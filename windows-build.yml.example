@@ -1,4 +1,4 @@
-name: Windows Build & Smoke Test
+name: Windows Build & Smoke Test (rename to .github/workflows/windows-build.yml to activate)
 
 on:
   workflow_dispatch:

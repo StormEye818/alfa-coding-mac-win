@@ -103,5 +103,6 @@
 | `fix-strategy.md` | 本报告 |
 
 ## 下载地址（GitHub Release v0.1.0-fixed）
-- AlfaProxi-0.1.0-arm64-fixed.dmg | 
-- AlfaProxi.Setup.0.1.0-fixed.exe | 
+
+- AlfaProxi-0.1.0-arm64-fixed.dmg | https://github.com/StormEye818/alfa-coding-mac-win/releases/download/v0.1.0-fixed/AlfaProxi-0.1.0-arm64-fixed.dmg
+- AlfaProxi.Setup.0.1.0-fixed.exe | https://github.com/StormEye818/alfa-coding-mac-win/releases/download/v0.1.0-fixed/AlfaProxi.Setup.0.1.0-fixed.exe

@@ -1,0 +1,69 @@
+/** 核心逻辑自测：node test/proxi.test.js */
+import { ProxiBlock, crc16Kermit } from '../src/proxi.js';
+
+let pass = 0, fail = 0;
+function check(name, cond, extra = '') {
+    if (cond) { pass++; console.log(`  ✓ ${name}`); }
+    else { fail++; console.log(`  ✗ ${name} ${extra}`); }
+}
+
+console.log('CRC-16/KERMIT');
+check("CRC('123456789') = 0x2189", crc16Kermit(new TextEncoder().encode('123456789')) === 0x2189,
+    `got 0x${crc16Kermit(new TextEncoder().encode('123456789')).toString(16)}`);
+check('CRC 空数据 = 0', crc16Kermit(new Uint8Array(0)) === 0);
+
+console.log('\n实车照片头部（2026-09-28 Giulia 四叶草 中国版）');
+// 前 24 字节已从照片精确读出：ASCII "406200232331OUTPUT-SIT %"
+// 结构 = "406200"(6) + CRC 五位十进制 "23233"(5) + "1"(1) + "OUTPUT-SIT %"(12) = 24
+const head = '3430363230303233323333314F55545055542D5349542025';
+const body = new Uint8Array(289).fill(0);      // 12 行 x24 + 1
+const headBytes = Uint8Array.from(head.match(/../g).map((h) => parseInt(h, 16)));
+body.set(headBytes, 0);
+const blk = new ProxiBlock(body);
+check('头部 ASCII = 406200232331OUTPUT-SIT %', blk.headerAscii() === '406200232331OUTPUT-SIT %',
+    `got ${JSON.stringify(blk.headerAscii())}`);
+check('存储的 CRC 读出 23233', blk.storedCrc() === 23233, `got ${blk.storedCrc()}`);
+
+console.log('\n字节/位编辑');
+const b = new ProxiBlock(body);
+b.setBit(58, 1, 1);
+check('Byte58 bit1 置 1', b.getBit(58, 1) === 1 && b.getByte(58) === 0x02);
+b.setBit(58, 1, 0);
+check('Byte58 bit1 清 0', b.getByte(58) === 0x00);
+b.setByte(119, 0x79);
+check('Byte119 整体设为 0x79', b.getByte(119) === 0x79);
+b.setBits(166, { 0: 1, 1: 1 });
+check('Byte166 bit0+1 组合 (DDA=3)', b.getByte(166) === 0x03);
+let threw = false;
+try { b.setByte(9999, 0); } catch (e) { threw = true; }
+check('越界下标报错', threw);
+threw = false;
+try { b.setBit(10, 9, 1); } catch (e) { threw = true; }
+check('非法位编号报错', threw);
+
+console.log('\n校验与封缄');
+const c = new ProxiBlock(body);
+const v0 = c.verify();
+check('未封缄时 stored != computed（说明 CRC 区被覆盖过）', v0.stored !== v0.computed,
+    `stored=${v0.stored} computed=${v0.computed}`);
+const sealed = c.seal();
+check('seal() 写回 5 位十进制', c.storedCrc() === sealed && String(sealed).padStart(5, '0').length === 5);
+check('seal 后 verify 通过', c.verify().ok, JSON.stringify(c.verify()));
+
+console.log('\ndiff');
+const d1 = new ProxiBlock(body);
+const d2 = new ProxiBlock(body);
+d2.setBit(156, 4, 1);   // 全零块里置 1 才会产生差异
+d2.setByte(58, 0xff);
+const diffs = d1.diff(d2);
+check('检出 2 处差异', diffs.length === 2, `got ${diffs.length}`);
+check('差异含 Byte156', diffs.some((x) => x.addr === 156));
+check('差异含 Byte58', diffs.some((x) => x.addr === 58));
+
+console.log('\nhex 往返');
+const txt = d1.toHexText();
+check('toHexText 每行 24 字节', txt.split('\n')[0].split(' ').length === 24);
+check('fromHex 可还原', ProxiBlock.fromHex(txt).diff(d1).length === 0);
+
+console.log(`\n结果：${pass} 通过 / ${fail} 失败`);
+process.exit(fail ? 1 : 0);

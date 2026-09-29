@@ -1,0 +1,407 @@
+{
+  "note": "诊断接口适配目录。id=内部标识；kind=协议族；transport=传输方式；baud=默认串口速率；probe=识别/测试流程；caps=能力。",
+  "baudHint": "多数 ELM 类接口用 38400，部分用 9600；OBDKey 用 9600；ELM327 USB 高速模式用 230400。",
+  "protocols": [
+    {
+      "id": "ELM_KWP2000Fast",
+      "name": "KWP2000 快速",
+      "bus": "kline"
+    },
+    {
+      "id": "ELM_ISO9141",
+      "name": "ISO 9141-2",
+      "bus": "kline"
+    },
+    {
+      "id": "ELM_KWP71",
+      "name": "KWP71（逐字节）",
+      "bus": "kline"
+    },
+    {
+      "id": "ELM_KWP01",
+      "name": "KWP01",
+      "bus": "kline"
+    },
+    {
+      "id": "ELM_BCAN",
+      "name": "车身 CAN（11 位）",
+      "bus": "can"
+    },
+    {
+      "id": "ELM_BCAN29",
+      "name": "车身 CAN（29 位）",
+      "bus": "can"
+    },
+    {
+      "id": "ELM_BHCAN29",
+      "name": "舒适/车身 CAN（29 位）",
+      "bus": "can"
+    },
+    {
+      "id": "ELM_CCAN29",
+      "name": "底盘 CAN（29 位）",
+      "bus": "can"
+    },
+    {
+      "id": "ELM_CCANPN",
+      "name": "底盘 CAN（11 位）",
+      "bus": "can"
+    },
+    {
+      "id": "ELM_CCANPNKWP",
+      "name": "底盘 CAN + KWP",
+      "bus": "can"
+    },
+    {
+      "id": "ELM_BHCANPN",
+      "name": "舒适 CAN（11 位）",
+      "bus": "can"
+    },
+    {
+      "id": "ELM_BHCANPNKWP",
+      "name": "舒适 CAN + KWP",
+      "bus": "can"
+    },
+    {
+      "id": "ELM_MONBCAN",
+      "name": "车身 CAN 监听",
+      "bus": "can"
+    },
+    {
+      "id": "ELM_MONBCAN29",
+      "name": "车身 CAN 监听（29 位）",
+      "bus": "can"
+    },
+    {
+      "id": "ELM_CANSCAN29",
+      "name": "CAN 扫描（29 位）",
+      "bus": "can"
+    },
+    {
+      "id": "ELM_CANSCANPN",
+      "name": "CAN 扫描（11 位）",
+      "bus": "can"
+    },
+    {
+      "id": "ELM_OBDII",
+      "name": "OBD-II 标准",
+      "bus": "can"
+    }
+  ],
+  "interfaces": [
+    {
+      "id": "elm-usb",
+      "kind": "elm",
+      "name": "ELM 327 / OBD Direct-Protect / 通用 OBD",
+      "transport": "usb",
+      "baud": 38400,
+      "probe": [
+        "ATZ",
+        "ATE0",
+        "ATI"
+      ],
+      "expect": "ELM",
+      "caps": [
+        "can",
+        "kline"
+      ]
+    },
+    {
+      "id": "elm-usb-hs",
+      "kind": "elm",
+      "name": "ELM 327（USB）高速模式",
+      "transport": "usb",
+      "baud": 230400,
+      "probe": [
+        "ATZ",
+        "ATE0",
+        "ATI",
+        "ATBRD11"
+      ],
+      "expect": "ELM",
+      "caps": [
+        "can",
+        "kline"
+      ],
+      "note": "先用 38400 连接，识别成功后发 ATBRD11 切到 230400bps；适配器响应慢时使用。"
+    },
+    {
+      "id": "elm-bt",
+      "kind": "elm",
+      "name": "ELM 327 / 通用 OBD",
+      "transport": "bluetooth",
+      "baud": 38400,
+      "probe": [
+        "ATZ",
+        "ATE0",
+        "ATI"
+      ],
+      "expect": "ELM",
+      "caps": [
+        "can",
+        "kline"
+      ]
+    },
+    {
+      "id": "elm-wifi",
+      "kind": "elm",
+      "name": "ELM 327 / 通用 OBD",
+      "transport": "wifi",
+      "host": "192.168.0.10",
+      "port": 35000,
+      "probe": [
+        "ATZ",
+        "ATE0",
+        "ATI"
+      ],
+      "expect": "ELM",
+      "caps": [
+        "can",
+        "kline"
+      ],
+      "note": "填 IP:端口，例如 192.168.0.10:35000。"
+    },
+    {
+      "id": "obdkey-usb",
+      "kind": "obdkey",
+      "name": "OBDKey",
+      "transport": "usb",
+      "baud": 9600,
+      "probe": [
+        "ATZ",
+        "ATE0",
+        "ATI"
+      ],
+      "expect": "OBDKey",
+      "caps": [
+        "can",
+        "kline"
+      ],
+      "note": "支持在 VagCom 模式与 ELM 模式之间切换。"
+    },
+    {
+      "id": "obdkey-bt",
+      "kind": "obdkey",
+      "name": "OBDKey",
+      "transport": "bluetooth",
+      "baud": 9600,
+      "probe": [
+        "ATZ",
+        "ATE0",
+        "ATI"
+      ],
+      "expect": "OBDKey",
+      "caps": [
+        "can",
+        "kline"
+      ]
+    },
+    {
+      "id": "obdkey-wifi",
+      "kind": "obdkey",
+      "name": "OBDKey",
+      "transport": "wifi",
+      "host": "192.168.0.10",
+      "port": 35000,
+      "probe": [
+        "ATZ",
+        "ATE0",
+        "ATI"
+      ],
+      "expect": "OBDKey",
+      "caps": [
+        "can",
+        "kline"
+      ]
+    },
+    {
+      "id": "cantiecar-serial",
+      "kind": "cantiecar",
+      "name": "CANtieCAR 串口",
+      "transport": "serial",
+      "baud": 115200,
+      "probe": [
+        "ATZ",
+        "ATE0"
+      ],
+      "expect": "CANtieCAR",
+      "caps": [
+        "can"
+      ],
+      "note": "测试时必须断开车辆连接，否则结果无效。"
+    },
+    {
+      "id": "cantiecar-usb",
+      "kind": "cantiecar",
+      "name": "CANtieCAR",
+      "transport": "usb",
+      "baud": 115200,
+      "probe": [
+        "ATZ",
+        "ATE0"
+      ],
+      "expect": "CANtieCAR",
+      "caps": [
+        "can"
+      ],
+      "note": "支持多组许可证（最多 3 个接口）。测试时必须断开车辆连接。"
+    },
+    {
+      "id": "cantiecar-bt",
+      "kind": "cantiecar",
+      "name": "CANtieCAR",
+      "transport": "bluetooth",
+      "baud": 115200,
+      "probe": [
+        "ATZ",
+        "ATE0"
+      ],
+      "expect": "CANtieCAR",
+      "caps": [
+        "can"
+      ]
+    },
+    {
+      "id": "cantiecar-wifi",
+      "kind": "cantiecar",
+      "name": "CANtieCAR",
+      "transport": "wifi",
+      "host": "192.168.0.10",
+      "port": 35000,
+      "probe": [
+        "ATZ",
+        "ATE0"
+      ],
+      "expect": "CANtieCAR",
+      "caps": [
+        "can"
+      ]
+    },
+    {
+      "id": "vagcom-kkl",
+      "kind": "vagcom",
+      "name": "K-Line / VAGCOM（USB/RS232）",
+      "transport": "usb",
+      "baud": 10400,
+      "probe": [
+        "01"
+      ],
+      "expect": "KKL",
+      "caps": [
+        "kline"
+      ],
+      "note": "仅 K-Line，不支持 CAN 模块。系统需支持高精度定时器，否则可能不稳定。"
+    },
+    {
+      "id": "obdlink-vlinker-usb",
+      "kind": "elm",
+      "name": "OBDLink / Vgate vLinker",
+      "transport": "usb",
+      "baud": 38400,
+      "probe": [
+        "ATZ",
+        "ATE0",
+        "ATI"
+      ],
+      "expect": "ELM",
+      "caps": [
+        "can",
+        "kline"
+      ]
+    },
+    {
+      "id": "obdlink-vlinker-bt",
+      "kind": "elm",
+      "name": "OBDLink / Vgate vLinker",
+      "transport": "bluetooth",
+      "baud": 38400,
+      "probe": [
+        "ATZ",
+        "ATE0",
+        "ATI"
+      ],
+      "expect": "ELM",
+      "caps": [
+        "can",
+        "kline"
+      ]
+    },
+    {
+      "id": "obdlink-vlinker-wifi",
+      "kind": "elm",
+      "name": "OBDLink / Vgate vLinker",
+      "transport": "wifi",
+      "host": "192.168.0.10",
+      "port": 35000,
+      "probe": [
+        "ATZ",
+        "ATE0",
+        "ATI"
+      ],
+      "expect": "ELM",
+      "caps": [
+        "can",
+        "kline"
+      ]
+    },
+    {
+      "id": "vlinker-ms-bt",
+      "kind": "vlinker",
+      "name": "Vgate vLinker MS",
+      "transport": "bluetooth",
+      "baud": 38400,
+      "probe": [
+        "ATZ",
+        "ATE0",
+        "ATI"
+      ],
+      "expect": "ELM",
+      "caps": [
+        "can",
+        "kline",
+        "autobus"
+      ],
+      "note": "唯一可可靠完成 PROXI 对齐的蓝牙接口；多路 CAN 自动切换，无需换适配线。"
+    },
+    {
+      "id": "auto-elm",
+      "kind": "auto",
+      "name": "自动识别 ELM327 / OBDLink / Vgate",
+      "transport": "auto",
+      "probe": [
+        "ATZ",
+        "ATE0",
+        "ATI"
+      ],
+      "expect": "ELM",
+      "caps": [
+        "can",
+        "kline"
+      ],
+      "note": "逐端口探测，自动判定接口类型。"
+    }
+  ],
+  "detectFlow": {
+    "steps": [
+      "枚举可用串口（可选只显示可用 COM 口）",
+      "对每个端口发 ATZ / ATE0 / ATI，按回显判定接口类型",
+      "ELM 类：检查版本是否兼容 ELM327 1.3/1.4（能否连 CAN 模块）",
+      "OBDKey：检测是否处于 ELM 模式，必要时切换（VagCom ↔ ELM）",
+      "CANtieCAR：按 USB / 蓝牙 / WiFi 分别探测，端口变更时重新定位",
+      "VagCom/KKL：发识别帧，判定 KKL 与 VagCom",
+      "测端口延迟（200 字节）与定时器精度（1000/750/250/100ms）",
+      "报告：XXX interface found at port N, speed Nbps / Suitable interface not found"
+    ],
+    "messages": {
+      "found": "{name} 接口已找到，端口 {port}，速率 {baud}bps",
+      "notFound": "未找到可用接口！",
+      "notElm": "不是 ELM 接口",
+      "notObdkey": "不是 OBDKey 接口",
+      "notCantiecar": "不是 CANtieCAR 接口",
+      "slow": "接口速度过慢。请尝试按「ELM 327（USB）高速模式」配置（230400bps）！",
+      "noTimer": "系统不支持高精度定时器！VagCom/KKL 接口可能无法正常工作！",
+      "disconnectCar": "请断开接口与车辆的连接！CANtieCAR 接着车时测试结果无效！",
+      "bodyBlock": "⚠ 车身电脑连续 3 次尝试失败后会锁定 30 分钟！"
+    }
+  }
+}

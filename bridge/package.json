@@ -1,0 +1,10 @@
+{
+  "name": "alfaproxi-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "串口/TCP 桥接：向界面提供串口枚举、开关、收发，供诊断接口适配层使用",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "serialport": "^12.0.0", "ws": "^8.18.0" }
+}

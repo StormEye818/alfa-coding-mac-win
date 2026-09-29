@@ -1,0 +1,19 @@
+# 依赖与产物
+node_modules/
+dist/
+.nsis-arm64/
+*.log
+
+# 测试残留状态
+sandbox/.presence-baseline.json
+
+# 调试脚本残留
+dbg*.mjs
+verify*.mjs
+latency.mjs
+detect-test.mjs
+drive-smoke.mjs
+bridge/sp-test.mjs
+
+# 系统
+.DS_Store

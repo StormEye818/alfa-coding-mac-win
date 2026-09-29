@@ -1,0 +1,67 @@
+{
+  "name": "alfaproxi",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Alfa Romeo Giulia/Stelvio (952/949) 刷隐藏与 PROXI 对齐工具",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "test": "node test/proxi.test.js && node test/protocol.test.js && node test/session.test.js && node test/align.test.js",
+    "build-data": "node tools/build-data.cjs",
+    "app": "python3 -m http.server 8848",
+    "electron": "electron .",
+    "dist": "electron-builder --mac --win",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win"
+  },
+  "dependencies": {
+    "serialport": "^12.0.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "cn.bigmiao.alfaproxi",
+    "productName": "AlfaProxi",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "app/**/*",
+      "src/**/*",
+      "bridge/server.js",
+      "electron/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "**/*.node",
+      "**/node_modules/@serialport/**"
+    ],
+    "npmRebuild": false,
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.utilities"
+    },
+    "dmg": {
+      "title": "AlfaProxi"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "allowScripts": {
+    "electron@33.4.11": true,
+    "@serialport/bindings-cpp@12.0.1": true
+  }
+}

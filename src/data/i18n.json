@@ -1,0 +1,3299 @@
+{
+  "note": "诊断软件 术语中文对照。zh=译文（汽车行业标准说法），en=原文。用于界面显示；en 保留以便与 诊断软件 对照。",
+  "version": "1.0",
+  "terms": {
+    "Low beam": {
+      "zh": "近光灯",
+      "en": "Low beam"
+    },
+    "High beam": {
+      "zh": "远光灯",
+      "en": "High beam"
+    },
+    "Low beam (XENON)": {
+      "zh": "近光灯（氙气）",
+      "en": "Low beam (XENON)"
+    },
+    "High beam (XENON)": {
+      "zh": "远光灯（氙气）",
+      "en": "High beam (XENON)"
+    },
+    "Fog lights": {
+      "zh": "前雾灯",
+      "en": "Fog lights"
+    },
+    "Rear fog lights": {
+      "zh": "后雾灯",
+      "en": "Rear fog lights"
+    },
+    "Rear fog lights (left)": {
+      "zh": "后雾灯（左）",
+      "en": "Rear fog lights (left)"
+    },
+    "Rear fog lights (right)": {
+      "zh": "后雾灯（右）",
+      "en": "Rear fog lights (right)"
+    },
+    "Front side lights": {
+      "zh": "前示宽灯",
+      "en": "Front side lights"
+    },
+    "Rear tail lights": {
+      "zh": "后尾灯",
+      "en": "Rear tail lights"
+    },
+    "Side lights": {
+      "zh": "示宽灯 / 侧标志灯",
+      "en": "Side lights"
+    },
+    "Hazard lights LED": {
+      "zh": "危险警示灯 LED（双闪）",
+      "en": "Hazard lights LED"
+    },
+    "Turn signal (left)": {
+      "zh": "转向灯（左）",
+      "en": "Turn signal (left)"
+    },
+    "Turn signal (right)": {
+      "zh": "转向灯（右）",
+      "en": "Turn signal (right)"
+    },
+    "Number plate lights": {
+      "zh": "牌照灯",
+      "en": "Number plate lights"
+    },
+    "Third (center) brake light": {
+      "zh": "高位（中央）刹车灯",
+      "en": "Third (center) brake light"
+    },
+    "Brake lights": {
+      "zh": "刹车灯",
+      "en": "Brake lights"
+    },
+    "Daylights (DRL)": {
+      "zh": "日间行车灯（DRL）",
+      "en": "Daylights (DRL)"
+    },
+    "Daylights dropout": {
+      "zh": "日间行车灯熄灭（跟随大灯）",
+      "en": "Daylights dropout"
+    },
+    "Auto high beam": {
+      "zh": "自动远光灯",
+      "en": "Auto high beam"
+    },
+    "Auto high beam indicator": {
+      "zh": "自动远光指示灯",
+      "en": "Auto high beam indicator"
+    },
+    "Xenon headlights": {
+      "zh": "氙气大灯",
+      "en": "Xenon headlights"
+    },
+    "Xenon headlights shutter": {
+      "zh": "氙气大灯遮光板",
+      "en": "Xenon headlights shutter"
+    },
+    "Cornering lights": {
+      "zh": "转向辅助灯（弯道辅助灯）",
+      "en": "Cornering lights"
+    },
+    "Headlight washers": {
+      "zh": "大灯清洗",
+      "en": "Headlight washers"
+    },
+    "Headlight actuators (LEFT)": {
+      "zh": "大灯调节电机（左）",
+      "en": "Headlight actuators (LEFT)"
+    },
+    "Headlight actuators (RIGHT)": {
+      "zh": "大灯调节电机（右）",
+      "en": "Headlight actuators (RIGHT)"
+    },
+    "Headlight actuators (CENTER)": {
+      "zh": "大灯调节电机（中）",
+      "en": "Headlight actuators (CENTER)"
+    },
+    "Headlight actuators (MIDDLE)": {
+      "zh": "大灯调节电机（中位）",
+      "en": "Headlight actuators (MIDDLE)"
+    },
+    "Headlight actuators (HIGH)": {
+      "zh": "大灯调节电机（高位）",
+      "en": "Headlight actuators (HIGH)"
+    },
+    "Headlight actuators (LOW)": {
+      "zh": "大灯调节电机（低位）",
+      "en": "Headlight actuators (LOW)"
+    },
+    "Night lights": {
+      "zh": "夜行灯（示宽小灯）",
+      "en": "Night lights"
+    },
+    "Puddle lights": {
+      "zh": "照地灯（迎宾灯）",
+      "en": "Puddle lights"
+    },
+    "Front interior light": {
+      "zh": "前排室内灯",
+      "en": "Front interior light"
+    },
+    "Dashboard illumination": {
+      "zh": "仪表背光",
+      "en": "Dashboard illumination"
+    },
+    "Mirror signal light": {
+      "zh": "后视镜转向灯",
+      "en": "Mirror signal light"
+    },
+    "Park lights indicator light": {
+      "zh": "示宽灯指示灯",
+      "en": "Park lights indicator light"
+    },
+    "Front foglights indicator light": {
+      "zh": "前雾灯指示灯",
+      "en": "Front foglights indicator light"
+    },
+    "Rear foglights indicator light": {
+      "zh": "后雾灯指示灯",
+      "en": "Rear foglights indicator light"
+    },
+    "Left turn signal control light": {
+      "zh": "左转向指示灯",
+      "en": "Left turn signal control light"
+    },
+    "Right turn signal control light": {
+      "zh": "右转向指示灯",
+      "en": "Right turn signal control light"
+    },
+    "High beam control light": {
+      "zh": "远光指示灯",
+      "en": "High beam control light"
+    },
+    "Light": {
+      "zh": "灯",
+      "en": "Light"
+    },
+    "Boot open": {
+      "zh": "开启后备箱",
+      "en": "Boot open"
+    },
+    "Door lock": {
+      "zh": "车门上锁",
+      "en": "Door lock"
+    },
+    "Door unlock": {
+      "zh": "车门解锁",
+      "en": "Door unlock"
+    },
+    "Doors status indicator": {
+      "zh": "车门状态指示灯",
+      "en": "Doors status indicator"
+    },
+    "Tow hook": {
+      "zh": "拖车钩（释放）",
+      "en": "Tow hook"
+    },
+    "Liftgate status": {
+      "zh": "尾门状态",
+      "en": "Liftgate status"
+    },
+    "Liftgate position counts": {
+      "zh": "尾门位置计数",
+      "en": "Liftgate position counts"
+    },
+    "Comfort windows open/close": {
+      "zh": "遥控车窗（舒适开启/关闭）",
+      "en": "Comfort windows open/close"
+    },
+    "Mirror heater": {
+      "zh": "后视镜加热",
+      "en": "Mirror heater"
+    },
+    "Menu: Mirrors auto-folding": {
+      "zh": "菜单：后视镜自动折叠",
+      "en": "Menu: Mirrors auto-folding"
+    },
+    "Menu: Easy entry": {
+      "zh": "菜单：舒适进出（座椅迎宾）",
+      "en": "Menu: Easy entry"
+    },
+    "Driver's side": {
+      "zh": "驾驶位方向",
+      "en": "Driver's side"
+    },
+    "Heated rear window control": {
+      "zh": "后窗加热（除雾）控制",
+      "en": "Heated rear window control"
+    },
+    "Windscreen wash pump relay": {
+      "zh": "前风挡洗涤泵继电器",
+      "en": "Windscreen wash pump relay"
+    },
+    "Horn command": {
+      "zh": "鸣笛测试",
+      "en": "Horn command"
+    },
+    "Acoustic signal (buzzer)": {
+      "zh": "蜂鸣器声响",
+      "en": "Acoustic signal (buzzer)"
+    },
+    "Dashboard acoustic alarm (beep)": {
+      "zh": "仪表提示音（哔声）",
+      "en": "Dashboard acoustic alarm (beep)"
+    },
+    "Rain sensor": {
+      "zh": "雨量传感器",
+      "en": "Rain sensor"
+    },
+    "Dusk sensor": {
+      "zh": "光感传感器（黄昏传感器）",
+      "en": "Dusk sensor"
+    },
+    "Display external temperature on dashboard": {
+      "zh": "仪表显示车外温度",
+      "en": "Display external temperature on dashboard"
+    },
+    "Volumetric sensors sensitivity": {
+      "zh": "车内超声波传感器灵敏度",
+      "en": "Volumetric sensors sensitivity"
+    },
+    "Tilt sensor X (Longitudinal)": {
+      "zh": "倾斜传感器 X（纵向）",
+      "en": "Tilt sensor X (Longitudinal)"
+    },
+    "Tilt sensor Y (Lateral)": {
+      "zh": "倾斜传感器 Y（横向）",
+      "en": "Tilt sensor Y (Lateral)"
+    },
+    "Power supply mode (Logistic mode)": {
+      "zh": "电源模式（物流模式）",
+      "en": "Power supply mode (Logistic mode)"
+    },
+    "Indicators command": {
+      "zh": "指示灯指令",
+      "en": "Indicators command"
+    },
+    "Rearm inertia switch (FIS)": {
+      "zh": "复位碰撞断油开关（FIS）",
+      "en": "Rearm inertia switch (FIS)"
+    },
+    "Security Gateway Module (SGW)": {
+      "zh": "安全网关模块（SGW）",
+      "en": "Security Gateway Module (SGW)"
+    },
+    "Active grille shutter": {
+      "zh": "主动进气格栅",
+      "en": "Active grille shutter"
+    },
+    "Seat heater (driver)": {
+      "zh": "座椅加热（驾驶位）",
+      "en": "Seat heater (driver)"
+    },
+    "Seat heater (passenger)": {
+      "zh": "座椅加热（副驾）",
+      "en": "Seat heater (passenger)"
+    },
+    "Steering wheel heater": {
+      "zh": "方向盘加热",
+      "en": "Steering wheel heater"
+    },
+    "Activate seat belt alarm": {
+      "zh": "开启安全带提醒",
+      "en": "Activate seat belt alarm"
+    },
+    "Deactivate seat belt alarm": {
+      "zh": "关闭安全带提醒",
+      "en": "Deactivate seat belt alarm"
+    },
+    "Seat belts control light": {
+      "zh": "安全带指示灯",
+      "en": "Seat belts control light"
+    },
+    "A/C Compressor relay": {
+      "zh": "空调压缩机继电器",
+      "en": "A/C Compressor relay"
+    },
+    "Additional heater relay 1": {
+      "zh": "辅助加热器继电器 1",
+      "en": "Additional heater relay 1"
+    },
+    "Additional heater relay 2": {
+      "zh": "辅助加热器继电器 2",
+      "en": "Additional heater relay 2"
+    },
+    "Air recirculation actuator": {
+      "zh": "内外循环风门电机",
+      "en": "Air recirculation actuator"
+    },
+    "Left distribution motor": {
+      "zh": "左侧配风电机",
+      "en": "Left distribution motor"
+    },
+    "Right distribution motor": {
+      "zh": "右侧配风电机",
+      "en": "Right distribution motor"
+    },
+    "Left distribution motor (top)": {
+      "zh": "左侧配风电机（上）",
+      "en": "Left distribution motor (top)"
+    },
+    "Right distribution motor (top)": {
+      "zh": "右侧配风电机（上）",
+      "en": "Right distribution motor (top)"
+    },
+    "Rear distribution actuator": {
+      "zh": "后排配风电机",
+      "en": "Rear distribution actuator"
+    },
+    "Left mixing actuator": {
+      "zh": "左侧混风电机",
+      "en": "Left mixing actuator"
+    },
+    "Right mixing actuator": {
+      "zh": "右侧混风电机",
+      "en": "Right mixing actuator"
+    },
+    "Flap actuators learning": {
+      "zh": "风门电机学习",
+      "en": "Flap actuators learning"
+    },
+    "Blow-by heater relay control": {
+      "zh": "曲轴箱通风加热继电器控制",
+      "en": "Blow-by heater relay control"
+    },
+    "Fan 1st speed": {
+      "zh": "鼓风机 1 档",
+      "en": "Fan 1st speed"
+    },
+    "Fan 2nd speed": {
+      "zh": "鼓风机 2 档",
+      "en": "Fan 2nd speed"
+    },
+    "Fan 3rd speed": {
+      "zh": "鼓风机 3 档",
+      "en": "Fan 3rd speed"
+    },
+    "Electric fan control": {
+      "zh": "电子风扇控制",
+      "en": "Electric fan control"
+    },
+    "Cruise control": {
+      "zh": "定速巡航",
+      "en": "Cruise control"
+    },
+    "Adaptive cruise control": {
+      "zh": "自适应巡航（ACC）",
+      "en": "Adaptive cruise control"
+    },
+    "Cruise control light": {
+      "zh": "定速巡航指示灯",
+      "en": "Cruise control light"
+    },
+    "Speed limitation function": {
+      "zh": "限速功能",
+      "en": "Speed limitation function"
+    },
+    "FCW control light": {
+      "zh": "前碰撞预警指示灯（FCW）",
+      "en": "FCW control light"
+    },
+    "Hill holder failure indicator": {
+      "zh": "上坡辅助故障指示灯",
+      "en": "Hill holder failure indicator"
+    },
+    "Tire pressure monitoring system (TPMS)": {
+      "zh": "胎压监测（TPMS）",
+      "en": "Tire pressure monitoring system (TPMS)"
+    },
+    "Tire pressure warning light": {
+      "zh": "胎压报警灯",
+      "en": "Tire pressure warning light"
+    },
+    "Front wheels pressure reference": {
+      "zh": "前轮胎压参考值",
+      "en": "Front wheels pressure reference"
+    },
+    "Rear wheels pressure reference": {
+      "zh": "后轮胎压参考值",
+      "en": "Rear wheels pressure reference"
+    },
+    "Front left wheel identification": {
+      "zh": "左前轮识别码（传感器 ID）",
+      "en": "Front left wheel identification"
+    },
+    "Front right wheel identification": {
+      "zh": "右前轮识别码（传感器 ID）",
+      "en": "Front right wheel identification"
+    },
+    "Rear left wheel identification": {
+      "zh": "左后轮识别码（传感器 ID）",
+      "en": "Rear left wheel identification"
+    },
+    "Rear right wheel identification": {
+      "zh": "右后轮识别码（传感器 ID）",
+      "en": "Rear right wheel identification"
+    },
+    "Electronic parking brake": {
+      "zh": "电子手刹（EPB）",
+      "en": "Electronic parking brake"
+    },
+    "EPB maintenance mode": {
+      "zh": "EPB 维修模式（更换刹车片）",
+      "en": "EPB maintenance mode"
+    },
+    "Exit EPB maintenance mode": {
+      "zh": "退出 EPB 维修模式",
+      "en": "Exit EPB maintenance mode"
+    },
+    "Rear left EPB motor": {
+      "zh": "左后 EPB 电机",
+      "en": "Rear left EPB motor"
+    },
+    "Rear right EPB motor": {
+      "zh": "右后 EPB 电机",
+      "en": "Rear right EPB motor"
+    },
+    "Front left load valve": {
+      "zh": "左前增压阀",
+      "en": "Front left load valve"
+    },
+    "Front right load valve": {
+      "zh": "右前增压阀",
+      "en": "Front right load valve"
+    },
+    "Rear left load valve": {
+      "zh": "左后增压阀",
+      "en": "Rear left load valve"
+    },
+    "Rear right load valve": {
+      "zh": "右后增压阀",
+      "en": "Rear right load valve"
+    },
+    "Front left drain valve": {
+      "zh": "左前泄压阀",
+      "en": "Front left drain valve"
+    },
+    "Front right drain valve": {
+      "zh": "右前泄压阀",
+      "en": "Front right drain valve"
+    },
+    "Rear left drain valve": {
+      "zh": "左后泄压阀",
+      "en": "Rear left drain valve"
+    },
+    "Rear right drain valve": {
+      "zh": "右后泄压阀",
+      "en": "Rear right drain valve"
+    },
+    "Traction solenoid valve (primary) 1": {
+      "zh": "牵引力控制电磁阀（主）1",
+      "en": "Traction solenoid valve (primary) 1"
+    },
+    "Traction solenoid valve (primary) 2": {
+      "zh": "牵引力控制电磁阀（主）2",
+      "en": "Traction solenoid valve (primary) 2"
+    },
+    "Traction solenoid valve (pilot) 1": {
+      "zh": "牵引力控制电磁阀（先导）1",
+      "en": "Traction solenoid valve (pilot) 1"
+    },
+    "Traction solenoid valve (pilot) 2": {
+      "zh": "牵引力控制电磁阀（先导）2",
+      "en": "Traction solenoid valve (pilot) 2"
+    },
+    "Simulator solenoid valve": {
+      "zh": "模拟器电磁阀",
+      "en": "Simulator solenoid valve"
+    },
+    "Diagnostics solenoid valve": {
+      "zh": "诊断电磁阀",
+      "en": "Diagnostics solenoid valve"
+    },
+    "Hydraulic circuit 1 bleed": {
+      "zh": "液压回路 1 排气（排空）",
+      "en": "Hydraulic circuit 1 bleed"
+    },
+    "Hydraulic circuit 2 bleed": {
+      "zh": "液压回路 2 排气（排空）",
+      "en": "Hydraulic circuit 2 bleed"
+    },
+    "Hydraulic circuit bleed (Front Left)": {
+      "zh": "液压回路排气（左前）",
+      "en": "Hydraulic circuit bleed (Front Left)"
+    },
+    "Hydraulic circuit bleed (Front Right)": {
+      "zh": "液压回路排气（右前）",
+      "en": "Hydraulic circuit bleed (Front Right)"
+    },
+    "Hydraulic circuit bleed (Rear Left)": {
+      "zh": "液压回路排气（左后）",
+      "en": "Hydraulic circuit bleed (Rear Left)"
+    },
+    "Hydraulic circuit bleed (Rear Right)": {
+      "zh": "液压回路排气（右后）",
+      "en": "Hydraulic circuit bleed (Rear Right)"
+    },
+    "Hydraulic circuit bleed All Wheels": {
+      "zh": "液压回路排气（全车轮）",
+      "en": "Hydraulic circuit bleed All Wheels"
+    },
+    "Hydraulic unit bleed": {
+      "zh": "液压单元排气",
+      "en": "Hydraulic unit bleed"
+    },
+    "Hydraulic unit bleed (Simulator)": {
+      "zh": "液压单元排气（模拟器）",
+      "en": "Hydraulic unit bleed (Simulator)"
+    },
+    "ABS control light": {
+      "zh": "ABS 指示灯",
+      "en": "ABS control light"
+    },
+    "EBD control light": {
+      "zh": "EBD 指示灯",
+      "en": "EBD control light"
+    },
+    "EBD/Parking brake control light": {
+      "zh": "EBD / 手刹指示灯",
+      "en": "EBD/Parking brake control light"
+    },
+    "ESP control light": {
+      "zh": "ESP 车身稳定指示灯",
+      "en": "ESP control light"
+    },
+    "Steering wheel paddles": {
+      "zh": "方向盘拨片",
+      "en": "Steering wheel paddles"
+    },
+    "Reset steering angle": {
+      "zh": "转向角复位",
+      "en": "Reset steering angle"
+    },
+    "Lateral and longitudinal acceleration sensor calibration": {
+      "zh": "横向/纵向加速度传感器标定",
+      "en": "Lateral and longitudinal acceleration sensor calibration"
+    },
+    "Pressure sensor calibration": {
+      "zh": "压力传感器标定",
+      "en": "Pressure sensor calibration"
+    },
+    "Roll-bench/dyno mode": {
+      "zh": "转鼓/测功机模式",
+      "en": "Roll-bench/dyno mode"
+    },
+    "Traction solenoid valve": {
+      "zh": "牵引力控制电磁阀",
+      "en": "Traction solenoid valve"
+    },
+    "Multimedia: ACP/AA mode": {
+      "zh": "多媒体：CarPlay / Android Auto 模式",
+      "en": "Multimedia: ACP/AA mode"
+    },
+    "Multimedia: ACP/AA supported functionality": {
+      "zh": "多媒体：CarPlay / Android Auto 支持功能",
+      "en": "Multimedia: ACP/AA supported functionality"
+    },
+    "Multimedia: Cellular module": {
+      "zh": "多媒体：蜂窝通信模块",
+      "en": "Multimedia: Cellular module"
+    },
+    "Multimedia: DAB radio": {
+      "zh": "多媒体：DAB 数字收音机",
+      "en": "Multimedia: DAB radio"
+    },
+    "Multimedia: FM2 radio": {
+      "zh": "多媒体：FM2 收音机",
+      "en": "Multimedia: FM2 radio"
+    },
+    "Multimedia: GPS module": {
+      "zh": "多媒体：GPS 模块",
+      "en": "Multimedia: GPS module"
+    },
+    "Multimedia: Navigation": {
+      "zh": "多媒体：导航",
+      "en": "Multimedia: Navigation"
+    },
+    "Multimedia: External media ports": {
+      "zh": "多媒体：外接媒体接口",
+      "en": "Multimedia: External media ports"
+    },
+    "Multimedia: Navigation info repeat": {
+      "zh": "多媒体：导航信息复显",
+      "en": "Multimedia: Navigation info repeat"
+    },
+    "Multimedia: Phone info repeat": {
+      "zh": "多媒体：电话信息复显",
+      "en": "Multimedia: Phone info repeat"
+    },
+    "Menu: Navigation info repeat": {
+      "zh": "菜单：导航信息复显",
+      "en": "Menu: Navigation info repeat"
+    },
+    "Menu: Phone info repeat": {
+      "zh": "菜单：电话信息复显",
+      "en": "Menu: Phone info repeat"
+    },
+    "Menu: Audio info repeat": {
+      "zh": "菜单：音响信息复显",
+      "en": "Menu: Audio info repeat"
+    },
+    "Menu: Auto parking brake": {
+      "zh": "菜单：自动驻车",
+      "en": "Menu: Auto parking brake"
+    },
+    "Rear camera": {
+      "zh": "倒车影像",
+      "en": "Rear camera"
+    },
+    "Rear camera brightness": {
+      "zh": "倒车影像亮度",
+      "en": "Rear camera brightness"
+    },
+    "Video Input Setting": {
+      "zh": "视频输入设置",
+      "en": "Video Input Setting"
+    },
+    "Read touch pad configuration": {
+      "zh": "读取触控板配置",
+      "en": "Read touch pad configuration"
+    },
+    "Touch Pad Configuration Status": {
+      "zh": "触控板配置状态",
+      "en": "Touch Pad Configuration Status"
+    },
+    "Touch pad self calibration": {
+      "zh": "触控板自标定",
+      "en": "Touch pad self calibration"
+    },
+    "Touch pad self test": {
+      "zh": "触控板自检",
+      "en": "Touch pad self test"
+    },
+    "Splash Screen": {
+      "zh": "开机动画（Splash 画面）",
+      "en": "Splash Screen"
+    },
+    "List of Stored Languages": {
+      "zh": "已存语言列表",
+      "en": "List of Stored Languages"
+    },
+    "Sync SDARS module": {
+      "zh": "同步卫星收音机模块（SDARS）",
+      "en": "Sync SDARS module"
+    },
+    "Tomtom Maps Data": {
+      "zh": "TomTom 地图数据",
+      "en": "Tomtom Maps Data"
+    },
+    "Tomtom MUID Data": {
+      "zh": "TomTom 设备标识数据（MUID）",
+      "en": "Tomtom MUID Data"
+    },
+    "Cabin Equalization Version": {
+      "zh": "座舱音效均衡版本",
+      "en": "Cabin Equalization Version"
+    },
+    "Supplier Configuration Data": {
+      "zh": "供应商配置数据",
+      "en": "Supplier Configuration Data"
+    },
+    "Key programming": {
+      "zh": "钥匙编程（匹配钥匙）",
+      "en": "Key programming"
+    },
+    "Enable FOBIKs": {
+      "zh": "启用遥控钥匙（FOBIK）",
+      "en": "Enable FOBIKs"
+    },
+    "VIN code write": {
+      "zh": "写入 VIN 码",
+      "en": "VIN code write"
+    },
+    "VIN write": {
+      "zh": "写入 VIN",
+      "en": "VIN write"
+    },
+    "VIN lock": {
+      "zh": "VIN 锁定",
+      "en": "VIN lock"
+    },
+    "VIN unlock": {
+      "zh": "VIN 解锁",
+      "en": "VIN unlock"
+    },
+    "VIN unlock2": {
+      "zh": "VIN 解锁 2",
+      "en": "VIN unlock2"
+    },
+    "VIN unlock4": {
+      "zh": "VIN 解锁 4",
+      "en": "VIN unlock4"
+    },
+    "VIN unlock + 1040": {
+      "zh": "VIN 解锁 + 1040",
+      "en": "VIN unlock + 1040"
+    },
+    "VIN unlock + 2705": {
+      "zh": "VIN 解锁 + 2705",
+      "en": "VIN unlock + 2705"
+    },
+    "VIN unlock3 +vinlock": {
+      "zh": "VIN 解锁 3 + VIN 锁定",
+      "en": "VIN unlock3 +vinlock"
+    },
+    "Activate VIN lock": {
+      "zh": "启用 VIN 锁定",
+      "en": "Activate VIN lock"
+    },
+    "Deactivate VIN lock": {
+      "zh": "解除 VIN 锁定",
+      "en": "Deactivate VIN lock"
+    },
+    "Deactivate VIN lock V2": {
+      "zh": "解除 VIN 锁定 V2",
+      "en": "Deactivate VIN lock V2"
+    },
+    "test 2705": {
+      "zh": "测试 2705",
+      "en": "test 2705"
+    },
+    "NEXT SERVICE KM RESET": {
+      "zh": "下次保养里程复位",
+      "en": "NEXT SERVICE KM RESET"
+    },
+    "Last service date": {
+      "zh": "上次保养日期",
+      "en": "Last service date"
+    },
+    "Service interval": {
+      "zh": "保养周期",
+      "en": "Service interval"
+    },
+    "Set number of service coupons": {
+      "zh": "设置保养券张数",
+      "en": "Set number of service coupons"
+    },
+    "Oil change": {
+      "zh": "更换机油（归零）",
+      "en": "Oil change"
+    },
+    "Oil level initialization": {
+      "zh": "机油液位初始化",
+      "en": "Oil level initialization"
+    },
+    "Oil pressure light": {
+      "zh": "机油压力报警灯",
+      "en": "Oil pressure light"
+    },
+    "Air filter replacement": {
+      "zh": "更换空气滤芯",
+      "en": "Air filter replacement"
+    },
+    "Particle filter light": {
+      "zh": "颗粒捕捉器指示灯",
+      "en": "Particle filter light"
+    },
+    "Particle filter regeneration": {
+      "zh": "颗粒捕捉器再生",
+      "en": "Particle filter regeneration"
+    },
+    "Particle filter replacement": {
+      "zh": "更换颗粒捕捉器（DPF）",
+      "en": "Particle filter replacement"
+    },
+    "Particle filter replacement (E6D)": {
+      "zh": "更换颗粒捕捉器（E6D 排放）",
+      "en": "Particle filter replacement (E6D)"
+    },
+    "Differential pressure sensor replacement (only for version with DPF)": {
+      "zh": "更换压差传感器（仅 DPF 版）",
+      "en": "Differential pressure sensor replacement (only for version with DPF)"
+    },
+    "Overboost counter reset": {
+      "zh": "超增压计数器复位",
+      "en": "Overboost counter reset"
+    },
+    "Speedometer": {
+      "zh": "车速表",
+      "en": "Speedometer"
+    },
+    "MIL control light": {
+      "zh": "故障灯（MIL）",
+      "en": "MIL control light"
+    },
+    "Engine temperature light": {
+      "zh": "水温报警灯",
+      "en": "Engine temperature light"
+    },
+    "Low fuel warning light": {
+      "zh": "燃油不足报警灯",
+      "en": "Low fuel warning light"
+    },
+    "Water in fuel filter control light": {
+      "zh": "燃油含水报警灯",
+      "en": "Water in fuel filter control light"
+    },
+    "Glow plugs control light": {
+      "zh": "预热塞指示灯",
+      "en": "Glow plugs control light"
+    },
+    "Airbag control light": {
+      "zh": "安全气囊指示灯",
+      "en": "Airbag control light"
+    },
+    "STOP&START control light": {
+      "zh": "启停系统指示灯",
+      "en": "STOP&START control light"
+    },
+    "Particle filter": {
+      "zh": "颗粒捕捉器",
+      "en": "Particle filter"
+    },
+    "Coil 1": {
+      "zh": "点火线圈 1",
+      "en": "Coil 1"
+    },
+    "Coil 2": {
+      "zh": "点火线圈 2",
+      "en": "Coil 2"
+    },
+    "Coil 3": {
+      "zh": "点火线圈 3",
+      "en": "Coil 3"
+    },
+    "Coil 4": {
+      "zh": "点火线圈 4",
+      "en": "Coil 4"
+    },
+    "Coil 5": {
+      "zh": "点火线圈 5",
+      "en": "Coil 5"
+    },
+    "Coil 6": {
+      "zh": "点火线圈 6",
+      "en": "Coil 6"
+    },
+    "Injectors": {
+      "zh": "喷油嘴",
+      "en": "Injectors"
+    },
+    "Injector code Cyl. 1": {
+      "zh": "喷油嘴编码 气缸 1",
+      "en": "Injector code Cyl. 1"
+    },
+    "Injector code Cyl. 2": {
+      "zh": "喷油嘴编码 气缸 2",
+      "en": "Injector code Cyl. 2"
+    },
+    "Injector code Cyl. 3": {
+      "zh": "喷油嘴编码 气缸 3",
+      "en": "Injector code Cyl. 3"
+    },
+    "Injector code Cyl. 4": {
+      "zh": "喷油嘴编码 气缸 4",
+      "en": "Injector code Cyl. 4"
+    },
+    "UniAir actuation electrovalve Cyl. 1": {
+      "zh": "UniAir 电磁阀 气缸 1",
+      "en": "UniAir actuation electrovalve Cyl. 1"
+    },
+    "UniAir actuation electrovalve Cyl. 2": {
+      "zh": "UniAir 电磁阀 气缸 2",
+      "en": "UniAir actuation electrovalve Cyl. 2"
+    },
+    "UniAir actuation electrovalve Cyl. 3": {
+      "zh": "UniAir 电磁阀 气缸 3",
+      "en": "UniAir actuation electrovalve Cyl. 3"
+    },
+    "UniAir actuation electrovalve Cyl. 4": {
+      "zh": "UniAir 电磁阀 气缸 4",
+      "en": "UniAir actuation electrovalve Cyl. 4"
+    },
+    "Fuel pump relay": {
+      "zh": "燃油泵继电器",
+      "en": "Fuel pump relay"
+    },
+    "Fuel high pressure regulator": {
+      "zh": "高压油压调节器",
+      "en": "Fuel high pressure regulator"
+    },
+    "Fuel supply circuit purge": {
+      "zh": "供油回路排空",
+      "en": "Fuel supply circuit purge"
+    },
+    "Rail pressure sensor replacement": {
+      "zh": "更换轨压传感器",
+      "en": "Rail pressure sensor replacement"
+    },
+    "Motorised throttle": {
+      "zh": "电子节气门",
+      "en": "Motorised throttle"
+    },
+    "Throttle position learning": {
+      "zh": "节气门位置学习",
+      "en": "Throttle position learning"
+    },
+    "Boost control solenoid": {
+      "zh": "增压控制电磁阀",
+      "en": "Boost control solenoid"
+    },
+    "Turbo vacuum valve": {
+      "zh": "涡轮真空阀",
+      "en": "Turbo vacuum valve"
+    },
+    "Wastegate solenoid valve": {
+      "zh": "废气旁通阀电磁阀",
+      "en": "Wastegate solenoid valve"
+    },
+    "Electronic thermostat": {
+      "zh": "电子节温器",
+      "en": "Electronic thermostat"
+    },
+    "Variable displacement engine oil pump": {
+      "zh": "可变排量机油泵",
+      "en": "Variable displacement engine oil pump"
+    },
+    "Glow plug preheating circuit test": {
+      "zh": "预热塞预热回路测试",
+      "en": "Glow plug preheating circuit test"
+    },
+    "EGR solenoid valve": {
+      "zh": "EGR 废气再循环电磁阀",
+      "en": "EGR solenoid valve"
+    },
+    "EGR exchanger exclusion valve": {
+      "zh": "EGR 冷却器旁通阀",
+      "en": "EGR exchanger exclusion valve"
+    },
+    "High pressure EGR valve learn": {
+      "zh": "高压 EGR 阀学习",
+      "en": "High pressure EGR valve learn"
+    },
+    "High pressure EGR valve test": {
+      "zh": "高压 EGR 阀测试",
+      "en": "High pressure EGR valve test"
+    },
+    "Low pressure EGR valve learn": {
+      "zh": "低压 EGR 阀学习",
+      "en": "Low pressure EGR valve learn"
+    },
+    "Low pressure EGR valve test": {
+      "zh": "低压 EGR 阀测试",
+      "en": "Low pressure EGR valve test"
+    },
+    "Evaporation control valve": {
+      "zh": "蒸发排放控制阀",
+      "en": "Evaporation control valve"
+    },
+    "Phase variator control (intake)": {
+      "zh": "进气相位调节器控制（VVT）",
+      "en": "Phase variator control (intake)"
+    },
+    "Phase variator control (exhaust)": {
+      "zh": "排气相位调节器控制（VVT）",
+      "en": "Phase variator control (exhaust)"
+    },
+    "Lambda 1 heater (pre-cat.)": {
+      "zh": "1 号氧传感器加热器（三元前）",
+      "en": "Lambda 1 heater (pre-cat.)"
+    },
+    "Lambda 1 heater (after-cat.)": {
+      "zh": "1 号氧传感器加热器（三元后）",
+      "en": "Lambda 1 heater (after-cat.)"
+    },
+    "Replacement of Lambda sensor": {
+      "zh": "更换氧传感器",
+      "en": "Replacement of Lambda sensor"
+    },
+    "Replacement of RPM sensor or distribution belt": {
+      "zh": "更换转速传感器或正时皮带",
+      "en": "Replacement of RPM sensor or distribution belt"
+    },
+    "Replacement of control unit and injectors": {
+      "zh": "更换控制单元与喷油嘴",
+      "en": "Replacement of control unit and injectors"
+    },
+    "Replacement of intelligent alternator (IAM)": {
+      "zh": "更换智能发电机（IAM）",
+      "en": "Replacement of intelligent alternator (IAM)"
+    },
+    "Replacement of timing sensor or cam": {
+      "zh": "更换正时传感器或凸轮轴",
+      "en": "Replacement of timing sensor or cam"
+    },
+    "Replacement of turbocharger": {
+      "zh": "更换涡轮增压器",
+      "en": "Replacement of turbocharger"
+    },
+    "Replacement of smart alternator": {
+      "zh": "更换智能发电机",
+      "en": "Replacement of smart alternator"
+    },
+    "NOx sensor before NOx storage catalyst replacement": {
+      "zh": "更换 NOx 储存催化器前的 NOx 传感器",
+      "en": "NOx sensor before NOx storage catalyst replacement"
+    },
+    "NOx sensor after NOx storage catalyst replacement": {
+      "zh": "更换 NOx 储存催化器后的 NOx 传感器",
+      "en": "NOx sensor after NOx storage catalyst replacement"
+    },
+    "NOx storage catalyst (NSC) replacement": {
+      "zh": "更换 NOx 储存催化器（NSC）",
+      "en": "NOx storage catalyst (NSC) replacement"
+    },
+    "Ionization control module self-adaptation parameters reset": {
+      "zh": "离子控制模块自适应参数复位",
+      "en": "Ionization control module self-adaptation parameters reset"
+    },
+    "Self-adaptation parameters reset": {
+      "zh": "自适应参数复位",
+      "en": "Self-adaptation parameters reset"
+    },
+    "Self-adaptation reset": {
+      "zh": "自适应复位",
+      "en": "Self-adaptation reset"
+    },
+    "Self test": {
+      "zh": "自检",
+      "en": "Self test"
+    },
+    "ECU Current Internal Settings": {
+      "zh": "ECU 当前内部设置",
+      "en": "ECU Current Internal Settings"
+    },
+    "ECU temperature": {
+      "zh": "ECU 温度",
+      "en": "ECU temperature"
+    },
+    "Phonic wheel learn reset": {
+      "zh": "信号盘学习复位",
+      "en": "Phonic wheel learn reset"
+    },
+    "Air flow meter sensor replacement": {
+      "zh": "更换空气流量计",
+      "en": "Air flow meter sensor replacement"
+    },
+    "Urea/AdBlue extended purge": {
+      "zh": "尿素（AdBlue）延长排空",
+      "en": "Urea/AdBlue extended purge"
+    },
+    "Urea/AdBlue first fill reset": {
+      "zh": "尿素首次加注复位",
+      "en": "Urea/AdBlue first fill reset"
+    },
+    "Urea/AdBlue heating component replacement": {
+      "zh": "更换尿素加热部件",
+      "en": "Urea/AdBlue heating component replacement"
+    },
+    "Urea/AdBlue injector 1 reset": {
+      "zh": "尿素喷嘴 1 复位",
+      "en": "Urea/AdBlue injector 1 reset"
+    },
+    "Urea/AdBlue pressure line heater": {
+      "zh": "尿素压力管路加热",
+      "en": "Urea/AdBlue pressure line heater"
+    },
+    "Urea/AdBlue pump reset": {
+      "zh": "尿素泵复位",
+      "en": "Urea/AdBlue pump reset"
+    },
+    "Urea/AdBlue system refill": {
+      "zh": "尿素系统加注",
+      "en": "Urea/AdBlue system refill"
+    },
+    "Urea/AdBlue tank reset": {
+      "zh": "尿素箱复位",
+      "en": "Urea/AdBlue tank reset"
+    },
+    "Gearbox learn": {
+      "zh": "变速箱学习",
+      "en": "Gearbox learn"
+    },
+    "Gearbox lever position learn": {
+      "zh": "换挡杆位置学习",
+      "en": "Gearbox lever position learn"
+    },
+    "Gear selector lever LEDs": {
+      "zh": "换挡杆指示灯",
+      "en": "Gear selector lever LEDs"
+    },
+    "Clutch calibration": {
+      "zh": "离合器标定",
+      "en": "Clutch calibration"
+    },
+    "Clutch pedal learning": {
+      "zh": "离合器踏板学习",
+      "en": "Clutch pedal learning"
+    },
+    "Clutch pedal learning (E6D)": {
+      "zh": "离合器踏板学习（E6D）",
+      "en": "Clutch pedal learning (E6D)"
+    },
+    "Neutral signal learn": {
+      "zh": "空挡信号学习",
+      "en": "Neutral signal learn"
+    },
+    "Body height wheelhouse edge (front left)": {
+      "zh": "轮眉处车身高度（左前）",
+      "en": "Body height wheelhouse edge (front left)"
+    },
+    "Body height wheelhouse edge (front right)": {
+      "zh": "轮眉处车身高度（右前）",
+      "en": "Body height wheelhouse edge (front right)"
+    },
+    "Body height wheelhouse edge (rear left)": {
+      "zh": "轮眉处车身高度（左后）",
+      "en": "Body height wheelhouse edge (rear left)"
+    },
+    "Body height wheelhouse edge (rear right)": {
+      "zh": "轮眉处车身高度（右后）",
+      "en": "Body height wheelhouse edge (rear right)"
+    },
+    "Fully open the splitters": {
+      "zh": "完全打开扰流板（分流器）",
+      "en": "Fully open the splitters"
+    },
+    "Active alignment stage 1 (mirror in forward position)": {
+      "zh": "主动标定 阶段1（后视镜前倾位）",
+      "en": "Active alignment stage 1 (mirror in forward position)"
+    },
+    "Active alignment stage 2 (mirror in center position)": {
+      "zh": "主动标定 阶段2（后视镜中位）",
+      "en": "Active alignment stage 2 (mirror in center position)"
+    },
+    "Active alignment stage 3 (mirror in backward position)": {
+      "zh": "主动标定 阶段3（后视镜后倾位）",
+      "en": "Active alignment stage 3 (mirror in backward position)"
+    },
+    "Active alignment stage 4": {
+      "zh": "主动标定 阶段4",
+      "en": "Active alignment stage 4"
+    },
+    "Active alignment stage 4 (TEST2)": {
+      "zh": "主动标定 阶段4（TEST2）",
+      "en": "Active alignment stage 4 (TEST2)"
+    },
+    "Actuator base adjustment": {
+      "zh": "执行器零位调整",
+      "en": "Actuator base adjustment"
+    },
+    "Calibrate closed position": {
+      "zh": "标定关闭位置",
+      "en": "Calibrate closed position"
+    },
+    "Calibrate opened position": {
+      "zh": "标定开启位置",
+      "en": "Calibrate opened position"
+    },
+    "Calibration board distance": {
+      "zh": "标定板距离",
+      "en": "Calibration board distance"
+    },
+    "First calibration": {
+      "zh": "首次标定",
+      "en": "First calibration"
+    },
+    "Motor calibration": {
+      "zh": "电机标定",
+      "en": "Motor calibration"
+    },
+    "Power down calibration": {
+      "zh": "下电标定",
+      "en": "Power down calibration"
+    },
+    "Position sensor 1 signal": {
+      "zh": "位置传感器 1 信号",
+      "en": "Position sensor 1 signal"
+    },
+    "Position sensor 2 signal": {
+      "zh": "位置传感器 2 信号",
+      "en": "Position sensor 2 signal"
+    },
+    "Position sensor calibration": {
+      "zh": "位置传感器标定",
+      "en": "Position sensor calibration"
+    },
+    "Production/Service final calibration": {
+      "zh": "生产/售后最终标定",
+      "en": "Production/Service final calibration"
+    },
+    "Reset calibration": {
+      "zh": "标定复位",
+      "en": "Reset calibration"
+    },
+    "System calibration": {
+      "zh": "系统标定",
+      "en": "System calibration"
+    },
+    "Target frame calibration": {
+      "zh": "目标框标定",
+      "en": "Target frame calibration"
+    },
+    "Latch motor feedback": {
+      "zh": "锁电机反馈",
+      "en": "Latch motor feedback"
+    },
+    "Latch position switch": {
+      "zh": "锁位置开关",
+      "en": "Latch position switch"
+    },
+    "Latch status": {
+      "zh": "锁止状态",
+      "en": "Latch status"
+    },
+    "Drive motor PWM": {
+      "zh": "驱动电机 PWM",
+      "en": "Drive motor PWM"
+    },
+    "Drive motor feedback": {
+      "zh": "驱动电机反馈",
+      "en": "Drive motor feedback"
+    },
+    "Pump relay control": {
+      "zh": "泵继电器控制",
+      "en": "Pump relay control"
+    },
+    "Flow shutter valve": {
+      "zh": "节流阀（翻板阀）",
+      "en": "Flow shutter valve"
+    },
+    "Classification number/version": {
+      "zh": "分类号 / 版本",
+      "en": "Classification number/version"
+    },
+    "PROXI ALIGNMENT PROCEDURE": {
+      "zh": "PROXI 对齐程序",
+      "en": "PROXI ALIGNMENT PROCEDURE"
+    },
+    "PROXI 2024": {
+      "zh": "PROXI 2024",
+      "en": "PROXI 2024"
+    },
+    "Dynamic control selector": {
+      "zh": "动态驾驶模式选择器（DNA/Race）",
+      "en": "Dynamic control selector"
+    },
+    "Country code": {
+      "zh": "国家 / 地区代码",
+      "en": "Country code"
+    },
+    "ACP/AA mode reset": {
+      "zh": "CarPlay / Android Auto 模式复位",
+      "en": "ACP/AA mode reset"
+    },
+    "ACP/AA offline activation": {
+      "zh": "CarPlay / Android Auto 离线激活",
+      "en": "ACP/AA offline activation"
+    },
+    "ACP/AA offline management": {
+      "zh": "CarPlay / Android Auto 离线管理",
+      "en": "ACP/AA offline management"
+    },
+    "Low temp. WCAC coolant pump": {
+      "zh": "低温中冷器冷却水泵",
+      "en": "Low temp. WCAC coolant pump"
+    },
+    "Service Interval Reset": {
+      "zh": "保养周期复位",
+      "en": "Service Interval Reset"
+    },
+    "Body Computer Marelli (952)": {
+      "zh": "车身电脑 Marelli（952）",
+      "en": "Body Computer Marelli (952)"
+    },
+    "Body Computer Marelli (949)": {
+      "zh": "车身电脑 Marelli（949）",
+      "en": "Body Computer Marelli (949)"
+    },
+    "CAN Setup / PROXI Alignment Procedure (952)": {
+      "zh": "CAN 设置 / PROXI 对齐程序（952）",
+      "en": "CAN Setup / PROXI Alignment Procedure (952)"
+    },
+    "Instrument Panel Continental": {
+      "zh": "组合仪表 大陆",
+      "en": "Instrument Panel Continental"
+    },
+    "Continental ABS MK C1": {
+      "zh": "ABS / ESP 大陆 MK C1",
+      "en": "Continental ABS MK C1"
+    },
+    "ZF Electric Steering": {
+      "zh": "ZF 电动助力转向（EPS）",
+      "en": "ZF Electric Steering"
+    },
+    "ZF 8HP50/75 Automatic Gearbox": {
+      "zh": "ZF 8HP50/75 自动变速箱",
+      "en": "ZF 8HP50/75 Automatic Gearbox"
+    },
+    "ZF Electronic Gear Shift Module": {
+      "zh": "ZF 电子换挡模块（ESM）",
+      "en": "ZF Electronic Gear Shift Module"
+    },
+    "Magna Q4 Transfer Case": {
+      "zh": "Magna Q4 分动箱",
+      "en": "Magna Q4 Transfer Case"
+    },
+    "Bosch Airbag": {
+      "zh": "博世安全气囊",
+      "en": "Bosch Airbag"
+    },
+    "Automotive Lighting adaptive headlights": {
+      "zh": "自适应大灯",
+      "en": "Automotive Lighting adaptive headlights"
+    },
+    "Steering Lock TRW": {
+      "zh": "TRW 转向锁",
+      "en": "Steering Lock TRW"
+    },
+    "Haptical lane feedback (HALF) camera Bosch": {
+      "zh": "博世触感车道保持摄像头（HALF）",
+      "en": "Haptical lane feedback (HALF) camera Bosch"
+    },
+    "Driver assistant system module (DASM) radar Bosch": {
+      "zh": "博世驾驶辅助雷达（DASM）",
+      "en": "Driver assistant system module (DASM) radar Bosch"
+    },
+    "Torque vectoring module (TVM)": {
+      "zh": "扭矩矢量分配模块（TVM）",
+      "en": "Torque vectoring module (TVM)"
+    },
+    "Parking control Bosch": {
+      "zh": "泊车雷达 博世",
+      "en": "Parking control Bosch"
+    },
+    "Parking control Bosch (Rear only)": {
+      "zh": "泊车雷达 博世（仅后）",
+      "en": "Parking control Bosch (Rear only)"
+    },
+    "Radio frequency hub (RFHUB) Continental": {
+      "zh": "射频接收模块（RFHUB）大陆",
+      "en": "Radio frequency hub (RFHUB) Continental"
+    },
+    "TRW climate control (Automatic)": {
+      "zh": "TRW 自动空调",
+      "en": "TRW climate control (Automatic)"
+    },
+    "Comfort seat and wheel (CSWM) Bitron": {
+      "zh": "舒适座椅与方向盘（CSWM）Bitron",
+      "en": "Comfort seat and wheel (CSWM) Bitron"
+    },
+    "Comfort rear seat (CRSM) Bitron": {
+      "zh": "后排舒适座椅（CRSM）Bitron",
+      "en": "Comfort rear seat (CRSM) Bitron"
+    },
+    "Marelli AlfaConnect Radio/Nav": {
+      "zh": "马瑞利 AlfaConnect 收音机 / 导航",
+      "en": "Marelli AlfaConnect Radio/Nav"
+    },
+    "Multimedia control module (multifunction knob/joystick/touchpad)": {
+      "zh": "多媒体控制模块（多功能旋钮/摇杆/触控板）",
+      "en": "Multimedia control module (multifunction knob/joystick/touchpad)"
+    },
+    "Amplifier module Ask/Beats": {
+      "zh": "功放 Ask / Beats",
+      "en": "Amplifier module Ask/Beats"
+    },
+    "Engine sound enhacement module (ESEM)": {
+      "zh": "发动机声浪模拟模块（ESEM）",
+      "en": "Engine sound enhacement module (ESEM)"
+    },
+    "Power liftgate (PLGM) BROSE": {
+      "zh": "电动尾门（PLGM）博泽",
+      "en": "Power liftgate (PLGM) BROSE"
+    },
+    "Blind Spot Sensor Autoliv (Left)": {
+      "zh": "盲点监测传感器 奥托立夫（左）",
+      "en": "Blind Spot Sensor Autoliv (Left)"
+    },
+    "Active aerodynamic module LEFT (AAML)": {
+      "zh": "主动空气动力模块 左（AAML）",
+      "en": "Active aerodynamic module LEFT (AAML)"
+    },
+    "Active aerodynamic module RIGHT (AAMR)": {
+      "zh": "主动空气动力模块 右（AAMR）",
+      "en": "Active aerodynamic module RIGHT (AAMR)"
+    },
+    "Urea/AdBlue dosing module Continental": {
+      "zh": "尿素（AdBlue）喷射模块 大陆",
+      "en": "Urea/AdBlue dosing module Continental"
+    },
+    "Bosch EDC17C69 CF6/EOBD Diesel Injection (2.2)": {
+      "zh": "博世 EDC17C69 柴油喷射（2.2）",
+      "en": "Bosch EDC17C69 CF6/EOBD Diesel Injection (2.2)"
+    },
+    "Bosch Motronic MeD17.3.5 CF6 Injection (2.9 V6, Primary, Cyl. 1-2-3)": {
+      "zh": "博世 Motronic MeD17.3.5 喷射（2.9 V6 主列 气缸 1-2-3）",
+      "en": "Bosch Motronic MeD17.3.5 CF6 Injection (2.9 V6, Primary, Cyl. 1-2-3)"
+    },
+    "Bosch Motronic MeD17.3.5 CF6 Injection (2.9 V6, Secondary, Cyl. 4-5-6)": {
+      "zh": "博世 Motronic MeD17.3.5 喷射（2.9 V6 副列 气缸 4-5-6）",
+      "en": "Bosch Motronic MeD17.3.5 CF6 Injection (2.9 V6, Secondary, Cyl. 4-5-6)"
+    },
+    "Magneti Marelli IAW 10JA CF6/EOBD Injection (2.0)": {
+      "zh": "马瑞利 IAW 10JA 喷射（2.0）",
+      "en": "Magneti Marelli IAW 10JA CF6/EOBD Injection (2.0)"
+    },
+    "Adaptive Cruise Control Node (NAC)": {
+      "zh": "自适应巡航控制节点（NAC）",
+      "en": "Adaptive Cruise Control Node (NAC)"
+    },
+    "Additional Heater Node (CTM)": {
+      "zh": "辅助加热器节点（CTM）",
+      "en": "Additional Heater Node (CTM)"
+    },
+    "Amplifier Node (AMP)": {
+      "zh": "功放节点（AMP）",
+      "en": "Amplifier Node (AMP)"
+    },
+    "Assisted Braking Node (NBA)": {
+      "zh": "辅助制动节点（NBA）",
+      "en": "Assisted Braking Node (NBA)"
+    },
+    "Auto Headlamp Leveling Node (AHLM)": {
+      "zh": "大灯高度自动调节节点（AHLM）",
+      "en": "Auto Headlamp Leveling Node (AHLM)"
+    },
+    "Automatic Transmission Node (TCM/NCA/NCR)": {
+      "zh": "自动变速箱节点（TCM/NCA/NCR）",
+      "en": "Automatic Transmission Node (TCM/NCA/NCR)"
+    },
+    "Body Computer Node (BCM/NBC)": {
+      "zh": "车身电脑节点（BCM/NBC）",
+      "en": "Body Computer Node (BCM/NBC)"
+    },
+    "Boot Node (NVB)": {
+      "zh": "尾门节点（NVB）",
+      "en": "Boot Node (NVB)"
+    },
+    "Ceiling Node (NIM)": {
+      "zh": "顶控节点（NIM）",
+      "en": "Ceiling Node (NIM)"
+    },
+    "Central vision processing module (CVPM)": {
+      "zh": "中央视觉处理模块（CVPM）",
+      "en": "Central vision processing module (CVPM)"
+    },
+    "Climate Control Node (HVAC/NCL)": {
+      "zh": "空调控制节点（HVAC/NCL）",
+      "en": "Climate Control Node (HVAC/NCL)"
+    },
+    "Comfort Rear Seat Module (CRSM)": {
+      "zh": "后排舒适座椅模块（CRSM）",
+      "en": "Comfort Rear Seat Module (CRSM)"
+    },
+    "Comfort Seat and Wheel Node (CSWM)": {
+      "zh": "座椅与方向盘舒适节点（CSWM）",
+      "en": "Comfort Seat and Wheel Node (CSWM)"
+    },
+    "Compact Disk Node (CDM)": {
+      "zh": "CD 换碟机节点（CDM）",
+      "en": "Compact Disk Node (CDM)"
+    },
+    "Convergence Telematic Node (CTM)": {
+      "zh": "融合信息通信节点（CTM）",
+      "en": "Convergence Telematic Node (CTM)"
+    },
+    "Coupling Control Node (CCM)": {
+      "zh": "耦合控制节点（CCM）",
+      "en": "Coupling Control Node (CCM)"
+    },
+    "Dashboard Node (IPC/NQS)": {
+      "zh": "组合仪表节点（IPC/NQS）",
+      "en": "Dashboard Node (IPC/NQS)"
+    },
+    "Display Screen Module (DSM)": {
+      "zh": "显示屏模块（DSM）",
+      "en": "Display Screen Module (DSM)"
+    },
+    "Drive Train Control Node (DTCM)": {
+      "zh": "传动系控制节点（DTCM）",
+      "en": "Drive Train Control Node (DTCM)"
+    },
+    "Driver Assistant System Node (DASM)": {
+      "zh": "驾驶辅助系统节点（DASM）",
+      "en": "Driver Assistant System Node (DASM)"
+    },
+    "Driver Door Latch Module (DDML)": {
+      "zh": "驾驶员门锁模块（DDML）",
+      "en": "Driver Door Latch Module (DDML)"
+    },
+    "Driver Door Node (NPG)": {
+      "zh": "驾驶员车门节点（NPG）",
+      "en": "Driver Door Node (NPG)"
+    },
+    "Driver monitoring system module (DMSM)": {
+      "zh": "驾驶员监测模块（DMSM）",
+      "en": "Driver monitoring system module (DMSM)"
+    },
+    "Driver Seat Node (NAG)": {
+      "zh": "驾驶员座椅节点（NAG）",
+      "en": "Driver Seat Node (NAG)"
+    },
+    "Electronic limited slip differential (ELSDM)": {
+      "zh": "电子限滑差速器（ELSDM）",
+      "en": "Electronic limited slip differential (ELSDM)"
+    },
+    "Engine control Module 2 (ECM2)": {
+      "zh": "发动机控制模块 2（ECM2）",
+      "en": "Engine control Module 2 (ECM2)"
+    },
+    "Engine Control Node (ECM/NCM)": {
+      "zh": "发动机控制节点（ECM/NCM）",
+      "en": "Engine Control Node (ECM/NCM)"
+    },
+    "Engine Signals Node (NSM)": {
+      "zh": "发动机信号节点（NSM）",
+      "en": "Engine Signals Node (NSM)"
+    },
+    "Engine sound enhacement module (ESEM/ANC)": {
+      "zh": "发动机声浪增强模块（ESEM/ANC）",
+      "en": "Engine sound enhacement module (ESEM/ANC)"
+    },
+    "Entertainment multimedia control module (EMCM)": {
+      "zh": "娱乐多媒体控制模块（EMCM）",
+      "en": "Entertainment multimedia control module (EMCM)"
+    },
+    "Entertainment Telematic Node (ETM)": {
+      "zh": "娱乐信息通信节点（ETM）",
+      "en": "Entertainment Telematic Node (ETM)"
+    },
+    "Front View Camera Node (FVCM)": {
+      "zh": "前视摄像头节点（FVCM）",
+      "en": "Front View Camera Node (FVCM)"
+    },
+    "Gearbox Selector Node (ESM/GSM/NSC)": {
+      "zh": "换挡杆节点（ESM/GSM/NSC）",
+      "en": "Gearbox Selector Node (ESM/GSM/NSC)"
+    },
+    "Info-Telematic/Convergence Node (NIT/NCV)": {
+      "zh": "信息通信/融合节点（NIT/NCV）",
+      "en": "Info-Telematic/Convergence Node (NIT/NCV)"
+    },
+    "Integrated Center Stack Node (ICS)": {
+      "zh": "中控台集成节点（ICS）",
+      "en": "Integrated Center Stack Node (ICS)"
+    },
+    "Left Blind Spot Sensor Node (LBSS)": {
+      "zh": "左盲区监测传感器节点（LBSS）",
+      "en": "Left Blind Spot Sensor Node (LBSS)"
+    },
+    "Parking Brake Control Node (NPB)": {
+      "zh": "驻车制动控制节点（NPB）",
+      "en": "Parking Brake Control Node (NPB)"
+    },
+    "Passenger Door Latch Module (PDML)": {
+      "zh": "副驾门锁模块（PDML）",
+      "en": "Passenger Door Latch Module (PDML)"
+    },
+    "Passenger Door Node (NPP)": {
+      "zh": "副驾车门节点（NPP）",
+      "en": "Passenger Door Node (NPP)"
+    },
+    "Passenger Occupant Classification Node (OCM)": {
+      "zh": "副驾乘员分类节点（OCM）",
+      "en": "Passenger Occupant Classification Node (OCM)"
+    },
+    "Passenger Seat Node (NAP)": {
+      "zh": "副驾座椅节点（NAP）",
+      "en": "Passenger Seat Node (NAP)"
+    },
+    "Passive Entry Node (NPE)": {
+      "zh": "无钥匙进入节点（NPE）",
+      "en": "Passive Entry Node (NPE)"
+    },
+    "Power Lift Gate Node (PLGM)": {
+      "zh": "电动尾门节点（PLGM）",
+      "en": "Power Lift Gate Node (PLGM)"
+    },
+    "Radio Frequency Hub Node (RFHM)": {
+      "zh": "射频中心节点（RFHM）",
+      "en": "Radio Frequency Hub Node (RFHM)"
+    },
+    "Rear Left Climate Control Node (RLCM)": {
+      "zh": "后排左侧空调控制节点（RLCM）",
+      "en": "Rear Left Climate Control Node (RLCM)"
+    },
+    "Receiver Radio (NRR)": {
+      "zh": "收音机主机（NRR）",
+      "en": "Receiver Radio (NRR)"
+    },
+    "Receiver Radio/Radio Navigator Node (NRR/RMN)": {
+      "zh": "收音机/导航节点（NRR/RMN）",
+      "en": "Receiver Radio/Radio Navigator Node (NRR/RMN)"
+    },
+    "Right Blind Spot Sensor Node (RBSS)": {
+      "zh": "右盲区监测传感器节点（RBSS）",
+      "en": "Right Blind Spot Sensor Node (RBSS)"
+    },
+    "Satellite Receiver Node (SRM)": {
+      "zh": "卫星收音接收节点（SRM）",
+      "en": "Satellite Receiver Node (SRM)"
+    },
+    "Selective Catalytic Reduction Module (SCRM)": {
+      "zh": "选择性催化还原模块（SCRM）",
+      "en": "Selective Catalytic Reduction Module (SCRM)"
+    },
+    "Side Acceleration / Yaw Node (NYL)": {
+      "zh": "侧向加速度/横摆节点（NYL）",
+      "en": "Side Acceleration / Yaw Node (NYL)"
+    },
+    "Steering Angle Sensor Node (NAS)": {
+      "zh": "转向角传感器节点（NAS）",
+      "en": "Steering Angle Sensor Node (NAS)"
+    },
+    "Steering Column Control Node (SCCM)": {
+      "zh": "转向柱控制节点（SCCM）",
+      "en": "Steering Column Control Node (SCCM)"
+    },
+    "Steering Wheel Controls Node (NVO)": {
+      "zh": "方向盘控制节点（NVO）",
+      "en": "Steering Wheel Controls Node (NVO)"
+    },
+    "Telematic Box Node (TBM)": {
+      "zh": "信息通信盒节点（TBM）",
+      "en": "Telematic Box Node (TBM)"
+    },
+    "Traffic message module (TMM)": {
+      "zh": "交通信息模块（TMM）",
+      "en": "Traffic message module (TMM)"
+    },
+    "Wireless Ignition Node (WIN)": {
+      "zh": "无钥匙起动节点（WIN）",
+      "en": "Wireless Ignition Node (WIN)"
+    },
+    "Active aerodynamic module Left (AAML)": {
+      "zh": "主动空气动力学模块 左（AAML）",
+      "en": "Active aerodynamic module Left (AAML)"
+    },
+    "Active aerodynamic module Right (AAMR)": {
+      "zh": "主动空气动力学模块 右（AAMR）",
+      "en": "Active aerodynamic module Right (AAMR)"
+    },
+    "Airbag Node (NAB/ORC)": {
+      "zh": "安全气囊节点（NAB/ORC）",
+      "en": "Airbag Node (NAB/ORC)"
+    },
+    "Brake System Node (ABS/BSM/NFR)": {
+      "zh": "制动系统 ABS / ESP（大陆 MK C1）",
+      "en": "Brake System Node (ABS/BSM/NFR)"
+    },
+    "Chassis domain control module (CDCM)": {
+      "zh": "底盘域控制模块（CDCM）",
+      "en": "Chassis domain control module (CDCM)"
+    },
+    "Collision Mitigation Module (CMM)": {
+      "zh": "碰撞缓解模块（CMM）",
+      "en": "Collision Mitigation Module (CMM)"
+    },
+    "Electric Steering Node (EPS/NGE)": {
+      "zh": "电动助力转向节点（EPS/NGE）",
+      "en": "Electric Steering Node (EPS/NGE)"
+    },
+    "Haptical Lane Feedback Node (HALF)": {
+      "zh": "车道保持触觉反馈节点（HALF）",
+      "en": "Haptical Lane Feedback Node (HALF)"
+    },
+    "Parking Sensor Node (PAM/NSP)": {
+      "zh": "泊车雷达节点（PAM/NSP）",
+      "en": "Parking Sensor Node (PAM/NSP)"
+    },
+    "Self-adaptive Headlamps Node (AFLS/NFA)": {
+      "zh": "自适应大灯节点（AFLS/NFA）",
+      "en": "Self-adaptive Headlamps Node (AFLS/NFA)"
+    },
+    "Steering Lock Node (NBS)": {
+      "zh": "转向锁节点（NBS）",
+      "en": "Steering Lock Node (NBS)"
+    },
+    "Tire Pressure Node (TPMS)": {
+      "zh": "胎压监测节点（TPMS）",
+      "en": "Tire Pressure Node (TPMS)"
+    },
+    "Vehicle Tracking Module (VTM)": {
+      "zh": "车辆追踪模块（VTM）",
+      "en": "Vehicle Tracking Module (VTM)"
+    },
+    "Video Parking Aid Node (VPAM)": {
+      "zh": "泊车影像辅助节点（VPAM）",
+      "en": "Video Parking Aid Node (VPAM)"
+    },
+    "Auxiliary hybrid control processor module (AHCP)": {
+      "zh": "混合动力辅助控制处理器模块（AHCP）",
+      "en": "Auxiliary hybrid control processor module (AHCP)"
+    },
+    "Battery Pack Control Node (BPCM)": {
+      "zh": "电池包控制节点（BPCM）",
+      "en": "Battery Pack Control Node (BPCM)"
+    },
+    "Electric Air Compressor Node (EAC)": {
+      "zh": "电动空气压缩机节点（EAC）",
+      "en": "Electric Air Compressor Node (EAC)"
+    },
+    "Electric Vehicle Control Node (EVCU)": {
+      "zh": "电动车控制节点（EVCU）",
+      "en": "Electric Vehicle Control Node (EVCU)"
+    },
+    "Gas Injector Node (SDU)": {
+      "zh": "燃气喷射节点（SDU）",
+      "en": "Gas Injector Node (SDU)"
+    },
+    "Hybrid control processor module (HCP)": {
+      "zh": "混合动力控制处理器模块（HCP）",
+      "en": "Hybrid control processor module (HCP)"
+    },
+    "Integrated Dual Charger Module (IDCM)": {
+      "zh": "双充电集成模块（IDCM）",
+      "en": "Integrated Dual Charger Module (IDCM)"
+    },
+    "Onboard Battery Charger Node (OBCM)": {
+      "zh": "车载充电机节点（OBCM）",
+      "en": "Onboard Battery Charger Node (OBCM)"
+    },
+    "Power Inverter Node (PIM)": {
+      "zh": "功率逆变器节点（PIM）",
+      "en": "Power Inverter Node (PIM)"
+    },
+    "Regenerative Brakes Control Node (RBC)": {
+      "zh": "再生制动控制节点（RBC）",
+      "en": "Regenerative Brakes Control Node (RBC)"
+    },
+    "Trailer Tow Node (TTM)": {
+      "zh": "拖车节点（TTM）",
+      "en": "Trailer Tow Node (TTM)"
+    },
+    "Air Suspension Node (NMA/ASM)": {
+      "zh": "空气悬架节点（NMA/ASM）",
+      "en": "Air Suspension Node (NMA/ASM)"
+    },
+    "Overweight Monitoring Node (OMM)": {
+      "zh": "超载监测节点（OMM）",
+      "en": "Overweight Monitoring Node (OMM)"
+    },
+    "Roll Control Node (NRC)": {
+      "zh": "侧倾控制节点（NRC）",
+      "en": "Roll Control Node (NRC)"
+    },
+    "Suspension Controlled Node (DCM)": {
+      "zh": "悬架控制节点（DCM）",
+      "en": "Suspension Controlled Node (DCM)"
+    },
+    "When finished entering the code ALWAYS check the value reported in Parameters section. If the code is entered/stored incorrectly, repeat the procedure.": {
+      "zh": "输入编码后务必到「参数」区核对读回值。若编码输入或存储错误，请重新执行该流程。",
+      "en": "When finished entering the code ALWAYS check the value reported in Parameters section. If the code is entered/stored incorrectly, repeat the procedure."
+    },
+    "After the reset of the self-adaptive parameters, or after workshop repairs with disconnection of battery or control unit reprogramming, remember to carry out climate control learn procedure (key on MAR with climate control on for one minute).": {
+      "zh": "自适应参数复位、断开电瓶或控制单元编程维修后，记得执行空调学习流程（钥匙打到 MAR、空调开启并保持一分钟）。",
+      "en": "After the reset of the self-adaptive parameters, or after workshop repairs with disconnection of battery or control unit reprogramming, remember to carry out climate control learn procedure (key on MAR with climate control on for one minute)."
+    },
+    "DO NOT INTERRUPT the procedure once it has started. The key should be ON/MAR and Engine OFF. After successfull execution of the procedure turn your key to OFF and wait at least 60 seconds before turning it back ON.  NOTE: On some models (GIULIA, STELVIO) the ABS module may be reset during PROXI procedure. You will have to connect to ABS mnodule and perform all calibration procedures.": {
+      "zh": "⚠ 一旦开始不要中断。钥匙 ON、发动机 OFF。执行完成后将钥匙打到 OFF 并等待至少 60 秒再上电。注意：部分车型（Giulia / Stelvio）的 ABS 模块可能在 PROXI 过程中被复位，完成后需连接 ABS 模块执行全部标定流程（转向角、加速度、胎压）。",
+      "en": "DO NOT INTERRUPT the procedure once it has started. The key should be ON/MAR and Engine OFF. After successfull execution of the procedure turn your key to OFF and wait at least 60 seconds before turning it back ON.  NOTE: On some models (GIULIA, STELVIO) the ABS module may be reset during PROXI procedure. You will have to connect to ABS mnodule and perform all calibration procedures."
+    },
+    "Make sure that the vehicle is in park/gear and will not move when parking brake is released!!!": {
+      "zh": "确认车辆已挂 P 档/驻车且不会移动，再松开电子手刹！！！",
+      "en": "Make sure that the vehicle is in park/gear and will not move when parking brake is released!!!"
+    },
+    "Do not execute the procedure without opening the bleeder!": {
+      "zh": "未打开排气螺钉前不得执行该流程！（刹车排气）",
+      "en": "Do not execute the procedure without opening the bleeder!"
+    },
+    "DO NOT DRIVE THE VEHICLE WHILE IN ROLL BENCH MODE!": {
+      "zh": "滚筒/测功模式期间严禁驾驶车辆！",
+      "en": "DO NOT DRIVE THE VEHICLE WHILE IN ROLL BENCH MODE!"
+    },
+    "DO NOT EXECUTE WITHOUT SPECIAL RADAR CALIBRATION EQUIPMENT!!!": {
+      "zh": "无专用雷达标定设备严禁执行！！！",
+      "en": "DO NOT EXECUTE WITHOUT SPECIAL RADAR CALIBRATION EQUIPMENT!!!"
+    },
+    "You will also need to enter the electronic key code of your vehicle in order to execute this function. You can request this code from official service or dealer. Please be careful and note that the Body Computer will block itself for 30 minutes after an incorrect code is entered 3 times.  The procedure should be executed with car turned OFF - you should not press the START button to switch ON or start the car!  NOTE: You may run this procedure in simulation mode to see how it works.  After the procedure: Disconnect the OBD cable, go out of car and test if all FOBIKs work.": {
+      "zh": "执行本功能还需输入车辆的电子钥匙码（可向官方服务站或经销商索取）。注意：连续 3 次输错，车身电脑将锁定 30 分钟。执行时车辆应为熄火状态——不要按 START 按钮上电或启动！可在模拟模式下先熟悉流程。执行后：断开 OBD 线，下车测试全部遥控钥匙是否有效。",
+      "en": "You will also need to enter the electronic key code of your vehicle in order to execute this function. You can request this code from official service or dealer. Please be careful and note that the Body Computer will block itself for 30 minutes after an incorrect code is entered 3 times.  The procedure should be executed with car turned OFF - you should not press the START button to switch ON or start the car!  NOTE: You may run this procedure in simulation mode to see how it works.  After the procedure: Disconnect the OBD cable, go out of car and test if all FOBIKs work."
+    },
+    "DO NOT RUN this procedure if you don't know what you are doing as this procedure may disable your keys! Make sure YOU HAVE ALL KEYS as you will have to program ALL of them.  WARNING: You will also need to enter the electronic key code of your vehicle in order to execute this function. You can request this code from official service or dealer. Please be careful and note that the Body Computer will block itself for 30 minutes after an incorrect code is entered 3 times.  The procedure should be executed with car turned OFF - you should not press the START button to switch ON or start the car!  NOTE: You may run this procedure in simulation mode to see how it works. Basically, you have to do the following:  1. Start the procedure  2. The system will ask you to prepare FOBIK 1 and click Y. After that you have to press the UNLOCK button on the FOBIK briefly once and wait. The system will confirm if the recognition of the FOBIK is successfull.  3. The system will ask you to insert FOBIK 2 and so on. This procedure can be repeated for up to 8 FOBIKs.  4. The system will finally store all recognized keys into the Radio Frequency Hub module (RFH) and will display a status of the whole procedure. You will still have a chance to abort the procedure before step 4 and restore the previous FOBIK data.  PLEASE NOTE that the FOBIKs not learned during the procedure will be disabled and it will not be possible to use them to unlock or start the car. These FOBIKs can be re-enabled by using the \"Enable FOBIKs\" procedure.  After the procedure: Disconnect the OBD cable, go out of car and test if all FOBIKs work.": {
+      "zh": "⚠ 不熟悉流程请勿执行——本流程可能使钥匙失效！务必准备全部钥匙（所有钥匙都需重新编程）。执行本功能还需输入车辆的电子钥匙码（可向官方服务站/经销商索取）；连续 3 次输错车身电脑将锁定 30 分钟。执行时车辆应为熄火状态，不要按 START 上电或启动。流程：1. 启动流程；2. 按提示准备 1 号遥控钥匙并短暂按下 UNLOCK 键，系统确认识别；3. 依此插入 2 号及以后的钥匙，最多 8 把；4. 系统把识别到的钥匙写入射频中心模块（RFH）并显示结果（第 4 步前仍可中止并恢复原钥匙数据）。注意：未在流程中学习的钥匙将被禁用，无法解锁或启动车辆，可用「启用遥控钥匙」流程恢复。执行后：断开 OBD 线，下车测试全部遥控钥匙是否有效。",
+      "en": "DO NOT RUN this procedure if you don't know what you are doing as this procedure may disable your keys! Make sure YOU HAVE ALL KEYS as you will have to program ALL of them.  WARNING: You will also need to enter the electronic key code of your vehicle in order to execute this function. You can request this code from official service or dealer. Please be careful and note that the Body Computer will block itself for 30 minutes after an incorrect code is entered 3 times.  The procedure should be executed with car turned OFF - you should not press the START button to switch ON or start the car!  NOTE: You may run this procedure in simulation mode to see how it works. Basically, you have to do the following:  1. Start the procedure  2. The system will ask you to prepare FOBIK 1 and click Y. After that you have to press the UNLOCK button on the FOBIK briefly once and wait. The system will confirm if the recognition of the FOBIK is successfull.  3. The system will ask you to insert FOBIK 2 and so on. This procedure can be repeated for up to 8 FOBIKs.  4. The system will finally store all recognized keys into the Radio Frequency Hub module (RFH) and will display a status of the whole procedure. You will still have a chance to abort the procedure before step 4 and restore the previous FOBIK data.  PLEASE NOTE that the FOBIKs not learned during the procedure will be disabled and it will not be possible to use them to unlock or start the car. These FOBIKs can be re-enabled by using the \"Enable FOBIKs\" procedure.  After the procedure: Disconnect the OBD cable, go out of car and test if all FOBIKs work."
+    },
+    "DO NOT EXECUTE WITHOUT SPECIAL CAMERA CALIBRATION EQUIPMENT!!!": {
+      "zh": "无专用摄像头标定设备严禁执行！！！",
+      "en": "DO NOT EXECUTE WITHOUT SPECIAL CAMERA CALIBRATION EQUIPMENT!!!"
+    }
+  },
+  "options": {
+    "Not Present": {
+      "zh": "未安装",
+      "en": "Not Present"
+    },
+    "Not present": {
+      "zh": "未安装",
+      "en": "Not present"
+    },
+    "Present": {
+      "zh": "已安装",
+      "en": "Present"
+    },
+    "Enabled": {
+      "zh": "开启",
+      "en": "Enabled"
+    },
+    "Disabled": {
+      "zh": "关闭",
+      "en": "Disabled"
+    },
+    "None": {
+      "zh": "无",
+      "en": "None"
+    },
+    "Unused": {
+      "zh": "未使用",
+      "en": "Unused"
+    },
+    "Left": {
+      "zh": "左",
+      "en": "Left"
+    },
+    "Right": {
+      "zh": "右",
+      "en": "Right"
+    },
+    "Both": {
+      "zh": "双侧",
+      "en": "Both"
+    },
+    "LHD": {
+      "zh": "左舵（LHD）",
+      "en": "LHD"
+    },
+    "RHD": {
+      "zh": "右舵（RHD）",
+      "en": "RHD"
+    },
+    "Europe": {
+      "zh": "欧规",
+      "en": "Europe"
+    },
+    "US (side markers)": {
+      "zh": "美规（带侧标志灯）",
+      "en": "US (side markers)"
+    },
+    "Europe (separate from direction)": {
+      "zh": "欧规（与转向灯分开）",
+      "en": "Europe (separate from direction)"
+    },
+    "US (combined with direction)": {
+      "zh": "美规（与转向灯合并）",
+      "en": "US (combined with direction)"
+    },
+    "Type 1": {
+      "zh": "类型 1",
+      "en": "Type 1"
+    },
+    "Type 6": {
+      "zh": "类型 6",
+      "en": "Type 6"
+    },
+    "Type 7": {
+      "zh": "类型 7",
+      "en": "Type 7"
+    },
+    "Type 1/AUX": {
+      "zh": "类型 1 / AUX",
+      "en": "Type 1/AUX"
+    },
+    "Type 2/AUX+USB": {
+      "zh": "类型 2 / AUX + USB",
+      "en": "Type 2/AUX+USB"
+    },
+    "Type 3/AUX+USB+SD": {
+      "zh": "类型 3 / AUX + USB + SD",
+      "en": "Type 3/AUX+USB+SD"
+    },
+    "Type 4/AUX+2xUSB": {
+      "zh": "类型 4 / AUX + 双 USB",
+      "en": "Type 4/AUX+2xUSB"
+    },
+    "Type 5/AUX+2xUSB+SD": {
+      "zh": "类型 5 / AUX + 双 USB + SD",
+      "en": "Type 5/AUX+2xUSB+SD"
+    },
+    "Type 2/DNA": {
+      "zh": "类型 2 / DNA",
+      "en": "Type 2/DNA"
+    },
+    "Type 3/DNA/Sport": {
+      "zh": "类型 3 / DNA / Sport",
+      "en": "Type 3/DNA/Sport"
+    },
+    "ACC": {
+      "zh": "ACC 自适应巡航",
+      "en": "ACC"
+    },
+    "ACC+": {
+      "zh": "ACC+ 增强型自适应巡航",
+      "en": "ACC+"
+    },
+    "CarPlay": {
+      "zh": "Apple CarPlay",
+      "en": "CarPlay"
+    },
+    "Android Auto": {
+      "zh": "Android Auto",
+      "en": "Android Auto"
+    },
+    "ACP+AA": {
+      "zh": "CarPlay + Android Auto",
+      "en": "ACP+AA"
+    },
+    "Base, Logic 1": {
+      "zh": "基础型 逻辑1",
+      "en": "Base, Logic 1"
+    },
+    "Base, Logic 2": {
+      "zh": "基础型 逻辑2",
+      "en": "Base, Logic 2"
+    },
+    "Base, Logic 3": {
+      "zh": "基础型 逻辑3",
+      "en": "Base, Logic 3"
+    },
+    "Base, Logic 4": {
+      "zh": "基础型 逻辑4",
+      "en": "Base, Logic 4"
+    },
+    "Base, Logic 5": {
+      "zh": "基础型 逻辑5",
+      "en": "Base, Logic 5"
+    },
+    "Base, Logic 6": {
+      "zh": "基础型 逻辑6",
+      "en": "Base, Logic 6"
+    },
+    "Base, Logic 7": {
+      "zh": "基础型 逻辑7",
+      "en": "Base, Logic 7"
+    },
+    "Premium, Logic 0": {
+      "zh": "高级型 逻辑0",
+      "en": "Premium, Logic 0"
+    },
+    "Premium, Logic 1": {
+      "zh": "高级型 逻辑1",
+      "en": "Premium, Logic 1"
+    },
+    "Premium, Logic 2": {
+      "zh": "高级型 逻辑2",
+      "en": "Premium, Logic 2"
+    },
+    "Premium, Logic 3": {
+      "zh": "高级型 逻辑3",
+      "en": "Premium, Logic 3"
+    },
+    "Premium, Logic 4": {
+      "zh": "高级型 逻辑4",
+      "en": "Premium, Logic 4"
+    },
+    "Premium, Logic 5": {
+      "zh": "高级型 逻辑5",
+      "en": "Premium, Logic 5"
+    },
+    "Premium, Logic 6": {
+      "zh": "高级型 逻辑6",
+      "en": "Premium, Logic 6"
+    },
+    "Premium, Logic 7": {
+      "zh": "高级型 逻辑7",
+      "en": "Premium, Logic 7"
+    },
+    "World": {
+      "zh": "全球版",
+      "en": "World"
+    },
+    "Albania": {
+      "zh": "阿尔巴尼亚",
+      "en": "Albania"
+    },
+    "Andorra": {
+      "zh": "安道尔",
+      "en": "Andorra"
+    },
+    "Australia": {
+      "zh": "澳大利亚",
+      "en": "Australia"
+    },
+    "Austria": {
+      "zh": "奥地利",
+      "en": "Austria"
+    },
+    "Bahamas": {
+      "zh": "巴哈马",
+      "en": "Bahamas"
+    },
+    "Belgium": {
+      "zh": "比利时",
+      "en": "Belgium"
+    },
+    "Bosnia-Herzegovina": {
+      "zh": "波黑",
+      "en": "Bosnia-Herzegovina"
+    },
+    "Brazil": {
+      "zh": "巴西",
+      "en": "Brazil"
+    },
+    "Bulgaria": {
+      "zh": "保加利亚",
+      "en": "Bulgaria"
+    },
+    "Canada": {
+      "zh": "加拿大",
+      "en": "Canada"
+    },
+    "Canary islands": {
+      "zh": "加那利群岛",
+      "en": "Canary islands"
+    },
+    "China": {
+      "zh": "中国",
+      "en": "China"
+    },
+    "Croatia": {
+      "zh": "克罗地亚",
+      "en": "Croatia"
+    },
+    "Cuba": {
+      "zh": "古巴",
+      "en": "Cuba"
+    },
+    "Cyprus": {
+      "zh": "塞浦路斯",
+      "en": "Cyprus"
+    },
+    "Czech Republic": {
+      "zh": "捷克",
+      "en": "Czech Republic"
+    },
+    "Denmark": {
+      "zh": "丹麦",
+      "en": "Denmark"
+    },
+    "Estonia": {
+      "zh": "爱沙尼亚",
+      "en": "Estonia"
+    },
+    "Finland": {
+      "zh": "芬兰",
+      "en": "Finland"
+    },
+    "France": {
+      "zh": "法国",
+      "en": "France"
+    },
+    "French Guiana": {
+      "zh": "法属圭亚那",
+      "en": "French Guiana"
+    },
+    "French Polynesia": {
+      "zh": "法属波利尼西亚",
+      "en": "French Polynesia"
+    },
+    "Germany": {
+      "zh": "德国",
+      "en": "Germany"
+    },
+    "Gibraltar": {
+      "zh": "直布罗陀",
+      "en": "Gibraltar"
+    },
+    "Greece": {
+      "zh": "希腊",
+      "en": "Greece"
+    },
+    "Greenland": {
+      "zh": "格陵兰",
+      "en": "Greenland"
+    },
+    "Hong Kong": {
+      "zh": "中国香港",
+      "en": "Hong Kong"
+    },
+    "Hungary": {
+      "zh": "匈牙利",
+      "en": "Hungary"
+    },
+    "Iceland": {
+      "zh": "冰岛",
+      "en": "Iceland"
+    },
+    "India": {
+      "zh": "印度",
+      "en": "India"
+    },
+    "Ireland": {
+      "zh": "爱尔兰",
+      "en": "Ireland"
+    },
+    "Israel": {
+      "zh": "以色列",
+      "en": "Israel"
+    },
+    "Italy": {
+      "zh": "意大利",
+      "en": "Italy"
+    },
+    "Japan": {
+      "zh": "日本",
+      "en": "Japan"
+    },
+    "Latvia": {
+      "zh": "拉脱维亚",
+      "en": "Latvia"
+    },
+    "Lebanon": {
+      "zh": "黎巴嫩",
+      "en": "Lebanon"
+    },
+    "Liechtenstein": {
+      "zh": "列支敦士登",
+      "en": "Liechtenstein"
+    },
+    "Lithuania": {
+      "zh": "立陶宛",
+      "en": "Lithuania"
+    },
+    "Luxembourg": {
+      "zh": "卢森堡",
+      "en": "Luxembourg"
+    },
+    "Macedonia": {
+      "zh": "马其顿",
+      "en": "Macedonia"
+    },
+    "Malta": {
+      "zh": "马耳他",
+      "en": "Malta"
+    },
+    "Martinique": {
+      "zh": "马提尼克",
+      "en": "Martinique"
+    },
+    "Mauritis": {
+      "zh": "毛里求斯",
+      "en": "Mauritis"
+    },
+    "Mexico": {
+      "zh": "墨西哥",
+      "en": "Mexico"
+    },
+    "Moldova": {
+      "zh": "摩尔多瓦",
+      "en": "Moldova"
+    },
+    "Monaco": {
+      "zh": "摩纳哥",
+      "en": "Monaco"
+    },
+    "Montenegro": {
+      "zh": "黑山",
+      "en": "Montenegro"
+    },
+    "Netherlands": {
+      "zh": "荷兰",
+      "en": "Netherlands"
+    },
+    "New Zealand": {
+      "zh": "新西兰",
+      "en": "New Zealand"
+    },
+    "Norway": {
+      "zh": "挪威",
+      "en": "Norway"
+    },
+    "Poland": {
+      "zh": "波兰",
+      "en": "Poland"
+    },
+    "Portugal": {
+      "zh": "葡萄牙",
+      "en": "Portugal"
+    },
+    "Reunion": {
+      "zh": "留尼汪",
+      "en": "Reunion"
+    },
+    "Romania": {
+      "zh": "罗马尼亚",
+      "en": "Romania"
+    },
+    "Russia": {
+      "zh": "俄罗斯",
+      "en": "Russia"
+    },
+    "Serbia": {
+      "zh": "塞尔维亚",
+      "en": "Serbia"
+    },
+    "Slovakia": {
+      "zh": "斯洛伐克",
+      "en": "Slovakia"
+    },
+    "Slovenia": {
+      "zh": "斯洛文尼亚",
+      "en": "Slovenia"
+    },
+    "South Africa": {
+      "zh": "南非",
+      "en": "South Africa"
+    },
+    "South Korea": {
+      "zh": "韩国",
+      "en": "South Korea"
+    },
+    "Spain": {
+      "zh": "西班牙",
+      "en": "Spain"
+    },
+    "Sweden": {
+      "zh": "瑞典",
+      "en": "Sweden"
+    },
+    "Switzerland": {
+      "zh": "瑞士",
+      "en": "Switzerland"
+    },
+    "Turkey": {
+      "zh": "土耳其",
+      "en": "Turkey"
+    },
+    "UAE": {
+      "zh": "阿联酋",
+      "en": "UAE"
+    },
+    "USA": {
+      "zh": "美国",
+      "en": "USA"
+    },
+    "Ukraine": {
+      "zh": "乌克兰",
+      "en": "Ukraine"
+    },
+    "United Kingdom": {
+      "zh": "英国",
+      "en": "United Kingdom"
+    },
+    "Country 01": {
+      "zh": "国家代码 01",
+      "en": "Country 01"
+    },
+    "Country 03": {
+      "zh": "国家代码 03",
+      "en": "Country 03"
+    },
+    "Country 09": {
+      "zh": "国家代码 09",
+      "en": "Country 09"
+    },
+    "Country 0B": {
+      "zh": "国家代码 0B",
+      "en": "Country 0B"
+    },
+    "Country 0C": {
+      "zh": "国家代码 0C",
+      "en": "Country 0C"
+    },
+    "Country 0D": {
+      "zh": "国家代码 0D",
+      "en": "Country 0D"
+    },
+    "Country 11": {
+      "zh": "国家代码 11",
+      "en": "Country 11"
+    },
+    "Country 12": {
+      "zh": "国家代码 12",
+      "en": "Country 12"
+    },
+    "Country 13": {
+      "zh": "国家代码 13",
+      "en": "Country 13"
+    },
+    "Country 14": {
+      "zh": "国家代码 14",
+      "en": "Country 14"
+    },
+    "Country 16": {
+      "zh": "国家代码 16",
+      "en": "Country 16"
+    },
+    "Country 17": {
+      "zh": "国家代码 17",
+      "en": "Country 17"
+    },
+    "Country 18": {
+      "zh": "国家代码 18",
+      "en": "Country 18"
+    },
+    "Country 19": {
+      "zh": "国家代码 19",
+      "en": "Country 19"
+    },
+    "Country 1B": {
+      "zh": "国家代码 1B",
+      "en": "Country 1B"
+    },
+    "Country 1C": {
+      "zh": "国家代码 1C",
+      "en": "Country 1C"
+    },
+    "Country 1D": {
+      "zh": "国家代码 1D",
+      "en": "Country 1D"
+    },
+    "Country 1E": {
+      "zh": "国家代码 1E",
+      "en": "Country 1E"
+    },
+    "Country 1F": {
+      "zh": "国家代码 1F",
+      "en": "Country 1F"
+    },
+    "Country 21": {
+      "zh": "国家代码 21",
+      "en": "Country 21"
+    },
+    "Country 22": {
+      "zh": "国家代码 22",
+      "en": "Country 22"
+    },
+    "Country 23": {
+      "zh": "国家代码 23",
+      "en": "Country 23"
+    },
+    "Country 24": {
+      "zh": "国家代码 24",
+      "en": "Country 24"
+    },
+    "Country 25": {
+      "zh": "国家代码 25",
+      "en": "Country 25"
+    },
+    "Country 26": {
+      "zh": "国家代码 26",
+      "en": "Country 26"
+    },
+    "Country 27": {
+      "zh": "国家代码 27",
+      "en": "Country 27"
+    },
+    "Country 29": {
+      "zh": "国家代码 29",
+      "en": "Country 29"
+    },
+    "Country 2A": {
+      "zh": "国家代码 2A",
+      "en": "Country 2A"
+    },
+    "Country 2B": {
+      "zh": "国家代码 2B",
+      "en": "Country 2B"
+    },
+    "Country 2C": {
+      "zh": "国家代码 2C",
+      "en": "Country 2C"
+    },
+    "Country 2D": {
+      "zh": "国家代码 2D",
+      "en": "Country 2D"
+    },
+    "Country 2E": {
+      "zh": "国家代码 2E",
+      "en": "Country 2E"
+    },
+    "Country 2F": {
+      "zh": "国家代码 2F",
+      "en": "Country 2F"
+    },
+    "Country 30": {
+      "zh": "国家代码 30",
+      "en": "Country 30"
+    },
+    "Country 31": {
+      "zh": "国家代码 31",
+      "en": "Country 31"
+    },
+    "Country 32": {
+      "zh": "国家代码 32",
+      "en": "Country 32"
+    },
+    "Country 35": {
+      "zh": "国家代码 35",
+      "en": "Country 35"
+    },
+    "Country 39": {
+      "zh": "国家代码 39",
+      "en": "Country 39"
+    },
+    "Country 3A": {
+      "zh": "国家代码 3A",
+      "en": "Country 3A"
+    },
+    "Country 3B": {
+      "zh": "国家代码 3B",
+      "en": "Country 3B"
+    },
+    "Country 3C": {
+      "zh": "国家代码 3C",
+      "en": "Country 3C"
+    },
+    "Country 3E": {
+      "zh": "国家代码 3E",
+      "en": "Country 3E"
+    },
+    "Country 3F": {
+      "zh": "国家代码 3F",
+      "en": "Country 3F"
+    },
+    "Country 40": {
+      "zh": "国家代码 40",
+      "en": "Country 40"
+    },
+    "Country 42": {
+      "zh": "国家代码 42",
+      "en": "Country 42"
+    },
+    "Country 43": {
+      "zh": "国家代码 43",
+      "en": "Country 43"
+    },
+    "Country 44": {
+      "zh": "国家代码 44",
+      "en": "Country 44"
+    },
+    "Country 45": {
+      "zh": "国家代码 45",
+      "en": "Country 45"
+    },
+    "Country 4A": {
+      "zh": "国家代码 4A",
+      "en": "Country 4A"
+    },
+    "Country 4B": {
+      "zh": "国家代码 4B",
+      "en": "Country 4B"
+    },
+    "Country 4C": {
+      "zh": "国家代码 4C",
+      "en": "Country 4C"
+    },
+    "Country 4D": {
+      "zh": "国家代码 4D",
+      "en": "Country 4D"
+    },
+    "Country 4E": {
+      "zh": "国家代码 4E",
+      "en": "Country 4E"
+    },
+    "Country 52": {
+      "zh": "国家代码 52",
+      "en": "Country 52"
+    },
+    "Country 53": {
+      "zh": "国家代码 53",
+      "en": "Country 53"
+    },
+    "Country 54": {
+      "zh": "国家代码 54",
+      "en": "Country 54"
+    },
+    "Country 55": {
+      "zh": "国家代码 55",
+      "en": "Country 55"
+    },
+    "Country 56": {
+      "zh": "国家代码 56",
+      "en": "Country 56"
+    },
+    "Country 57": {
+      "zh": "国家代码 57",
+      "en": "Country 57"
+    },
+    "Country 58": {
+      "zh": "国家代码 58",
+      "en": "Country 58"
+    },
+    "Country 59": {
+      "zh": "国家代码 59",
+      "en": "Country 59"
+    },
+    "Country 5A": {
+      "zh": "国家代码 5A",
+      "en": "Country 5A"
+    },
+    "Country 5F": {
+      "zh": "国家代码 5F",
+      "en": "Country 5F"
+    },
+    "Country 60": {
+      "zh": "国家代码 60",
+      "en": "Country 60"
+    },
+    "Country 61": {
+      "zh": "国家代码 61",
+      "en": "Country 61"
+    },
+    "Country 65": {
+      "zh": "国家代码 65",
+      "en": "Country 65"
+    },
+    "Country 66": {
+      "zh": "国家代码 66",
+      "en": "Country 66"
+    },
+    "Country 67": {
+      "zh": "国家代码 67",
+      "en": "Country 67"
+    },
+    "Country 68": {
+      "zh": "国家代码 68",
+      "en": "Country 68"
+    },
+    "Country 69": {
+      "zh": "国家代码 69",
+      "en": "Country 69"
+    },
+    "Country 6A": {
+      "zh": "国家代码 6A",
+      "en": "Country 6A"
+    },
+    "Country 6B": {
+      "zh": "国家代码 6B",
+      "en": "Country 6B"
+    },
+    "Country 6C": {
+      "zh": "国家代码 6C",
+      "en": "Country 6C"
+    },
+    "Country 6D": {
+      "zh": "国家代码 6D",
+      "en": "Country 6D"
+    },
+    "Country 6E": {
+      "zh": "国家代码 6E",
+      "en": "Country 6E"
+    },
+    "Country 71": {
+      "zh": "国家代码 71",
+      "en": "Country 71"
+    },
+    "Country 72": {
+      "zh": "国家代码 72",
+      "en": "Country 72"
+    },
+    "Country 73": {
+      "zh": "国家代码 73",
+      "en": "Country 73"
+    },
+    "Country 75": {
+      "zh": "国家代码 75",
+      "en": "Country 75"
+    },
+    "Country 76": {
+      "zh": "国家代码 76",
+      "en": "Country 76"
+    },
+    "Country 77": {
+      "zh": "国家代码 77",
+      "en": "Country 77"
+    },
+    "Country 78": {
+      "zh": "国家代码 78",
+      "en": "Country 78"
+    },
+    "Country 79": {
+      "zh": "国家代码 79",
+      "en": "Country 79"
+    },
+    "Country 7A": {
+      "zh": "国家代码 7A",
+      "en": "Country 7A"
+    },
+    "Country 7C": {
+      "zh": "国家代码 7C",
+      "en": "Country 7C"
+    },
+    "Country 7E": {
+      "zh": "国家代码 7E",
+      "en": "Country 7E"
+    },
+    "Country 80": {
+      "zh": "国家代码 80",
+      "en": "Country 80"
+    },
+    "Country 82": {
+      "zh": "国家代码 82",
+      "en": "Country 82"
+    },
+    "Country 83": {
+      "zh": "国家代码 83",
+      "en": "Country 83"
+    },
+    "Country 86": {
+      "zh": "国家代码 86",
+      "en": "Country 86"
+    },
+    "Country 87": {
+      "zh": "国家代码 87",
+      "en": "Country 87"
+    },
+    "Country 88": {
+      "zh": "国家代码 88",
+      "en": "Country 88"
+    },
+    "Country 89": {
+      "zh": "国家代码 89",
+      "en": "Country 89"
+    },
+    "Country 8A": {
+      "zh": "国家代码 8A",
+      "en": "Country 8A"
+    },
+    "Country 8B": {
+      "zh": "国家代码 8B",
+      "en": "Country 8B"
+    },
+    "Country 8D": {
+      "zh": "国家代码 8D",
+      "en": "Country 8D"
+    },
+    "Country 8E": {
+      "zh": "国家代码 8E",
+      "en": "Country 8E"
+    },
+    "Country 90": {
+      "zh": "国家代码 90",
+      "en": "Country 90"
+    },
+    "Country 91": {
+      "zh": "国家代码 91",
+      "en": "Country 91"
+    },
+    "Country 92": {
+      "zh": "国家代码 92",
+      "en": "Country 92"
+    },
+    "Country 93": {
+      "zh": "国家代码 93",
+      "en": "Country 93"
+    },
+    "Country 95": {
+      "zh": "国家代码 95",
+      "en": "Country 95"
+    },
+    "Country 96": {
+      "zh": "国家代码 96",
+      "en": "Country 96"
+    },
+    "Country 97": {
+      "zh": "国家代码 97",
+      "en": "Country 97"
+    },
+    "Country 98": {
+      "zh": "国家代码 98",
+      "en": "Country 98"
+    },
+    "Country 99": {
+      "zh": "国家代码 99",
+      "en": "Country 99"
+    },
+    "Country 9A": {
+      "zh": "国家代码 9A",
+      "en": "Country 9A"
+    },
+    "Country 9B": {
+      "zh": "国家代码 9B",
+      "en": "Country 9B"
+    },
+    "Country 9C": {
+      "zh": "国家代码 9C",
+      "en": "Country 9C"
+    },
+    "Country 9F": {
+      "zh": "国家代码 9F",
+      "en": "Country 9F"
+    },
+    "Country A0": {
+      "zh": "国家代码 A0",
+      "en": "Country A0"
+    },
+    "Country A3": {
+      "zh": "国家代码 A3",
+      "en": "Country A3"
+    },
+    "Country A4": {
+      "zh": "国家代码 A4",
+      "en": "Country A4"
+    },
+    "Country A5": {
+      "zh": "国家代码 A5",
+      "en": "Country A5"
+    },
+    "Country A6": {
+      "zh": "国家代码 A6",
+      "en": "Country A6"
+    },
+    "Country A8": {
+      "zh": "国家代码 A8",
+      "en": "Country A8"
+    },
+    "Country A9": {
+      "zh": "国家代码 A9",
+      "en": "Country A9"
+    },
+    "Country AA": {
+      "zh": "国家代码 AA",
+      "en": "Country AA"
+    },
+    "Country AD": {
+      "zh": "国家代码 AD",
+      "en": "Country AD"
+    },
+    "Country AE": {
+      "zh": "国家代码 AE",
+      "en": "Country AE"
+    },
+    "Country B2": {
+      "zh": "国家代码 B2",
+      "en": "Country B2"
+    },
+    "Country B3": {
+      "zh": "国家代码 B3",
+      "en": "Country B3"
+    },
+    "Country B4": {
+      "zh": "国家代码 B4",
+      "en": "Country B4"
+    },
+    "Country B5": {
+      "zh": "国家代码 B5",
+      "en": "Country B5"
+    },
+    "Country B6": {
+      "zh": "国家代码 B6",
+      "en": "Country B6"
+    },
+    "Country B7": {
+      "zh": "国家代码 B7",
+      "en": "Country B7"
+    },
+    "Country B8": {
+      "zh": "国家代码 B8",
+      "en": "Country B8"
+    },
+    "Country B9": {
+      "zh": "国家代码 B9",
+      "en": "Country B9"
+    },
+    "Country BA": {
+      "zh": "国家代码 BA",
+      "en": "Country BA"
+    },
+    "Country BC": {
+      "zh": "国家代码 BC",
+      "en": "Country BC"
+    },
+    "Country BD": {
+      "zh": "国家代码 BD",
+      "en": "Country BD"
+    },
+    "Country BE": {
+      "zh": "国家代码 BE",
+      "en": "Country BE"
+    },
+    "Country BF": {
+      "zh": "国家代码 BF",
+      "en": "Country BF"
+    },
+    "Country C0": {
+      "zh": "国家代码 C0",
+      "en": "Country C0"
+    },
+    "Country C1": {
+      "zh": "国家代码 C1",
+      "en": "Country C1"
+    },
+    "Country C2": {
+      "zh": "国家代码 C2",
+      "en": "Country C2"
+    },
+    "Country C3": {
+      "zh": "国家代码 C3",
+      "en": "Country C3"
+    },
+    "Country C4": {
+      "zh": "国家代码 C4",
+      "en": "Country C4"
+    },
+    "Country C5": {
+      "zh": "国家代码 C5",
+      "en": "Country C5"
+    },
+    "Country C7": {
+      "zh": "国家代码 C7",
+      "en": "Country C7"
+    },
+    "Country C8": {
+      "zh": "国家代码 C8",
+      "en": "Country C8"
+    },
+    "Country C9": {
+      "zh": "国家代码 C9",
+      "en": "Country C9"
+    },
+    "Country CA": {
+      "zh": "国家代码 CA",
+      "en": "Country CA"
+    },
+    "Country CF": {
+      "zh": "国家代码 CF",
+      "en": "Country CF"
+    },
+    "Country D0": {
+      "zh": "国家代码 D0",
+      "en": "Country D0"
+    },
+    "Country D1": {
+      "zh": "国家代码 D1",
+      "en": "Country D1"
+    },
+    "Country D2": {
+      "zh": "国家代码 D2",
+      "en": "Country D2"
+    },
+    "Country D3": {
+      "zh": "国家代码 D3",
+      "en": "Country D3"
+    },
+    "Country D4": {
+      "zh": "国家代码 D4",
+      "en": "Country D4"
+    },
+    "Country D5": {
+      "zh": "国家代码 D5",
+      "en": "Country D5"
+    },
+    "Country D6": {
+      "zh": "国家代码 D6",
+      "en": "Country D6"
+    },
+    "Country D7": {
+      "zh": "国家代码 D7",
+      "en": "Country D7"
+    },
+    "Country D8": {
+      "zh": "国家代码 D8",
+      "en": "Country D8"
+    },
+    "Country D9": {
+      "zh": "国家代码 D9",
+      "en": "Country D9"
+    },
+    "Country DA": {
+      "zh": "国家代码 DA",
+      "en": "Country DA"
+    },
+    "Country DB": {
+      "zh": "国家代码 DB",
+      "en": "Country DB"
+    },
+    "Country E1": {
+      "zh": "国家代码 E1",
+      "en": "Country E1"
+    },
+    "Country E2": {
+      "zh": "国家代码 E2",
+      "en": "Country E2"
+    },
+    "Country E3": {
+      "zh": "国家代码 E3",
+      "en": "Country E3"
+    },
+    "Country E4": {
+      "zh": "国家代码 E4",
+      "en": "Country E4"
+    },
+    "Country E5": {
+      "zh": "国家代码 E5",
+      "en": "Country E5"
+    },
+    "Country E6": {
+      "zh": "国家代码 E6",
+      "en": "Country E6"
+    },
+    "Country E7": {
+      "zh": "国家代码 E7",
+      "en": "Country E7"
+    },
+    "Country E8": {
+      "zh": "国家代码 E8",
+      "en": "Country E8"
+    },
+    "Country E9": {
+      "zh": "国家代码 E9",
+      "en": "Country E9"
+    },
+    "Country EA": {
+      "zh": "国家代码 EA",
+      "en": "Country EA"
+    },
+    "Country EB": {
+      "zh": "国家代码 EB",
+      "en": "Country EB"
+    },
+    "Country EC": {
+      "zh": "国家代码 EC",
+      "en": "Country EC"
+    },
+    "Country ED": {
+      "zh": "国家代码 ED",
+      "en": "Country ED"
+    },
+    "Country EE": {
+      "zh": "国家代码 EE",
+      "en": "Country EE"
+    },
+    "Country EF": {
+      "zh": "国家代码 EF",
+      "en": "Country EF"
+    },
+    "Country F0": {
+      "zh": "国家代码 F0",
+      "en": "Country F0"
+    },
+    "Country F1": {
+      "zh": "国家代码 F1",
+      "en": "Country F1"
+    },
+    "Country F2": {
+      "zh": "国家代码 F2",
+      "en": "Country F2"
+    },
+    "Country F3": {
+      "zh": "国家代码 F3",
+      "en": "Country F3"
+    },
+    "Country F4": {
+      "zh": "国家代码 F4",
+      "en": "Country F4"
+    },
+    "Country F5": {
+      "zh": "国家代码 F5",
+      "en": "Country F5"
+    },
+    "Country F6": {
+      "zh": "国家代码 F6",
+      "en": "Country F6"
+    },
+    "Country F7": {
+      "zh": "国家代码 F7",
+      "en": "Country F7"
+    },
+    "Country F8": {
+      "zh": "国家代码 F8",
+      "en": "Country F8"
+    },
+    "Country F9": {
+      "zh": "国家代码 F9",
+      "en": "Country F9"
+    },
+    "Country FA": {
+      "zh": "国家代码 FA",
+      "en": "Country FA"
+    },
+    "Country FB": {
+      "zh": "国家代码 FB",
+      "en": "Country FB"
+    },
+    "Country FC": {
+      "zh": "国家代码 FC",
+      "en": "Country FC"
+    },
+    "Country FD": {
+      "zh": "国家代码 FD",
+      "en": "Country FD"
+    },
+    "Country FE": {
+      "zh": "国家代码 FE",
+      "en": "Country FE"
+    },
+    "Country FF": {
+      "zh": "国家代码 FF",
+      "en": "Country FF"
+    },
+    "Not active": {
+      "zh": "未激活",
+      "en": "Not active"
+    },
+    "Unknown": {
+      "zh": "未知",
+      "en": "Unknown"
+    },
+    "Active, 3 key cycles": {
+      "zh": "激活 3 个点火周期",
+      "en": "Active, 3 key cycles"
+    },
+    "Active, 5 key cycles": {
+      "zh": "激活 5 个点火周期",
+      "en": "Active, 5 key cycles"
+    },
+    "Active, 10 key cycles": {
+      "zh": "激活 10 个点火周期",
+      "en": "Active, 10 key cycles"
+    },
+    "Active, 20 key cycles": {
+      "zh": "激活 20 个点火周期",
+      "en": "Active, 20 key cycles"
+    },
+    "Low power (logistic)": {
+      "zh": "低功耗（物流模式）",
+      "en": "Low power (logistic)"
+    },
+    "Normal": {
+      "zh": "正常",
+      "en": "Normal"
+    },
+    "Not locked": {
+      "zh": "未锁定",
+      "en": "Not locked"
+    },
+    "Locked by tool": {
+      "zh": "被诊断设备锁定",
+      "en": "Locked by tool"
+    },
+    "Locked": {
+      "zh": "已锁定",
+      "en": "Locked"
+    },
+    "Virgin": {
+      "zh": "未编程",
+      "en": "Virgin"
+    },
+    "Programmed": {
+      "zh": "已编程",
+      "en": "Programmed"
+    },
+    "Faulty": {
+      "zh": "故障",
+      "en": "Faulty"
+    },
+    "Factory": {
+      "zh": "出厂编程",
+      "en": "Factory"
+    },
+    "Spare part": {
+      "zh": "备件",
+      "en": "Spare part"
+    }
+  },
+  "modules": {
+    "BODY33": {
+      "zh": "车身电脑（马瑞利，Giulia 952）",
+      "en": "BODY33",
+      "code": "BODY33"
+    },
+    "BODY30": {
+      "zh": "车身电脑（马瑞利，Stelvio 949）",
+      "en": "BODY30",
+      "code": "BODY30"
+    },
+    "PROXIX1": {
+      "zh": "PROXI 配置对齐程序（952 / 949）",
+      "en": "PROXIX1",
+      "code": "PROXIX1"
+    },
+    "DASH29": {
+      "zh": "组合仪表（大陆）",
+      "en": "DASH29",
+      "code": "DASH29"
+    },
+    "SVCRST29": {
+      "zh": "保养周期复位单元",
+      "en": "SVCRST29",
+      "code": "SVCRST29"
+    },
+    "ABSMMKC1": {
+      "zh": "制动系统 ABS / ESP（大陆 MK C1）",
+      "en": "ABSMMKC1",
+      "code": "ABSMMKC1"
+    },
+    "EPSZFX1": {
+      "zh": "电动助力转向（采埃孚）",
+      "en": "EPSZFX1",
+      "code": "EPSZFX1"
+    },
+    "ZF8HP50": {
+      "zh": "自动变速箱（采埃孚 8HP50/75）",
+      "en": "ZF8HP50",
+      "code": "ZF8HP50"
+    },
+    "ESM1X": {
+      "zh": "电子换挡模块（采埃孚）",
+      "en": "ESM1X",
+      "code": "ESM1X"
+    },
+    "DTCM4": {
+      "zh": "分动箱（麦格纳 Q4）",
+      "en": "DTCM4",
+      "code": "DTCM4"
+    },
+    "ABG28": {
+      "zh": "安全气囊（博世）",
+      "en": "ABG28",
+      "code": "ABG28"
+    },
+    "HDLGHT6": {
+      "zh": "自适应大灯",
+      "en": "HDLGHT6",
+      "code": "HDLGHT6"
+    },
+    "SLCK2": {
+      "zh": "转向锁（天合）",
+      "en": "SLCK2",
+      "code": "SLCK2"
+    },
+    "HALF1": {
+      "zh": "车道保持摄像头（博世 HALF）",
+      "en": "HALF1",
+      "code": "HALF1"
+    },
+    "DASM1": {
+      "zh": "驾驶辅助雷达（博世 DASM）",
+      "en": "DASM1",
+      "code": "DASM1"
+    },
+    "TVM1": {
+      "zh": "扭矩矢量分配模块",
+      "en": "TVM1",
+      "code": "TVM1"
+    },
+    "PARKSEN8": {
+      "zh": "泊车雷达（博世，前后）",
+      "en": "PARKSEN8",
+      "code": "PARKSEN8"
+    },
+    "PARKSEN14": {
+      "zh": "泊车雷达（博世，仅后）",
+      "en": "PARKSEN14",
+      "code": "PARKSEN14"
+    },
+    "RFH30": {
+      "zh": "射频接收模块（大陆 RFHUB）",
+      "en": "RFH30",
+      "code": "RFH30"
+    },
+    "CLIMA33": {
+      "zh": "自动空调（天合）",
+      "en": "CLIMA33",
+      "code": "CLIMA33"
+    },
+    "CSWM2": {
+      "zh": "座椅与方向盘舒适模块（比创，前排）",
+      "en": "CSWM2",
+      "code": "CSWM2"
+    },
+    "CSWM5": {
+      "zh": "座椅舒适模块（比创，后排）",
+      "en": "CSWM5",
+      "code": "CSWM5"
+    },
+    "CNAV13": {
+      "zh": "收音机与导航主机（马瑞利 AlfaConnect）",
+      "en": "CNAV13",
+      "code": "CNAV13"
+    },
+    "EMCM1X": {
+      "zh": "多媒体控制面板（旋钮 / 触控板）",
+      "en": "EMCM1X",
+      "code": "EMCM1X"
+    },
+    "AMP2": {
+      "zh": "功放（Ask / Beats）",
+      "en": "AMP2",
+      "code": "AMP2"
+    },
+    "ANC1": {
+      "zh": "发动机声浪模拟（主动降噪）",
+      "en": "ANC1",
+      "code": "ANC1"
+    },
+    "PLGM1": {
+      "zh": "电动尾门（博泽）",
+      "en": "PLGM1",
+      "code": "PLGM1"
+    },
+    "LRBSS1": {
+      "zh": "盲点监测雷达（奥托立夫，左）",
+      "en": "LRBSS1",
+      "code": "LRBSS1"
+    },
+    "AAML1": {
+      "zh": "主动空气动力模块（左）",
+      "en": "AAML1",
+      "code": "AAML1"
+    },
+    "AAMR1": {
+      "zh": "主动空气动力模块（右）",
+      "en": "AAMR1",
+      "code": "AAMR1"
+    },
+    "ADBLU1": {
+      "zh": "尿素喷射模块（大陆）",
+      "en": "ADBLU1",
+      "code": "ADBLU1"
+    },
+    "JTDM23GP": {
+      "zh": "发动机电脑（博世 EDC17C69，柴油 2.2）",
+      "en": "JTDM23GP",
+      "code": "JTDM23GP"
+    },
+    "MED17.3.5": {
+      "zh": "发动机电脑（博世 Motronic 17.3.5，2.9 V6 主列）",
+      "en": "MED17.3.5",
+      "code": "MED17.3.5"
+    },
+    "MED17.3.5S": {
+      "zh": "发动机电脑（博世 Motronic 17.3.5，2.9 V6 副列）",
+      "en": "MED17.3.5S",
+      "code": "MED17.3.5S"
+    },
+    "IAW10JAX": {
+      "zh": "发动机电脑（马瑞利 IAW 10JA，2.0）",
+      "en": "IAW10JAX",
+      "code": "IAW10JAX"
+    }
+  },
+  "categories": {
+    "保养与里程复位": "保养与里程复位",
+    "钥匙 / 胎压 / VIN": "钥匙 / 胎压 / VIN",
+    "车身执行器与编程": "车身执行器与编程",
+    "刹车 / ABS / EPB": "刹车 / ABS / EPB",
+    "发动机": "发动机",
+    "变速箱 / 传动": "变速箱 / 传动",
+    "转向": "转向",
+    "转向锁": "转向锁",
+    "驾驶辅助 / 底盘": "驾驶辅助 / 底盘",
+    "空调 / 舒适": "空调 / 舒适",
+    "多媒体": "多媒体",
+    "灯光": "灯光",
+    "泊车": "泊车",
+    "尾门": "尾门",
+    "安全气囊": "安全气囊",
+    "盲点监测": "盲点监测",
+    "主动空气动力": "主动空气动力",
+    "排放 / 尿素": "排放 / 尿素",
+    "仪表": "仪表",
+    "PROXI 对齐": "PROXI 对齐"
+  },
+  "kinds": {
+    "执行器": "执行器测试",
+    "编程/调整": "编程 / 调整"
+  }
+}

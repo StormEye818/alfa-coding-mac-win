@@ -1,0 +1,75 @@
+name: Windows Build & Smoke Test
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build NSIS installer (real Windows, no wine needed)
+        run: npx electron-builder --win nsis
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
+      - name: Locate installer
+        id: exe
+        shell: bash
+        run: |
+          ls -la dist/*.exe
+          echo "path=$(ls dist/*.exe | head -1)" >> "$GITHUB_OUTPUT"
+
+      - name: Silent install smoke test
+        shell: bash
+        run: |
+          "${{ steps.exe.outputs.path }}" /S
+          sleep 8
+          ls -la "$LOCALAPPDATA/Programs/AlfaProxi/"
+          test -f "$LOCALAPPDATA/Programs/AlfaProxi/AlfaProxi.exe" && echo "INSTALL OK"
+
+      - name: Launch app smoke test
+        shell: bash
+        run: |
+          "$LOCALAPPDATA/Programs/AlfaProxi/AlfaProxi.exe" &
+          APP_PID=$!
+          sleep 10
+          if kill -0 $APP_PID 2>/dev/null; then
+            echo "APP RUNNING OK (pid $APP_PID)"
+            taskkill //PID $APP_PID //F
+          else
+            echo "APP EXITED EARLY - FAILURE"
+            exit 1
+          fi
+
+      - name: Uninstall smoke test
+        shell: bash
+        run: |
+          "$LOCALAPPDATA/Programs/AlfaProxi/Uninstall.exe" /S
+          sleep 5
+          if [ -d "$LOCALAPPDATA/Programs/AlfaProxi" ]; then
+            echo "UNINSTALL FAILED: dir still exists"
+            exit 1
+          fi
+          echo "UNINSTALL OK"
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AlfaProxi-windows-installer
+          path: dist/*.exe
+          if-no-files-found: error

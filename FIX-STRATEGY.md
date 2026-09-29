@@ -73,7 +73,7 @@
 
 ### 3.3 兜底：真实 Windows 验证（GitHub Actions）
 
-在仓库增加 `.github/workflows/windows-build.yml`（已附在交付物中）：在 `windows-latest` 运行器上原生构建 + 冒烟测试：
+仓库已部署 `windows-build.yml.example`（工作流模板）。**激活方式**：重命名为 `.github/workflows/windows-build.yml` 并推送（注意：推送 `.github/workflows/` 下的文件需要带 `workflow` 权限的 PAT；gh 设备流 token 不具备该权限，可从 Mac 端 git push 或使用 PAT）。激活后在 `windows-latest` 运行器上原生构建 + 冒烟测试：
 1. `npm ci` → `npx electron-builder --win nsis`（Windows 上不需要 wine）
 2. 静默安装 `/S` → 断言 `%LOCALAPPDATA%\Programs\AlfaProxi\AlfaProxi.exe` 存在
 3. 启动 app → 等待 → 断言进程存活 → 截图/日志 → 关闭

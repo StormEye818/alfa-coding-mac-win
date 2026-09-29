@@ -101,3 +101,7 @@
 | `dist/alfaproxi.nsi` | NSIS 安装脚本（可复现） |
 | `.github/workflows/windows-build.yml` | 真实 Windows CI：构建 + 冒烟测试 |
 | `fix-strategy.md` | 本报告 |
+
+## 下载地址（GitHub Release v0.1.0-fixed）
+- AlfaProxi-0.1.0-arm64-fixed.dmg | 
+- AlfaProxi.Setup.0.1.0-fixed.exe | 

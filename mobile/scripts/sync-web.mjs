@@ -67,3 +67,18 @@ const size = (p) => {
 };
 console.log('[sync] 完成: www/app', size(path.join(WWW, 'app', 'app.js')),
   '· vendor', size(path.join(WWW, 'app', 'vendor', 'mobile-bridge.js')));
+
+// iOS 原生插件注册修正：cap sync 只把 npm 插件写进 packageClassList（且每次重写），
+// app 内自带的 MfiSerialPlugin 必须在 sync 之后补进去，否则运行时报
+// "MfiSerial plugin is not implemented on ios"（2026-09-30 真机踩过）。
+// 注意：本脚本应在 `npx cap sync ios` 之后运行，或随后再跑一次。
+const iosCfg = path.join(MOBILE, 'ios', 'App', 'App', 'capacitor.config.json');
+try {
+  const cfg = JSON.parse(fs.readFileSync(iosCfg, 'utf8'));
+  cfg.packageClassList = Array.isArray(cfg.packageClassList) ? cfg.packageClassList : [];
+  if (!cfg.packageClassList.includes('MfiSerialPlugin')) {
+    cfg.packageClassList.push('MfiSerialPlugin');
+    fs.writeFileSync(iosCfg, JSON.stringify(cfg, null, 2));
+    console.log('[sync] iOS packageClassList 已补 MfiSerialPlugin');
+  }
+} catch { /* ios 工程未生成时跳过 */ }

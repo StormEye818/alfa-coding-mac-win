@@ -5,7 +5,7 @@ const check = (name, ok, actual) => {
   results.push({ name, ok });
   console.log(`${ok ? 'PASS' : 'FAIL'} | ${name}\n     ${actual}`);
 };
-const browser = await puppeteer.connect({ browserURL: 'http://127.0.0.1:9225', defaultViewport: null });
+const browser = await puppeteer.connect({ browserURL: 'http://127.0.0.1:9224', defaultViewport: null });
 const pages = await browser.pages();
 const page = pages.find((p) => p.url().includes('/app/')) || pages[0];
 page.on('dialog', (d) => d.accept().catch(() => {}));

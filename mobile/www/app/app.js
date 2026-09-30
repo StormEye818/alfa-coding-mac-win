@@ -129,7 +129,10 @@ function renderIfaceTypes() {
   opt.value = 'sim'; opt.textContent = '模拟模式（演示，不连车）';
   sel.appendChild(opt);
   const groups = {};
+  const isMobile = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   for (const i of state.ifaces) {
+    // 手机端只留无线接口（USB/串口/K线/自动扫描在手机上不可用）
+    if (isMobile && !['wifi', 'bluetooth'].includes(i.transport)) continue;
     const k = { usb: 'USB', bluetooth: '蓝牙', wifi: 'WiFi', serial: '串口', auto: '自动' }[i.transport] || i.transport;
     (groups[k] = groups[k] || []).push(i);
   }

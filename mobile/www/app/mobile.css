@@ -230,9 +230,12 @@ body.mobile .help-btn {
 /* alert → toast */
 body.mobile .apx-toast {
   position: fixed;
-  left: 16px; right: 16px;
-  bottom: calc(84px + env(safe-area-inset-bottom, 0px));
-  z-index: 90;
+  left: 8px; right: 8px;
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  z-index: 96;
+  max-height: 52vh;
+  overflow-y: auto;
+  cursor: pointer;
   padding: 12px 16px;
   border-radius: 12px;
   background: rgba(30, 41, 59, 0.97);
@@ -255,8 +258,11 @@ body.mobile .fn-row {
   min-height: 48px;
   padding: 10px 12px;
 }
-body.mobile .stagebar {
+/* 过程提示条（测试/扫描中的转圈）：必须压过浮动条/导航，此前选择器写错(.stagebar)从未生效 */
+body.mobile .stage-bar {
   bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  z-index: 97;
+  max-width: 92vw;
 }
 
 /* 表格型滚动区（DTC 说明等） */
@@ -264,3 +270,90 @@ body.mobile pre,
 body.mobile .fn-cmds {
   font-size: 12px;
 }
+
+/* iOS 刘海/灵动岛安全区：viewport-fit=cover 后必须手动让出顶部与两侧
+   （2026-09-30 真机实测：缺这段内容会顶进状态栏） */
+body.mobile {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+body.mobile header.top {
+  margin-top: 0;
+}
+body.mobile nav.tabs {
+  padding-left: calc(4px + env(safe-area-inset-left, 0px));
+  padding-right: calc(4px + env(safe-area-inset-right, 0px));
+}
+
+/* --- iOS 真机修复（2026-09-30）--- */
+/* 说明层必须盖过浮动写入条(z=80)/换线横幅(z=90)，否则「知道了」点不中 */
+body.mobile .help-sheet { z-index: 95; }
+
+/* 禁双击/双指缩放：app 内操作不该触发页面缩放 */
+body.mobile {
+  touch-action: manipulation;
+}
+body.mobile button,
+body.mobile select,
+body.mobile input,
+body.mobile .opt {
+  touch-action: manipulation;
+}
+
+/* --- 真机体验修复 2（2026-09-30）：面板头纵向排 + 连接区按钮网格 --- */
+body.mobile .panel-head {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+body.mobile .panel-head .actions {
+  width: 100%;
+}
+body.mobile .panel-head .actions select {
+  flex: 1 1 100%;
+  max-width: 100%;
+}
+body.mobile .panel-head .actions button {
+  flex: 1 1 calc(33.333% - 8px);
+  min-width: 96px;
+}
+
+/* 连接区展开：字段整行，按钮 3 个一行，状态 pill 3 个一行 */
+body.mobile .conn.mobile-open {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+body.mobile .conn.mobile-open .field {
+  width: 100%;
+}
+body.mobile .conn.mobile-open button {
+  flex: 1 1 calc(33.333% - 10px);
+  min-width: 96px;
+  margin: 0;
+}
+body.mobile .conn.mobile-open .pill {
+  flex: 1 1 calc(33.333% - 10px);
+  text-align: center;
+  justify-content: center;
+}
+body.mobile select,
+body.mobile input {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+/* 覆盖前文 .conn.mobile-open 的 column 设定：按钮要横向成行 */
+body.mobile .conn.mobile-open {
+  flex-direction: row;
+}
+
+/* 设备选择单（iOS datalist 失灵的替代交互） */
+.pp-list { display: flex; flex-direction: column; gap: 8px; max-height: 46vh; overflow-y: auto; }
+.pp-item {
+  min-height: 48px; padding: 10px 12px; text-align: left;
+  border-radius: 10px; border: 1px solid var(--border, #3a4658);
+  background: rgba(255,255,255,0.03); color: inherit; font-size: 14px;
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+}
+.pp-item small { opacity: 0.65; font-size: 11px; }

@@ -16,10 +16,10 @@
 
   document.body.classList.add('mobile');
 
-  // 引入样式（桌面 index.html 不带；这里动态注入避免桌面多一次请求）
+  // 引入样式（带版本号防 WebView 跨启动缓存旧样式——真机踩过改了不生效）
   const link = document.createElement('link');
   link.rel = 'stylesheet';
-  link.href = './mobile.css';
+  link.href = './mobile.css?v=' + Date.now();
   document.head.appendChild(link);
 
   /* ---------- 1) 连接 chip + 底部动作单 ---------- */
@@ -59,7 +59,10 @@
     t.className = 'apx-toast';
     t.textContent = String(msg);
     document.body.appendChild(t);
-    setTimeout(() => t.remove(), ms || 4200);
+    // 长文本（测试结果等）驻留更久，点按即关
+    const len = String(msg).length;
+    const dur = ms || (len > 120 ? 12000 : len > 60 ? 8000 : 4500);
+    setTimeout(() => t.remove(), dur);
     t.addEventListener('click', () => t.remove());
   }
   window.alert = (msg) => toast(msg);
@@ -117,6 +120,93 @@
     document.body.appendChild(helpSheet);
   }
 
+  /* ---------- 3.5) 串口/蓝牙设备选择单 ----------
+   * iOS WKWebView 对 <datalist> 下拉支持差（点了没反应）——移动端一律走底部选择单。
+   * WiFi 型（placeholder 含 IP）保留文本输入。 */
+  function initPortPicker() {
+    const input = document.getElementById('ifacePort');
+    const dl = document.getElementById('ifacePortList');
+    if (!input || !dl) return;
+
+    let sheet = null;
+    const closeSheet = () => { if (sheet) { sheet.remove(); sheet = null; } };
+
+    const renderSheet = (busy) => {
+      if (!sheet) return;
+      const list = sheet.querySelector('.pp-list');
+      const opts = [...dl.querySelectorAll('option')].map((o) => ({ v: o.value, t: o.textContent }));
+      list.innerHTML = opts.length
+        ? opts.map((o) => `<button class="pp-item" data-v="${o.v}">${o.t} <small>${o.v.slice(0, 18)}</small></button>`).join('')
+        : '<div class="dim" style="padding:12px">' + (busy ? '扫描中，请稍候…' : '未发现设备。点「重新扫描」或确认适配器已开机配对。') + '</div>';
+      const rescan = sheet.querySelector('.pp-rescan');
+      if (rescan) rescan.textContent = busy ? '扫描中…' : '重新扫描设备';
+      // 诊断行（真机排障：扫描看到多少广播 / 失败原因）
+      const diag = sheet.querySelector('.pp-diag');
+      const s = window.__apxLastScan;
+      if (diag) {
+        if (!s) diag.textContent = busy ? '正在扫描…' : '';
+        else {
+          let t = '';
+          if (s.mfi) {
+            t += s.mfi.error ? 'MFi 枚举失败：' + s.mfi.error
+              : `MFi 配件 ${s.mfi.count} 个${s.mfi.names.length ? '（' + s.mfi.names.join('；') + '）' : ''}`;
+          }
+          if (s.ok) t += (t ? ' · ' : '') + `BLE 广播 ${s.raw} 个 → 显示 ${s.shown} 个`;
+          else if (!s.mfi) t = '⚠ 扫描失败：' + s.error + '（检查 设置→隐私→蓝牙 是否允许 AlfaProxi）';
+          diag.textContent = t;
+        }
+      }
+    };
+
+    const openSheet = () => {
+      closeSheet();
+      sheet = document.createElement('div');
+      sheet.className = 'help-sheet pp-sheet';
+      sheet.innerHTML = '<div style="font-size:14px;font-weight:600;margin-bottom:8px">选择设备</div>' +
+        '<div class="pp-list"></div>' +
+        '<div class="pp-diag dim" style="margin-top:8px;font-size:11.5px"></div>' +
+        '<div style="margin-top:12px;display:flex;gap:10px;justify-content:flex-end">' +
+        '<button class="ghost small pp-rescan">重新扫描设备</button>' +
+        '<button class="small pp-close" style="min-width:96px;min-height:44px">关闭</button></div>';
+      document.body.appendChild(sheet);
+      renderSheet(false);
+
+      sheet.addEventListener('click', (e) => {
+        const item = e.target.closest('.pp-item');
+        if (item) {
+          input.value = item.getAttribute('data-v');
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+          closeSheet();
+          return;
+        }
+        if (e.target.closest('.pp-rescan')) {
+          renderSheet(true);
+          // 触发既有刷新链路（ifaceType change → refreshPorts → 填充 datalist）
+          document.getElementById('ifaceType').dispatchEvent(new Event('change', { bubbles: true }));
+          setTimeout(() => renderSheet(false), 5500);
+          return;
+        }
+        if (e.target.closest('.pp-close')) closeSheet();
+      });
+    };
+
+    // 非 WiFi 型：输入框改为只读 + 点按弹选择单（不弹键盘）
+    const syncMode = () => {
+      const isWifi = /IP/.test(input.placeholder || '');
+      if (isWifi) {
+        input.removeAttribute('readonly');
+        input.onfocus = null;
+      } else {
+        input.setAttribute('readonly', 'readonly');
+        input.onfocus = openSheet;
+        input.addEventListener('click', openSheet);
+      }
+    };
+    syncMode();
+    // 接口类型切换会重置 placeholder → 重新适配模式
+    document.getElementById('ifaceType')?.addEventListener('change', () => setTimeout(syncMode, 50));
+  }
+
   /* ---------- 4) 防熄屏 + 后台保护 ---------- */
   function initKeepAwake() {
     const Cap = window.Capacitor;
@@ -148,6 +238,7 @@
   // DOM 就绪后装配（app.js 的 load() 会重建部分节点，用 MutationObserver 补挂 tooltip）
   function boot() {
     initConnSheet();
+    initPortPicker();
     initTooltips();
     initKeepAwake();
     initBackgroundGuard();

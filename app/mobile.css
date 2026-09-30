@@ -230,9 +230,12 @@ body.mobile .help-btn {
 /* alert → toast */
 body.mobile .apx-toast {
   position: fixed;
-  left: 16px; right: 16px;
-  bottom: calc(84px + env(safe-area-inset-bottom, 0px));
-  z-index: 90;
+  left: 8px; right: 8px;
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  z-index: 96;
+  max-height: 52vh;
+  overflow-y: auto;
+  cursor: pointer;
   padding: 12px 16px;
   border-radius: 12px;
   background: rgba(30, 41, 59, 0.97);
@@ -255,8 +258,11 @@ body.mobile .fn-row {
   min-height: 48px;
   padding: 10px 12px;
 }
-body.mobile .stagebar {
+/* 过程提示条（测试/扫描中的转圈）：必须压过浮动条/导航，此前选择器写错(.stagebar)从未生效 */
+body.mobile .stage-bar {
   bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  z-index: 97;
+  max-width: 92vw;
 }
 
 /* 表格型滚动区（DTC 说明等） */
@@ -341,3 +347,13 @@ body.mobile input {
 body.mobile .conn.mobile-open {
   flex-direction: row;
 }
+
+/* 设备选择单（iOS datalist 失灵的替代交互） */
+.pp-list { display: flex; flex-direction: column; gap: 8px; max-height: 46vh; overflow-y: auto; }
+.pp-item {
+  min-height: 48px; padding: 10px 12px; text-align: left;
+  border-radius: 10px; border: 1px solid var(--border, #3a4658);
+  background: rgba(255,255,255,0.03); color: inherit; font-size: 14px;
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+}
+.pp-item small { opacity: 0.65; font-size: 11px; }

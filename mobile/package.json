@@ -8,8 +8,8 @@
     "sync": "node scripts/sync-web.mjs",
     "sync:smoke": "node scripts/sync-web.mjs --smoke",
     "build:bridge": "node scripts/sync-web.mjs --bridge-only",
-    "ios": "npm run sync && npx cap sync ios && npx cap run ios",
-    "android": "npm run sync && npx cap sync android && npx cap run android",
+    "ios": "npm run sync && npx cap sync ios && node scripts/sync-web.mjs --bridge-only && npx cap run ios",
+    "android": "npm run sync && npx cap sync android && node scripts/sync-web.mjs --bridge-only && npx cap run android",
     "smoke:ios": "bash scripts/smoke-sim.sh ios",
     "smoke:android": "bash scripts/smoke-sim.sh android",
     "postinstall": "node scripts/patch-tcp-plugin.mjs"

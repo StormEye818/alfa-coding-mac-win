@@ -4,14 +4,38 @@
 
 ## 安装
 
-| 平台 | 安装包 |
-|---|---|
-| macOS（Apple Silicon） | `AlfaProxi-0.1.0-arm64.dmg` |
-| Windows x64 | `AlfaProxi Setup 0.1.0.exe` |
+| 平台 | 安装包 | 说明 |
+|---|---|---|
+| macOS（Apple Silicon） | `AlfaProxi-0.2.0-arm64.dmg` | 已 ad-hoc 签名，双击安装 |
+| Windows x64 | `AlfaProxi.Setup.0.2.0.exe` | NSIS 免管理员安装 |
+| Android 8+ | `AlfaProxi-0.2.0-android.apk` | 侧载安装（3.5MB，用系统 WebView） |
+| iOS | 见下方「iOS 自行安装」 | 苹果限制无法直接分发安装包 |
 
 安装包在 [Releases](../../releases) 页下载。
 
-> ⚠️ 安装包**未签名**。macOS 首次打开请右键 → 打开（或 `xattr -cr /Applications/AlfaProxi.app`）；Windows 会有 SmartScreen 提示，点「仍要运行」。
+> ⚠️ 均为个人签名：macOS 若提示无法验证，右键 → 打开；Windows SmartScreen 点「更多信息 → 仍要运行」。
+
+## 移动端（iOS / Android）
+
+功能与桌面版**完全一致**（同一套协议核心与界面），适配了手机交互：底部标签导航、触控目标放大、连接设置折叠为顶部动作单、说明气泡、导出走系统分享。适配器只支持**无线**（WiFi + 蓝牙）：
+
+- **WiFi 适配器**（含 vLinker MS WiFi）：连适配器热点后填 IP:端口直连，已实测验收
+- **蓝牙**：代码就绪（Android 走经典蓝牙 SPP，iOS 只能走 BLE / 需适配器支持 BLE 透传）——**待真机验证**
+- 本机工具链验证：iOS 模拟器 + Android 模拟器连沙箱全链路（刷写/对齐/里程表判据）5/5 通过
+
+### iOS 自行安装（免费，装到自己的 iPhone）
+
+iOS 不允许直接分发安装包（每个 app 都需要绑定设备的签名授权），自用可从源码装机：
+
+1. Mac 上安装 **Xcode**（App Store），首次启动后在 Settings → Accounts 登录你的 Apple ID
+2. iPhone 用数据线连接 Mac，手机上解锁并「信任此电脑」
+3. 运行 `cd mobile && npm install && npm run sync && npx cap sync ios`
+4. Xcode 打开 `mobile/ios/App/App.xcodeproj`
+5. 选中 App 工程 → Signing & Capabilities → Team 选 **Personal Team**（自动创建免费证书）
+6. 顶部运行目标选你的 iPhone → **⌘R** 运行
+7. 首次打开若提示未信任：手机 设置 → 通用 → VPN与设备管理 → 信任开发者证书
+
+> 免费证书**7 天有效**、最多同时装 3 个自签 app；过期后重复第 6 步即可。长期使用建议付费 Apple Developer（$99/年）。
 
 ## 快速开始
 

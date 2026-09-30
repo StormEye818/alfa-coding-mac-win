@@ -264,3 +264,18 @@ body.mobile pre,
 body.mobile .fn-cmds {
   font-size: 12px;
 }
+
+/* iOS 刘海/灵动岛安全区：viewport-fit=cover 后必须手动让出顶部与两侧
+   （2026-09-30 真机实测：缺这段内容会顶进状态栏） */
+body.mobile {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+body.mobile header.top {
+  margin-top: 0;
+}
+body.mobile nav.tabs {
+  padding-left: calc(4px + env(safe-area-inset-left, 0px));
+  padding-right: calc(4px + env(safe-area-inset-right, 0px));
+}

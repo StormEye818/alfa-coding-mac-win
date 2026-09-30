@@ -279,3 +279,65 @@ body.mobile nav.tabs {
   padding-left: calc(4px + env(safe-area-inset-left, 0px));
   padding-right: calc(4px + env(safe-area-inset-right, 0px));
 }
+
+/* --- iOS 真机修复（2026-09-30）--- */
+/* 说明层必须盖过浮动写入条(z=80)/换线横幅(z=90)，否则「知道了」点不中 */
+body.mobile .help-sheet { z-index: 95; }
+
+/* 禁双击/双指缩放：app 内操作不该触发页面缩放 */
+body.mobile {
+  touch-action: manipulation;
+}
+body.mobile button,
+body.mobile select,
+body.mobile input,
+body.mobile .opt {
+  touch-action: manipulation;
+}
+
+/* --- 真机体验修复 2（2026-09-30）：面板头纵向排 + 连接区按钮网格 --- */
+body.mobile .panel-head {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+body.mobile .panel-head .actions {
+  width: 100%;
+}
+body.mobile .panel-head .actions select {
+  flex: 1 1 100%;
+  max-width: 100%;
+}
+body.mobile .panel-head .actions button {
+  flex: 1 1 calc(33.333% - 8px);
+  min-width: 96px;
+}
+
+/* 连接区展开：字段整行，按钮 3 个一行，状态 pill 3 个一行 */
+body.mobile .conn.mobile-open {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+body.mobile .conn.mobile-open .field {
+  width: 100%;
+}
+body.mobile .conn.mobile-open button {
+  flex: 1 1 calc(33.333% - 10px);
+  min-width: 96px;
+  margin: 0;
+}
+body.mobile .conn.mobile-open .pill {
+  flex: 1 1 calc(33.333% - 10px);
+  text-align: center;
+  justify-content: center;
+}
+body.mobile select,
+body.mobile input {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+/* 覆盖前文 .conn.mobile-open 的 column 设定：按钮要横向成行 */
+body.mobile .conn.mobile-open {
+  flex-direction: row;
+}

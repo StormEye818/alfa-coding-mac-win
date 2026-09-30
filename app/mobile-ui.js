@@ -65,15 +65,18 @@
   window.alert = (msg) => toast(msg);
   window.__apxToast = toast;   // 供 confirm 替代层复用
 
-  /* ---------- 3) title tooltip → ⓘ 说明 ---------- */
+  /* ---------- 3) title tooltip → ⓘ 说明 ----------
+   * 只处理非交互元素（卡片标题/统计块等）。按钮/下拉/输入框的 title 绝不拦截——
+   * 否则点按钮弹的是说明而不是执行动作（2026-09-30 真机实测踩过：写入按钮被劫持）。 */
+  const INTERACTIVE = 'button, select, input, textarea, a, label, .opt';   // 注：.help-btn 本身是触发器，不在其列
   function initTooltips() {
-    const nodes = document.querySelectorAll('[title]');
-    nodes.forEach((n) => {
+    document.querySelectorAll('[title]').forEach((n) => {
       const text = n.getAttribute('title');
       if (!text) return;
-      n.removeAttribute('title');          // 触屏不触发 hover，改点按
+      n.removeAttribute('title');          // 触屏不触发 hover
+      if (n.matches(INTERACTIVE) || n.closest(INTERACTIVE)) return;   // 交互元素：只去 title，不劫持点击
       n.setAttribute('data-help', text);
-      if (!n.querySelector(':scope > .help-btn') && !n.classList.contains('help-btn')) {
+      if (!n.querySelector(':scope > .help-btn')) {
         const b = document.createElement('span');
         b.className = 'help-btn';
         b.textContent = '?';
@@ -82,30 +85,36 @@
       }
     });
 
-    document.addEventListener('click', (e) => {
-      const t = e.target.closest('[data-help]');
-      if (!t) return;
-      e.preventDefault();
-      e.stopPropagation();
-      showHelp(t.getAttribute('data-help'));
-    }, true);
-
-    let sheet = null;
-    function showHelp(text) {
-      if (sheet) sheet.remove();
-      sheet = document.createElement('div');
-      sheet.className = 'help-sheet';
-      sheet.textContent = text;
-      const close = document.createElement('div');
-      close.style.cssText = 'margin-top:10px;text-align:right';
-      const btn = document.createElement('button');
-      btn.textContent = '知道了';
-      btn.style.minWidth = '96px';
-      btn.addEventListener('click', () => sheet && sheet.remove());
-      close.appendChild(btn);
-      sheet.appendChild(close);
-      document.body.appendChild(sheet);
+    if (!initTooltips._bound) {            // 只绑一次（此前每 3s 重复叠加监听）
+      initTooltips._bound = true;
+      document.addEventListener('click', (e) => {
+        if (e.target.closest(INTERACTIVE)) return;   // 点在交互元素上绝不拦截
+        const t = e.target.closest('[data-help]');
+        if (!t) return;
+        e.preventDefault();
+        e.stopPropagation();
+        showHelp(t.getAttribute('data-help'));
+      }, true);
     }
+  }
+
+  let helpSheet = null;
+  function showHelp(text) {
+    if (helpSheet) helpSheet.remove();
+    helpSheet = document.createElement('div');
+    helpSheet.className = 'help-sheet';
+    helpSheet.textContent = text;
+    const close = document.createElement('div');
+    close.style.cssText = 'margin-top:12px;text-align:right';
+    const btn = document.createElement('button');
+    btn.textContent = '知道了';
+    btn.style.cssText = 'min-width:120px;min-height:44px';
+    const dismiss = () => { if (helpSheet) { helpSheet.remove(); helpSheet = null; } };
+    btn.addEventListener('click', dismiss);
+    close.appendChild(btn);
+    helpSheet.appendChild(close);
+    helpSheet.addEventListener('click', dismiss);   // 点说明层任意处也可关闭
+    document.body.appendChild(helpSheet);
   }
 
   /* ---------- 4) 防熄屏 + 后台保护 ---------- */

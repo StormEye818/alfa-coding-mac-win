@@ -57,10 +57,34 @@ if (chip) {
   await new Promise((r) => setTimeout(r, 300));
   const open = await page.evaluate(() => document.querySelector('.conn')?.classList.contains('mobile-open'));
   check('连接动作单展开', !!open, `mobile-open=${open}`);
+  // 防复发：展开后不得横向溢出，按钮不得独占一行
+  const cm = await page.evaluate(() => {
+    const overflow = document.documentElement.scrollWidth - window.innerWidth;
+    const btns = [...document.querySelectorAll('.conn.mobile-open > button')];
+    const rows = new Set(btns.map((b) => Math.round(b.getBoundingClientRect().top)));
+    return { overflow, btnRows: rows.size, btnCount: btns.length };
+  });
+  check('连接区展开无溢出且按钮成行', cm.overflow <= 2 && cm.btnRows <= Math.ceil(cm.btnCount / 2),
+    `溢出 ${cm.overflow}px · ${cm.btnCount} 个按钮排成 ${cm.btnRows} 行`);
   await page.screenshot({ path: '/tmp/ux-connsheet.png' });
 } else {
   check('连接动作单展开', false, '无 .conn-chip');
 }
+
+// 防复发：实时数据页选中模块后不得横向溢出（此前 panel-head 横排被挤出屏）
+await page.evaluate((t) => document.querySelector(`.tabs .tab[data-tab="${t}"]`).click(), 'live');
+await new Promise((r) => setTimeout(r, 350));
+const live = await page.evaluate(() => {
+  const sel = document.getElementById('liveModule');
+  const opt = [...sel.options].find((o) => o.value);
+  if (opt) { sel.value = opt.value; sel.dispatchEvent(new Event('change', { bubbles: true })); }
+  return {
+    overflow: document.documentElement.scrollWidth - window.innerWidth,
+    picked: opt ? opt.textContent : null,
+  };
+});
+check('实时数据选模块后无溢出', live.overflow <= 2, `选了「${live.picked}」溢出 ${live.overflow}px`);
+await page.screenshot({ path: '/tmp/ux-live-picked.png' });
 
 await browser.close();
 const fail = results.filter((r) => !r.ok).length;

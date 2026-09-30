@@ -8,7 +8,7 @@ XPStyle on
 !include "FileFunc.nsh"
 
 Name "AlfaProxi"
-OutFile "AlfaProxi.Setup.0.2.0.exe"
+OutFile "AlfaProxi.Setup.0.2.1.exe"
 InstallDir "$LOCALAPPDATA\Programs\AlfaProxi"
 InstallDirRegKey HKCU "Software\AlfaProxi" "InstallLocation"
 RequestExecutionLevel user

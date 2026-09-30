@@ -69,8 +69,13 @@
   </div>
 </div>
 
-<div id="cableBanner">
-  <span class="cable-icon">⚙</span>
+<div id="floatWriteBar" class="float-write hidden">
+  <span class="fw-text">已选 <b id="fwCount">0</b> 项待写入</span>
+  <button class="ghost small" id="fwPreview">预览字节</button>
+  <button class="primary small" id="fwWrite">写入 ECU</button>
+</div>
+
+<div id="cableBanner">  <span class="cable-icon">⚙</span>
   <div class="cable-body">
     <strong>需要更换适配线</strong>
     <div id="cableHint" class="cable-detail"></div>
@@ -110,7 +115,8 @@
       <div class="actions">
         <button id="btnRead" class="ghost">读取车辆配置</button>
         <button id="btnBackup" class="ghost">导出配置备份</button>
-        <button id="btnApply" class="primary">写入所选项</button>
+        <button id="btnApply" class="ghost" title="仅把所选合入字节编辑器预览，不写入车辆；写入车辆请点「写入 ECU」">应用到字节（预览）</button>
+        <button id="btnWriteFeatures" class="primary" title="把所选项真正写入车辆（自动合入+写入+读回校验）">写入 ECU</button>
       </div>
     </div>
 

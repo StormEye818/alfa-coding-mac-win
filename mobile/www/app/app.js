@@ -491,6 +491,7 @@ function renderNamed() {
     });
     grid.appendChild(div);
   }
+  updateFloatBar();
 }
 
 /* ================= 扩展配置项 ================= */
@@ -579,6 +580,7 @@ function renderFeatures() {
     grid.appendChild(card);
   }
   detectConflicts();
+  updateFloatBar();
 }
 
 function optionToPatch(f, idx) {
@@ -785,7 +787,7 @@ $('btnRevert').addEventListener('click', () => {
   renderEditor(); renderNamed(); renderFeatures(); detectConflicts();
   log('已放弃全部改动');
 });
-$('btnWrite').addEventListener('click', async () => {
+async function writeToEcu() {
   if (!(await ensureRead())) return;
   if (!confirm('确认写入 ECU？写入前请确认已导出备份。')) return;
   try {
@@ -827,6 +829,22 @@ $('btnWrite').addEventListener('click', async () => {
     stageFail('写入失败：' + e.message);
     alert('写入失败：' + e.message + (e.nrcText ? '（' + e.nrcText + '）' : '') + '\n\n所选项已标记为「写入失败」。');
   }
+}
+// 「写入 ECU」在三处等价：字节编辑器页 / 隐藏功能页 / 待写浮动条
+for (const id of ['btnWrite', 'btnWriteFeatures', 'fwWrite']) $(id).addEventListener('click', writeToEcu);
+
+/** 待写浮动条：有待写选择时提示并直达「写入 ECU」 */
+function updateFloatBar() {
+  const bar = $('floatWriteBar');
+  if (!bar) return;
+  const n = state.namedPicks.size + state.selected.size;
+  bar.classList.toggle('hidden', n === 0 || !state.readDone);
+  $('fwCount').textContent = n;
+}
+$('fwPreview').addEventListener('click', async () => {
+  $('btnApply').click();                       // 先合入字节块
+  await new Promise((r) => setTimeout(r, 350));
+  document.querySelector('.tabs .tab[data-tab="editor"]')?.click();
 });
 
 /* ================= PROXI 对齐 ================= */

@@ -47,8 +47,8 @@
     syncChip();
 
     chip.addEventListener('click', () => {
-      const open = conn.classList.toggle('mobile-open');
-      if (open) conn.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // 只展开/收起，不滚动页面（真机反馈：自动下滑很烦）
+      conn.classList.toggle('mobile-open');
     });
   }
 

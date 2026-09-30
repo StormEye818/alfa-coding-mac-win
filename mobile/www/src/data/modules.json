@@ -1,0 +1,1386 @@
+{
+  "generatedFrom": "diag-data/data (诊断软件 5.4 DB)",
+  "platforms": {
+    "949": {
+      "name": "Stelvio",
+      "code": "949",
+      "bodyModule": "BODY30",
+      "proxiModule": "PROXIX1"
+    },
+    "952": {
+      "name": "Giulia",
+      "code": "952",
+      "bodyModule": "BODY33",
+      "proxiModule": "PROXIX1"
+    }
+  },
+  "busGroups": {
+    "plain": {
+      "label": "直连（无需换线）",
+      "baud": 500,
+      "cable": "none"
+    },
+    "comfort": {
+      "label": "舒适/车身 CAN",
+      "baud": 125,
+      "cable": "adapter-5-blue"
+    },
+    "swap": {
+      "label": "底盘/安全 CAN（需换线）",
+      "baud": 500,
+      "cable": "adapter-6-gray"
+    }
+  },
+  "modules": [
+    {
+      "code": "JTDM23GP",
+      "name": "Bosch EDC17C69 CF6/EOBD Diesel Injection (2.2)",
+      "bus": "CCAN29",
+      "tx": "10",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 0,
+      "sort": 641
+    },
+    {
+      "code": "DASH29",
+      "name": "Instrument Panel Continental",
+      "bus": "CCAN29",
+      "tx": "60",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 0,
+      "sort": 642
+    },
+    {
+      "code": "SVCRST29",
+      "name": "Service Interval Reset",
+      "bus": "CCAN29",
+      "tx": "60",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 0,
+      "sort": 643
+    },
+    {
+      "code": "BODY33",
+      "name": "Body Computer Marelli (952)",
+      "bus": "CCAN29",
+      "tx": "40",
+      "rx": "F1",
+      "platforms": [
+        "952"
+      ],
+      "timeoutMs": 0,
+      "sort": 656
+    },
+    {
+      "code": "PROXIX1",
+      "name": "CAN Setup / PROXI Alignment Procedure (952)",
+      "bus": "CCAN29",
+      "tx": "40",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 0,
+      "sort": 657
+    },
+    {
+      "code": "CSWM2",
+      "name": "Comfort seat and wheel (CSWM) Bitron",
+      "bus": "BHCAN29",
+      "tx": "C2",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 500,
+      "sort": 664
+    },
+    {
+      "code": "MED17.3.5",
+      "name": "Bosch Motronic MeD17.3.5 CF6 Injection (2.9 V6, Primary, Cyl. 1-2-3)",
+      "bus": "CCAN29",
+      "tx": "10",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 0,
+      "sort": 673
+    },
+    {
+      "code": "MED17.3.5S",
+      "name": "Bosch Motronic MeD17.3.5 CF6 Injection (2.9 V6, Secondary, Cyl. 4-5-6)",
+      "bus": "CCAN29",
+      "tx": "17",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 0,
+      "sort": 674
+    },
+    {
+      "code": "ABSMMKC1",
+      "name": "Continental ABS MK C1",
+      "bus": "CCAN29",
+      "tx": "28",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 600,
+      "sort": 675
+    },
+    {
+      "code": "IAW10JAX",
+      "name": "Magneti Marelli IAW 10JA CF6/EOBD Injection (2.0)",
+      "bus": "CCAN29",
+      "tx": "10",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 0,
+      "sort": 677
+    },
+    {
+      "code": "EPSZFX1",
+      "name": "ZF Electric Steering",
+      "bus": "CCAN29",
+      "tx": "30",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 600,
+      "sort": 678
+    },
+    {
+      "code": "PARKSEN8",
+      "name": "Parking control Bosch",
+      "bus": "CCAN29",
+      "tx": "A0",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 600,
+      "sort": 679
+    },
+    {
+      "code": "EMCM1X",
+      "name": "Multimedia control module (multifunction knob/joystick/touchpad)",
+      "bus": "BHCAN29",
+      "tx": "8A",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 500,
+      "sort": 680
+    },
+    {
+      "code": "CNAV13",
+      "name": "Marelli AlfaConnect Radio/Nav",
+      "bus": "BHCAN29",
+      "tx": "87",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 500,
+      "sort": 681
+    },
+    {
+      "code": "CLIMA33",
+      "name": "TRW climate control (Automatic)",
+      "bus": "BHCAN29",
+      "tx": "98",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 500,
+      "sort": 682
+    },
+    {
+      "code": "ZF8HP50",
+      "name": "ZF 8HP50/75 Automatic Gearbox",
+      "bus": "CCAN29",
+      "tx": "18",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 0,
+      "sort": 683
+    },
+    {
+      "code": "ESM1X",
+      "name": "ZF Electronic Gear Shift Module",
+      "bus": "CCAN29",
+      "tx": "1F",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 0,
+      "sort": 684
+    },
+    {
+      "code": "ABG28",
+      "name": "Bosch Airbag",
+      "bus": "CCAN29",
+      "tx": "C0",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 600,
+      "sort": 685
+    },
+    {
+      "code": "LRBSS1",
+      "name": "Blind Spot Sensor Autoliv (Left)",
+      "bus": "BHCAN29",
+      "tx": "62",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 500,
+      "sort": 691
+    },
+    {
+      "code": "BODY30",
+      "name": "Body Computer Marelli (949)",
+      "bus": "CCAN29",
+      "tx": "40",
+      "rx": "F1",
+      "platforms": [
+        "949"
+      ],
+      "timeoutMs": 0,
+      "sort": 694
+    },
+    {
+      "code": "AMP2",
+      "name": "Amplifier module Ask/Beats",
+      "bus": "BHCAN29",
+      "tx": "83",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 500,
+      "sort": 697
+    },
+    {
+      "code": "HDLGHT6",
+      "name": "Automotive Lighting adaptive headlights",
+      "bus": "CCAN29",
+      "tx": "70",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 600,
+      "sort": 699
+    },
+    {
+      "code": "DTCM4",
+      "name": "Magna Q4 Transfer Case",
+      "bus": "CCAN29",
+      "tx": "1A",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 0,
+      "sort": 740
+    },
+    {
+      "code": "SLCK2",
+      "name": "Steering Lock TRW",
+      "bus": "CCAN29",
+      "tx": "C4",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 600,
+      "sort": 741
+    },
+    {
+      "code": "HALF1",
+      "name": "Haptical lane feedback (HALF) camera Bosch",
+      "bus": "CCAN29",
+      "tx": "31",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 600,
+      "sort": 742
+    },
+    {
+      "code": "DASM1",
+      "name": "Driver assistant system module (DASM) radar Bosch",
+      "bus": "CCAN29",
+      "tx": "2A",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 0,
+      "sort": 743
+    },
+    {
+      "code": "ANC1",
+      "name": "Engine sound enhacement module (ESEM)",
+      "bus": "BHCAN29",
+      "tx": "8B",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 500,
+      "sort": 744
+    },
+    {
+      "code": "TVM1",
+      "name": "Torque vectoring module (TVM)",
+      "bus": "CCAN29",
+      "tx": "21",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 600,
+      "sort": 745
+    },
+    {
+      "code": "CSWM5",
+      "name": "Comfort rear seat (CRSM) Bitron",
+      "bus": "BHCAN29",
+      "tx": "D0",
+      "rx": "F1",
+      "platforms": [
+        "949",
+        "952"
+      ],
+      "timeoutMs": 500,
+      "sort": 752
+    },
+    {
+      "code": "PLGM1",
+      "name": "Power liftgate (PLGM) BROSE",
+      "bus": "BHCAN29",
+      "tx": "41",
+      "rx": "F1",
+      "platforms": [
+        "949"
+      ],
+      "timeoutMs": 500,
+      "sort": 1752
+    },
+    {
+      "code": "RFH30",
+      "name": "Radio frequency hub (RFHUB) Continental",
+      "bus": "CCAN29",
+      "tx": "C7",
+      "rx": "F1",
+      "platforms": [
+        "949",
+        "952"
+      ],
+      "timeoutMs": 0,
+      "sort": 1753
+    },
+    {
+      "code": "AAML1",
+      "name": "Active aerodynamic module LEFT (AAML)",
+      "bus": "CCAN29",
+      "tx": "3F",
+      "rx": "F1",
+      "platforms": [
+        "949",
+        "952"
+      ],
+      "timeoutMs": 600,
+      "sort": 2763
+    },
+    {
+      "code": "AAMR1",
+      "name": "Active aerodynamic module RIGHT (AAMR)",
+      "bus": "CCAN29",
+      "tx": "3E",
+      "rx": "F1",
+      "platforms": [
+        "949",
+        "952"
+      ],
+      "timeoutMs": 600,
+      "sort": 2764
+    },
+    {
+      "code": "ADBLU1",
+      "name": "Urea/AdBlue dosing module Continental",
+      "bus": "CCAN29",
+      "tx": "01",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 0,
+      "sort": 2784
+    },
+    {
+      "code": "PARKSEN14",
+      "name": "Parking control Bosch (Rear only)",
+      "bus": "CCAN29",
+      "tx": "A0",
+      "rx": "F1",
+      "platforms": [
+        "952",
+        "949"
+      ],
+      "timeoutMs": 600,
+      "sort": 2793
+    }
+  ],
+  "alignmentNodes": [
+    {
+      "name": "Adaptive Cruise Control Node (NAC)",
+      "addr": "00",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 14,
+      "bitMask": "01",
+      "presence": "0101Present|0100Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Additional Heater Node (CTM)",
+      "addr": "99",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 12,
+      "bitMask": "04",
+      "presence": "0404Present|0400Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Amplifier Node (AMP)",
+      "addr": "83",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 11,
+      "bitMask": "40",
+      "presence": "4040Present|4000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Assisted Braking Node (NBA)",
+      "addr": "00",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 14,
+      "bitMask": "08",
+      "presence": "0808Present|0800Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Auto Headlamp Leveling Node (AHLM)",
+      "addr": "71",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 7,
+      "bitMask": "10",
+      "presence": "1010Present|1000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Automatic Transmission Node (TCM/NCA/NCR)",
+      "addr": "18",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 15,
+      "bitMask": "08",
+      "presence": "0808Present|0800Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Body Computer Node (BCM/NBC)",
+      "addr": "40",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 16,
+      "bitMask": "01",
+      "presence": "0101Present|0100Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Boot Node (NVB)",
+      "addr": "00",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 15,
+      "bitMask": "02",
+      "presence": "0202Present|0200Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Ceiling Node (NIM)",
+      "addr": "00",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 15,
+      "bitMask": "40",
+      "presence": "4040Present|4000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Central vision processing module (CVPM)",
+      "addr": "66",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 6,
+      "bitMask": "02",
+      "presence": "0202Present|0200Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Climate Control Node (HVAC/NCL)",
+      "addr": "98",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 15,
+      "bitMask": "04",
+      "presence": "0404Present|0400Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Comfort Rear Seat Module (CRSM)",
+      "addr": "D0",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 9,
+      "bitMask": "20",
+      "presence": "2020Present|2000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Comfort Seat and Wheel Node (CSWM)",
+      "addr": "C2",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 10,
+      "bitMask": "01",
+      "presence": "0101Present|0100Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Compact Disk Node (CDM)",
+      "addr": "84",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 11,
+      "bitMask": "80",
+      "presence": "8080Present|8000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Convergence Telematic Node (CTM)",
+      "addr": "61",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 12,
+      "bitMask": "02",
+      "presence": "0202Present|0200Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Coupling Control Node (CCM)",
+      "addr": "19",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 13,
+      "bitMask": "10",
+      "presence": "1010Present|1000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Dashboard Node (IPC/NQS)",
+      "addr": "60",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 16,
+      "bitMask": "08",
+      "presence": "0808Present|0800Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Display Screen Module (DSM)",
+      "addr": "6A",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 13,
+      "bitMask": "80",
+      "presence": "8080Present|8000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Drive Train Control Node (DTCM)",
+      "addr": "1A",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 8,
+      "bitMask": "08",
+      "presence": "0808Present|0800Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Driver Assistant System Node (DASM)",
+      "addr": "2A",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 9,
+      "bitMask": "02",
+      "presence": "0202Present|0200Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Driver Door Latch Module (DDML)",
+      "addr": "54",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 9,
+      "bitMask": "04",
+      "presence": "0404Present|0400Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Driver Door Node (NPG)",
+      "addr": "C8",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 15,
+      "bitMask": "01",
+      "presence": "0101Present|0100Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Driver monitoring system module (DMSM)",
+      "addr": "00",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 7,
+      "bitMask": "08",
+      "presence": "0808Present|0800Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Driver Seat Node (NAG)",
+      "addr": "A2",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 14,
+      "bitMask": "04",
+      "presence": "0404Present|0400Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Electronic limited slip differential (ELSDM)",
+      "addr": "00",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 3,
+      "bitMask": "02",
+      "presence": "0202Present|0200Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Engine control Module 2 (ECM2)",
+      "addr": "17",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 3,
+      "bitMask": "08",
+      "presence": "0808Present|0800Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Engine Control Node (ECM/NCM)",
+      "addr": "10",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 16,
+      "bitMask": "02",
+      "presence": "0202Present|0200Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Engine Signals Node (NSM)",
+      "addr": "00",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 13,
+      "bitMask": "02",
+      "presence": "0202Present|0200Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Engine sound enhacement module (ESEM/ANC)",
+      "addr": "8B",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 3,
+      "bitMask": "40",
+      "presence": "4040Present|4000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Entertainment multimedia control module (EMCM)",
+      "addr": "8A",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 4,
+      "bitMask": "80",
+      "presence": "8080Present|8000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Entertainment Telematic Node (ETM)",
+      "addr": "87",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 12,
+      "bitMask": "10",
+      "presence": "1010Present|1000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Front View Camera Node (FVCM)",
+      "addr": "6F",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 8,
+      "bitMask": "10",
+      "presence": "1010Present|1000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Gearbox Selector Node (ESM/GSM/NSC)",
+      "addr": "1F",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 14,
+      "bitMask": "40",
+      "presence": "4040Present|4000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Info-Telematic/Convergence Node (NIT/NCV)",
+      "addr": "00",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 16,
+      "bitMask": "80",
+      "presence": "8080Present|8000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Integrated Center Stack Node (ICS)",
+      "addr": "85",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 10,
+      "bitMask": "04",
+      "presence": "0404Present|0400Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Left Blind Spot Sensor Node (LBSS)",
+      "addr": "62",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 10,
+      "bitMask": "08",
+      "presence": "0808Present|0800Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Parking Brake Control Node (NPB)",
+      "addr": "2B",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 15,
+      "bitMask": "20",
+      "presence": "2020Present|2000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Passenger Door Latch Module (PDML)",
+      "addr": "55",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 9,
+      "bitMask": "08",
+      "presence": "0808Present|0800Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Passenger Door Node (NPP)",
+      "addr": "C9",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 14,
+      "bitMask": "02",
+      "presence": "0202Present|0200Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Passenger Occupant Classification Node (OCM)",
+      "addr": "58",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 7,
+      "bitMask": "40",
+      "presence": "4040Present|4000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Passenger Seat Node (NAP)",
+      "addr": "A3",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 14,
+      "bitMask": "80",
+      "presence": "8080Present|8000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Passive Entry Node (NPE)",
+      "addr": "C5",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 14,
+      "bitMask": "10",
+      "presence": "1010Present|1000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Power Lift Gate Node (PLGM)",
+      "addr": "41",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 8,
+      "bitMask": "20",
+      "presence": "2020Present|2000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Radio Frequency Hub Node (RFHM)",
+      "addr": "C7",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 8,
+      "bitMask": "02",
+      "presence": "0202Present|0200Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Rear Left Climate Control Node (RLCM)",
+      "addr": "99",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 11,
+      "bitMask": "01",
+      "presence": "0101Present|0100Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Receiver Radio (NRR)",
+      "addr": "82",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 16,
+      "bitMask": "20",
+      "presence": "2020Present|2000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Receiver Radio/Radio Navigator Node (NRR/RMN)",
+      "addr": "63",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 12,
+      "bitMask": "40",
+      "presence": "4040Present|4000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Right Blind Spot Sensor Node (RBSS)",
+      "addr": "65",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 10,
+      "bitMask": "10",
+      "presence": "1010Present|1000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Satellite Receiver Node (SRM)",
+      "addr": "81",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 11,
+      "bitMask": "20",
+      "presence": "2020Present|2000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Security Gateway Module (SGW)",
+      "addr": "CB",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 2,
+      "bitMask": "01",
+      "presence": "0101Present|0100Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Selective Catalytic Reduction Module (SCRM)",
+      "addr": "01",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 11,
+      "bitMask": "02",
+      "presence": "0202Present|0200Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Side Acceleration / Yaw Node (NYL)",
+      "addr": "00",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 15,
+      "bitMask": "80",
+      "presence": "8080Present|8000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Steering Angle Sensor Node (NAS)",
+      "addr": "00",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 15,
+      "bitMask": "10",
+      "presence": "1010Present|1000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Steering Column Control Node (SCCM)",
+      "addr": "86",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 10,
+      "bitMask": "20",
+      "presence": "2020Present|2000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Steering Wheel Controls Node (NVO)",
+      "addr": "00",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 16,
+      "bitMask": "10",
+      "presence": "1010Present|1000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Telematic Box Node (TBM)",
+      "addr": "C6",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 12,
+      "bitMask": "08",
+      "presence": "0808Present|0800Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Traffic message module (TMM)",
+      "addr": "90",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 2,
+      "bitMask": "08",
+      "presence": "0808Present|0800Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Wireless Ignition Node (WIN)",
+      "addr": "C3",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 9,
+      "bitMask": "01",
+      "presence": "0101Present|0100Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Active aerodynamic module Left (AAML)",
+      "addr": "3F",
+      "baud": 500,
+      "swapCable": true,
+      "startByte": 3,
+      "bitMask": "20",
+      "presence": "2020Present|2000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Active aerodynamic module Right (AAMR)",
+      "addr": "3E",
+      "baud": 500,
+      "swapCable": true,
+      "startByte": 3,
+      "bitMask": "10",
+      "presence": "1010Present|1000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Airbag Node (NAB/ORC)",
+      "addr": "C0",
+      "baud": 500,
+      "swapCable": true,
+      "startByte": 13,
+      "bitMask": "04",
+      "presence": "0404Present|0400Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Brake System Node (ABS/BSM/NFR)",
+      "addr": "28",
+      "baud": 500,
+      "swapCable": true,
+      "startByte": 16,
+      "bitMask": "40",
+      "presence": "4040Present|4000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Chassis domain control module (CDCM)",
+      "addr": "20",
+      "baud": 500,
+      "swapCable": true,
+      "startByte": 4,
+      "bitMask": "40",
+      "presence": "4040Present|4000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Collision Mitigation Module (CMM)",
+      "addr": "29",
+      "baud": 500,
+      "swapCable": true,
+      "startByte": 10,
+      "bitMask": "80",
+      "presence": "8080Present|8000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Electric Steering Node (EPS/NGE)",
+      "addr": "30",
+      "baud": 500,
+      "swapCable": true,
+      "startByte": 16,
+      "bitMask": "04",
+      "presence": "0404Present|0400Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Haptical Lane Feedback Node (HALF)",
+      "addr": "31",
+      "baud": 500,
+      "swapCable": true,
+      "startByte": 13,
+      "bitMask": "40",
+      "presence": "4040Present|4000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Parking Sensor Node (PAM/NSP)",
+      "addr": "A0",
+      "baud": 500,
+      "swapCable": true,
+      "startByte": 13,
+      "bitMask": "01",
+      "presence": "0101Present|0100Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Self-adaptive Headlamps Node (AFLS/NFA)",
+      "addr": "70",
+      "baud": 500,
+      "swapCable": true,
+      "startByte": 13,
+      "bitMask": "20",
+      "presence": "2020Present|2000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Steering Lock Node (NBS)",
+      "addr": "C4",
+      "baud": 500,
+      "swapCable": true,
+      "startByte": 14,
+      "bitMask": "20",
+      "presence": "2020Present|2000Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Tire Pressure Node (TPMS)",
+      "addr": "A1",
+      "baud": 500,
+      "swapCable": true,
+      "startByte": 12,
+      "bitMask": "01",
+      "presence": "0101Present|0100Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Torque vectoring module (TVM)",
+      "addr": "21",
+      "baud": 500,
+      "swapCable": true,
+      "startByte": 3,
+      "bitMask": "01",
+      "presence": "0101Present|0100Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Vehicle Tracking Module (VTM)",
+      "addr": "C1",
+      "baud": 500,
+      "swapCable": true,
+      "startByte": 10,
+      "bitMask": "02",
+      "presence": "0202Present|0200Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Video Parking Aid Node (VPAM)",
+      "addr": "64",
+      "baud": 500,
+      "swapCable": true,
+      "startByte": 11,
+      "bitMask": "08",
+      "presence": "0808Present|0800Not present",
+      "request": "03222023"
+    },
+    {
+      "name": "Auxiliary hybrid control processor module (AHCP)",
+      "addr": "00",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 6,
+      "bitMask": "40",
+      "presence": "4040Present|4000Not present",
+      "request": "03222023",
+      "excluded": "混动专用"
+    },
+    {
+      "name": "Battery Pack Control Node (BPCM)",
+      "addr": "44",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 8,
+      "bitMask": "40",
+      "presence": "4040Present|4000Not present",
+      "request": "03222023",
+      "excluded": "高压电池包"
+    },
+    {
+      "name": "Electric Air Compressor Node (EAC)",
+      "addr": "45",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 8,
+      "bitMask": "80",
+      "presence": "8080Present|8000Not present",
+      "request": "03222023",
+      "excluded": "纯电空调压缩机"
+    },
+    {
+      "name": "Electric Vehicle Control Node (EVCU)",
+      "addr": "42",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 8,
+      "bitMask": "01",
+      "presence": "0101Present|0100Not present",
+      "request": "03222023",
+      "excluded": "纯电整车控制"
+    },
+    {
+      "name": "Gas Injector Node (SDU)",
+      "addr": "11",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 12,
+      "bitMask": "80",
+      "presence": "8080Present|8000Not present",
+      "request": "03222023",
+      "excluded": "CNG 喷射"
+    },
+    {
+      "name": "Hybrid control processor module (HCP)",
+      "addr": "4B",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 4,
+      "bitMask": "04",
+      "presence": "0404Present|0400Not present",
+      "request": "03222023",
+      "excluded": "混动专用"
+    },
+    {
+      "name": "Integrated Dual Charger Module (IDCM)",
+      "addr": "50",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 1,
+      "bitMask": "20",
+      "presence": "2020Present|2000Not present",
+      "request": "03222023",
+      "excluded": "充电机"
+    },
+    {
+      "name": "Onboard Battery Charger Node (OBCM)",
+      "addr": "47",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 7,
+      "bitMask": "02",
+      "presence": "0202Present|0202Not present",
+      "request": "03222023",
+      "excluded": "车载充电机"
+    },
+    {
+      "name": "Power Inverter Node (PIM)",
+      "addr": "43",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 8,
+      "bitMask": "04",
+      "presence": "0404Present|0400Not present",
+      "request": "03222023",
+      "excluded": "电驱逆变器"
+    },
+    {
+      "name": "Regenerative Brakes Control Node (RBC)",
+      "addr": "48",
+      "baud": 500,
+      "swapCable": false,
+      "startByte": 7,
+      "bitMask": "04",
+      "presence": "0404Present|0400Not present",
+      "request": "03222023",
+      "excluded": "动能回收制动"
+    },
+    {
+      "name": "Trailer Tow Node (TTM)",
+      "addr": "4A",
+      "baud": 125,
+      "swapCable": false,
+      "startByte": 9,
+      "bitMask": "80",
+      "presence": "8080Present|8000Not present",
+      "request": "03222023",
+      "excluded": "原厂拖车模块"
+    },
+    {
+      "name": "Air Suspension Node (NMA/ASM)",
+      "addr": "3B",
+      "baud": 500,
+      "swapCable": true,
+      "startByte": 13,
+      "bitMask": "08",
+      "presence": "0808Present|0800Not present",
+      "request": "03222023",
+      "excluded": "空气悬架"
+    },
+    {
+      "name": "Overweight Monitoring Node (OMM)",
+      "addr": "3A",
+      "baud": 500,
+      "swapCable": true,
+      "startByte": 11,
+      "bitMask": "10",
+      "presence": "1010Present|1000Not present",
+      "request": "03222023",
+      "excluded": "商用车超载监测"
+    },
+    {
+      "name": "Roll Control Node (NRC)",
+      "addr": "39",
+      "baud": 500,
+      "swapCable": true,
+      "startByte": 11,
+      "bitMask": "04",
+      "presence": "0404Present|0400Not present",
+      "request": "03222023",
+      "excluded": "主动防倾杆"
+    },
+    {
+      "name": "Suspension Controlled Node (DCM)",
+      "addr": "38",
+      "baud": 500,
+      "swapCable": true,
+      "startByte": 12,
+      "bitMask": "20",
+      "presence": "2020Present|2000Not present",
+      "request": "03222023",
+      "excluded": "主动悬架"
+    }
+  ],
+  "excludedNote": "以下节点为其它平台（纯电/混动/拖车/空气悬架/商用车/CNG）配置，Giulia(952)/Stelvio(949) 物理上不存在，已从对齐列表隐藏。其余节点是否装配以读取配置后的在场位为准。"
+}

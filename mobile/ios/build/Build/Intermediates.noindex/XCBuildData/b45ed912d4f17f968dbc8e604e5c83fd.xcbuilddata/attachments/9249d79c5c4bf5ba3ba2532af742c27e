@@ -1,0 +1,79 @@
+{
+  "" : {
+    "diagnostics" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/BluetoothLe-primary.dia",
+    "emit-module-dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/BluetoothLe-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/BluetoothLe-primary-emit-module.dia",
+    "pch" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/BluetoothLe-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/BluetoothLe-primary.swiftdeps"
+  },
+  "/Users/se818/alfaproxi/mobile/node_modules/@capacitor-community/bluetooth-le/ios/Sources/BluetoothLe/Conversion.swift" : {
+    "const-values" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Conversion.swiftconstvalues",
+    "dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Conversion.d",
+    "diagnostics" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Conversion.dia",
+    "index-unit-output-path" : "/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Conversion.o",
+    "llvm-bc" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Conversion.bc",
+    "object" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Conversion.o",
+    "swift-dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Conversion.swiftdeps",
+    "swiftmodule" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Conversion~partial.swiftmodule"
+  },
+  "/Users/se818/alfaproxi/mobile/node_modules/@capacitor-community/bluetooth-le/ios/Sources/BluetoothLe/Device.swift" : {
+    "const-values" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Device.swiftconstvalues",
+    "dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Device.d",
+    "diagnostics" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Device.dia",
+    "index-unit-output-path" : "/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Device.o",
+    "llvm-bc" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Device.bc",
+    "object" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Device.o",
+    "swift-dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Device.swiftdeps",
+    "swiftmodule" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Device~partial.swiftmodule"
+  },
+  "/Users/se818/alfaproxi/mobile/node_modules/@capacitor-community/bluetooth-le/ios/Sources/BluetoothLe/DeviceListView.swift" : {
+    "const-values" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/DeviceListView.swiftconstvalues",
+    "dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/DeviceListView.d",
+    "diagnostics" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/DeviceListView.dia",
+    "index-unit-output-path" : "/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/DeviceListView.o",
+    "llvm-bc" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/DeviceListView.bc",
+    "object" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/DeviceListView.o",
+    "swift-dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/DeviceListView.swiftdeps",
+    "swiftmodule" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/DeviceListView~partial.swiftmodule"
+  },
+  "/Users/se818/alfaproxi/mobile/node_modules/@capacitor-community/bluetooth-le/ios/Sources/BluetoothLe/DeviceManager.swift" : {
+    "const-values" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/DeviceManager.swiftconstvalues",
+    "dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/DeviceManager.d",
+    "diagnostics" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/DeviceManager.dia",
+    "index-unit-output-path" : "/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/DeviceManager.o",
+    "llvm-bc" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/DeviceManager.bc",
+    "object" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/DeviceManager.o",
+    "swift-dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/DeviceManager.swiftdeps",
+    "swiftmodule" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/DeviceManager~partial.swiftmodule"
+  },
+  "/Users/se818/alfaproxi/mobile/node_modules/@capacitor-community/bluetooth-le/ios/Sources/BluetoothLe/Logging.swift" : {
+    "const-values" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Logging.swiftconstvalues",
+    "dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Logging.d",
+    "diagnostics" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Logging.dia",
+    "index-unit-output-path" : "/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Logging.o",
+    "llvm-bc" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Logging.bc",
+    "object" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Logging.o",
+    "swift-dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Logging.swiftdeps",
+    "swiftmodule" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Logging~partial.swiftmodule"
+  },
+  "/Users/se818/alfaproxi/mobile/node_modules/@capacitor-community/bluetooth-le/ios/Sources/BluetoothLe/Plugin.swift" : {
+    "const-values" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Plugin.swiftconstvalues",
+    "dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Plugin.d",
+    "diagnostics" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Plugin.dia",
+    "index-unit-output-path" : "/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Plugin.o",
+    "llvm-bc" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Plugin.bc",
+    "object" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Plugin.o",
+    "swift-dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Plugin.swiftdeps",
+    "swiftmodule" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/Plugin~partial.swiftmodule"
+  },
+  "/Users/se818/alfaproxi/mobile/node_modules/@capacitor-community/bluetooth-le/ios/Sources/BluetoothLe/ScanFilters.swift" : {
+    "const-values" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/ScanFilters.swiftconstvalues",
+    "dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/ScanFilters.d",
+    "diagnostics" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/ScanFilters.dia",
+    "index-unit-output-path" : "/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/ScanFilters.o",
+    "llvm-bc" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/ScanFilters.bc",
+    "object" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/ScanFilters.o",
+    "swift-dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/ScanFilters.swiftdeps",
+    "swiftmodule" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorCommunityBluetoothLe.build/Debug-iphonesimulator/BluetoothLe-t.build/Objects-normal/arm64/ScanFilters~partial.swiftmodule"
+  }
+}

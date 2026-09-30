@@ -1,0 +1,19 @@
+{
+  "" : {
+    "diagnostics" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/DeedarbCapacitorTcpSocket.build/Debug-iphonesimulator/TcpSocket-t.build/Objects-normal/arm64/TcpSocket-primary.dia",
+    "emit-module-dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/DeedarbCapacitorTcpSocket.build/Debug-iphonesimulator/TcpSocket-t.build/Objects-normal/arm64/TcpSocket-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/DeedarbCapacitorTcpSocket.build/Debug-iphonesimulator/TcpSocket-t.build/Objects-normal/arm64/TcpSocket-primary-emit-module.dia",
+    "pch" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/DeedarbCapacitorTcpSocket.build/Debug-iphonesimulator/TcpSocket-t.build/Objects-normal/arm64/TcpSocket-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/DeedarbCapacitorTcpSocket.build/Debug-iphonesimulator/TcpSocket-t.build/Objects-normal/arm64/TcpSocket-primary.swiftdeps"
+  },
+  "/Users/se818/alfaproxi/mobile/node_modules/@deedarb/capacitor-tcp-socket/ios/Plugin/TcpSocketPlugin.swift" : {
+    "const-values" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/DeedarbCapacitorTcpSocket.build/Debug-iphonesimulator/TcpSocket-t.build/Objects-normal/arm64/TcpSocketPlugin.swiftconstvalues",
+    "dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/DeedarbCapacitorTcpSocket.build/Debug-iphonesimulator/TcpSocket-t.build/Objects-normal/arm64/TcpSocketPlugin.d",
+    "diagnostics" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/DeedarbCapacitorTcpSocket.build/Debug-iphonesimulator/TcpSocket-t.build/Objects-normal/arm64/TcpSocketPlugin.dia",
+    "index-unit-output-path" : "/DeedarbCapacitorTcpSocket.build/Debug-iphonesimulator/TcpSocket-t.build/Objects-normal/arm64/TcpSocketPlugin.o",
+    "llvm-bc" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/DeedarbCapacitorTcpSocket.build/Debug-iphonesimulator/TcpSocket-t.build/Objects-normal/arm64/TcpSocketPlugin.bc",
+    "object" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/DeedarbCapacitorTcpSocket.build/Debug-iphonesimulator/TcpSocket-t.build/Objects-normal/arm64/TcpSocketPlugin.o",
+    "swift-dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/DeedarbCapacitorTcpSocket.build/Debug-iphonesimulator/TcpSocket-t.build/Objects-normal/arm64/TcpSocketPlugin.swiftdeps",
+    "swiftmodule" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/DeedarbCapacitorTcpSocket.build/Debug-iphonesimulator/TcpSocket-t.build/Objects-normal/arm64/TcpSocketPlugin~partial.swiftmodule"
+  }
+}

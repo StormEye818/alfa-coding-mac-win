@@ -17,3 +17,4 @@ bridge/sp-test.mjs
 
 # 系统
 .DS_Store
+mobile/release.keystore

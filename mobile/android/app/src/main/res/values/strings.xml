@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">AlfaProxi</string>
+    <string name="title_activity_main">AlfaProxi</string>
+    <string name="package_name">cn.bigmiao.alfaproxi</string>
+    <string name="custom_url_scheme">cn.bigmiao.alfaproxi</string>
+</resources>

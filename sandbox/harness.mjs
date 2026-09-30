@@ -135,7 +135,8 @@ const server = net.createServer((sock) => {
   sock.on('close', () => console.log('[sandbox] 工具断开'));
 });
 
-server.listen(PORT, '127.0.0.1', () => {
+// SANDBOX_HOST：默认只听本机；Android 模拟器需 SANDBOX_HOST=0.0.0.0（经 10.0.2.2 访问）
+server.listen(PORT, process.env.SANDBOX_HOST || '127.0.0.1', () => {
   console.log('[sandbox] 模拟 Giulia 已就绪');
   console.log('[sandbox] 连接方式: TCP 127.0.0.1:' + PORT);
   console.log('[sandbox] 工具里选「Vgate vLinker MS（沙箱）」+ 地址 127.0.0.1:' + PORT);

@@ -1,0 +1,19 @@
+{
+  "" : {
+    "diagnostics" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorShare.build/Debug-iphonesimulator/SharePlugin-t.build/Objects-normal/arm64/SharePlugin-primary.dia",
+    "emit-module-dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorShare.build/Debug-iphonesimulator/SharePlugin-t.build/Objects-normal/arm64/SharePlugin-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorShare.build/Debug-iphonesimulator/SharePlugin-t.build/Objects-normal/arm64/SharePlugin-primary-emit-module.dia",
+    "pch" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorShare.build/Debug-iphonesimulator/SharePlugin-t.build/Objects-normal/arm64/SharePlugin-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorShare.build/Debug-iphonesimulator/SharePlugin-t.build/Objects-normal/arm64/SharePlugin-primary.swiftdeps"
+  },
+  "/Users/se818/alfaproxi/mobile/node_modules/@capacitor/share/ios/Sources/SharePlugin/SharePlugin.swift" : {
+    "const-values" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorShare.build/Debug-iphonesimulator/SharePlugin-t.build/Objects-normal/arm64/SharePlugin.swiftconstvalues",
+    "dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorShare.build/Debug-iphonesimulator/SharePlugin-t.build/Objects-normal/arm64/SharePlugin.d",
+    "diagnostics" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorShare.build/Debug-iphonesimulator/SharePlugin-t.build/Objects-normal/arm64/SharePlugin.dia",
+    "index-unit-output-path" : "/CapacitorShare.build/Debug-iphonesimulator/SharePlugin-t.build/Objects-normal/arm64/SharePlugin.o",
+    "llvm-bc" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorShare.build/Debug-iphonesimulator/SharePlugin-t.build/Objects-normal/arm64/SharePlugin.bc",
+    "object" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorShare.build/Debug-iphonesimulator/SharePlugin-t.build/Objects-normal/arm64/SharePlugin.o",
+    "swift-dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorShare.build/Debug-iphonesimulator/SharePlugin-t.build/Objects-normal/arm64/SharePlugin.swiftdeps",
+    "swiftmodule" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapacitorShare.build/Debug-iphonesimulator/SharePlugin-t.build/Objects-normal/arm64/SharePlugin~partial.swiftmodule"
+  }
+}

@@ -1,0 +1,4 @@
+module SharePlugin {
+header "SharePlugin-Swift.h"
+export *
+}

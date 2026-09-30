@@ -1,6 +1,6 @@
 {
   "name": "alfaproxi",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Alfa Romeo Giulia/Stelvio (952/949) 刷隐藏与 PROXI 对齐工具",

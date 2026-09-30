@@ -23,6 +23,11 @@ const bridge = new BridgeClient('ws://127.0.0.1:8850');
 await bridge.connect();
 const tester = new InterfaceTester(bridge);
 const ifaces = JSON.parse(fs.readFileSync(new URL('../src/data/interfaces.json', import.meta.url), 'utf8'));
+// 接口表静态断言：vlinker-ms-wifi 条目存在（手机端 WiFi 首选，缺了会误提示换线）
+const vw = (ifaces.interfaces || ifaces).find((x) => x.id === 'vlinker-ms-wifi');
+check('接口表含 vlinker-ms-wifi（kind=vlinker 免换线）', 'id 存在且 kind=vlinker、transport=wifi、caps 含 autobus',
+  vw ? JSON.stringify({ kind: vw.kind, transport: vw.transport, caps: vw.caps }) : '缺失',
+  !!vw && vw.kind === 'vlinker' && vw.transport === 'wifi' && (vw.caps || []).includes('autobus'));
 // 沙箱连接走内联 spec（产品接口表不暴露测试入口）；kind=vlinker 与真 vLinker MS 语义一致
 const spec = {
   id: 'vlinker-ms-sandbox', kind: 'vlinker', name: 'Vgate vLinker MS（沙箱）',

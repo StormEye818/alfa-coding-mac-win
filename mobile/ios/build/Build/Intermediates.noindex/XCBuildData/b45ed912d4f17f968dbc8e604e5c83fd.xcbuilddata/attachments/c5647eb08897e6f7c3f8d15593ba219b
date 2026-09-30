@@ -1,0 +1,19 @@
+{
+  "" : {
+    "diagnostics" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorKeepAwake.build/Debug-iphonesimulator/CapacitorKeepAwakePlugin-t.build/Objects-normal/arm64/CapacitorKeepAwakePlugin-primary.dia",
+    "emit-module-dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorKeepAwake.build/Debug-iphonesimulator/CapacitorKeepAwakePlugin-t.build/Objects-normal/arm64/CapacitorKeepAwakePlugin-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorKeepAwake.build/Debug-iphonesimulator/CapacitorKeepAwakePlugin-t.build/Objects-normal/arm64/CapacitorKeepAwakePlugin-primary-emit-module.dia",
+    "pch" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorKeepAwake.build/Debug-iphonesimulator/CapacitorKeepAwakePlugin-t.build/Objects-normal/arm64/CapacitorKeepAwakePlugin-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorKeepAwake.build/Debug-iphonesimulator/CapacitorKeepAwakePlugin-t.build/Objects-normal/arm64/CapacitorKeepAwakePlugin-primary.swiftdeps"
+  },
+  "/Users/se818/alfaproxi/mobile/node_modules/@capgo/capacitor-keep-awake/ios/Sources/CapacitorKeepAwakePlugin/CapacitorKeepAwakePlugin.swift" : {
+    "const-values" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorKeepAwake.build/Debug-iphonesimulator/CapacitorKeepAwakePlugin-t.build/Objects-normal/arm64/CapacitorKeepAwakePlugin.swiftconstvalues",
+    "dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorKeepAwake.build/Debug-iphonesimulator/CapacitorKeepAwakePlugin-t.build/Objects-normal/arm64/CapacitorKeepAwakePlugin.d",
+    "diagnostics" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorKeepAwake.build/Debug-iphonesimulator/CapacitorKeepAwakePlugin-t.build/Objects-normal/arm64/CapacitorKeepAwakePlugin.dia",
+    "index-unit-output-path" : "/CapgoCapacitorKeepAwake.build/Debug-iphonesimulator/CapacitorKeepAwakePlugin-t.build/Objects-normal/arm64/CapacitorKeepAwakePlugin.o",
+    "llvm-bc" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorKeepAwake.build/Debug-iphonesimulator/CapacitorKeepAwakePlugin-t.build/Objects-normal/arm64/CapacitorKeepAwakePlugin.bc",
+    "object" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorKeepAwake.build/Debug-iphonesimulator/CapacitorKeepAwakePlugin-t.build/Objects-normal/arm64/CapacitorKeepAwakePlugin.o",
+    "swift-dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorKeepAwake.build/Debug-iphonesimulator/CapacitorKeepAwakePlugin-t.build/Objects-normal/arm64/CapacitorKeepAwakePlugin.swiftdeps",
+    "swiftmodule" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorKeepAwake.build/Debug-iphonesimulator/CapacitorKeepAwakePlugin-t.build/Objects-normal/arm64/CapacitorKeepAwakePlugin~partial.swiftmodule"
+  }
+}

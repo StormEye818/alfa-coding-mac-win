@@ -1,0 +1,4 @@
+module BluetoothLe {
+header "BluetoothLe-Swift.h"
+export *
+}

@@ -1,0 +1,36 @@
+{
+  "name": "alfaproxi-mobile",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "AlfaProxi 移动端（Capacitor 8 · iOS/Android）",
+  "scripts": {
+    "sync": "node scripts/sync-web.mjs",
+    "sync:smoke": "node scripts/sync-web.mjs --smoke",
+    "build:bridge": "node scripts/sync-web.mjs --bridge-only",
+    "ios": "npm run sync && npx cap sync ios && npx cap run ios",
+    "android": "npm run sync && npx cap sync android && npx cap run android",
+    "smoke:ios": "bash scripts/smoke-sim.sh ios",
+    "smoke:android": "bash scripts/smoke-sim.sh android",
+    "postinstall": "node scripts/patch-tcp-plugin.mjs"
+  },
+  "dependencies": {
+    "@ascentio-it/capacitor-bluetooth-serial": "^8.0.1",
+    "@capacitor-community/bluetooth-le": "^8.0.0",
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/app": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
+    "@capacitor/ios": "^8.0.0",
+    "@capacitor/share": "^8.0.0",
+    "@capgo/capacitor-file-sharer": "^8.0.0",
+    "@capgo/capacitor-keep-awake": "^8.0.0",
+    "@deedarb/capacitor-tcp-socket": "^8.2.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.0.0",
+    "esbuild": "^0.25.0"
+  },
+  "allowScripts": {
+    "esbuild@0.25.12": true
+  }
+}

@@ -1,0 +1,22 @@
+{
+	"appId": "cn.bigmiao.alfaproxi",
+	"appName": "AlfaProxi",
+	"webDir": "www",
+	"server": {
+		"androidScheme": "https"
+	},
+	"plugins": {
+		"SplashScreen": {
+			"launchShowDuration": 0
+		}
+	},
+	"packageClassList": [
+		"BluetoothSerial",
+		"BluetoothLe",
+		"AppPlugin",
+		"SharePlugin",
+		"FileSharerPlugin",
+		"CapacitorKeepAwakePlugin",
+		"TcpSocketPlugin"
+	]
+}

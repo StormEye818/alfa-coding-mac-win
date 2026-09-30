@@ -8,7 +8,7 @@ XPStyle on
 !include "FileFunc.nsh"
 
 Name "AlfaProxi"
-OutFile "AlfaProxi.Setup.0.1.0-fixed.exe"
+OutFile "AlfaProxi.Setup.0.2.0.exe"
 InstallDir "$LOCALAPPDATA\Programs\AlfaProxi"
 InstallDirRegKey HKCU "Software\AlfaProxi" "InstallLocation"
 RequestExecutionLevel user
@@ -29,7 +29,7 @@ BrandingText "AlfaProxi 0.1.0"
 
 Section "Install" SecMain
   SetOutPath "$INSTDIR"
-  File /r "win-unpacked\*.*"
+  File /r "dist/win-unpacked/*.*"
 
   ; Start menu + desktop shortcuts
   CreateDirectory "$SMPROGRAMS\AlfaProxi"

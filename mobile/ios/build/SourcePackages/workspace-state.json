@@ -1,0 +1,184 @@
+{
+  "object" : {
+    "artifacts" : [
+      {
+        "kind" : {
+          "xcframework" : {
+
+          }
+        },
+        "packageRef" : {
+          "identity" : "capacitor-swift-pm",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/ionic-team/capacitor-swift-pm.git",
+          "name" : "capacitor-swift-pm"
+        },
+        "path" : "/Users/se818/alfaproxi/mobile/ios/build/SourcePackages/artifacts/capacitor-swift-pm/Cordova/Cordova.xcframework",
+        "source" : {
+          "checksum" : "57ff2c8f1e5dcd8d4379ac3cccde1407d81ccd575347dc2aff4f72272b8794a1",
+          "type" : "remote",
+          "url" : "https://github.com/ionic-team/capacitor-swift-pm/releases/download/8.5.2/Cordova.xcframework.zip"
+        },
+        "targetName" : "Cordova"
+      },
+      {
+        "kind" : {
+          "xcframework" : {
+
+          }
+        },
+        "packageRef" : {
+          "identity" : "capacitor-swift-pm",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/ionic-team/capacitor-swift-pm.git",
+          "name" : "capacitor-swift-pm"
+        },
+        "path" : "/Users/se818/alfaproxi/mobile/ios/build/SourcePackages/artifacts/capacitor-swift-pm/Capacitor/Capacitor.xcframework",
+        "source" : {
+          "checksum" : "134c65a8bd30bfaa8ccb158d78142fa7231bf3f472e4a5d808c5fbed90fd4c75",
+          "type" : "remote",
+          "url" : "https://github.com/ionic-team/capacitor-swift-pm/releases/download/8.5.2/Capacitor.xcframework.zip"
+        },
+        "targetName" : "Capacitor"
+      }
+    ],
+    "dependencies" : [
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "app",
+          "kind" : "fileSystem",
+          "location" : "/Users/se818/alfaproxi/mobile/node_modules/@capacitor/app",
+          "name" : "app"
+        },
+        "state" : {
+          "name" : "fileSystem",
+          "path" : "/Users/se818/alfaproxi/mobile/node_modules/@capacitor/app"
+        },
+        "subpath" : "app"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "bluesocket",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/Kitura/BlueSocket.git",
+          "name" : "Socket"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "7b23a867008e0027bfd6f4d398d44720707bc8ca",
+            "version" : "2.0.4"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "BlueSocket"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "bluetooth-le",
+          "kind" : "fileSystem",
+          "location" : "/Users/se818/alfaproxi/mobile/node_modules/@capacitor-community/bluetooth-le",
+          "name" : "bluetooth-le"
+        },
+        "state" : {
+          "name" : "fileSystem",
+          "path" : "/Users/se818/alfaproxi/mobile/node_modules/@capacitor-community/bluetooth-le"
+        },
+        "subpath" : "bluetooth-le"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "capacitor-file-sharer",
+          "kind" : "fileSystem",
+          "location" : "/Users/se818/alfaproxi/mobile/node_modules/@capgo/capacitor-file-sharer",
+          "name" : "capacitor-file-sharer"
+        },
+        "state" : {
+          "name" : "fileSystem",
+          "path" : "/Users/se818/alfaproxi/mobile/node_modules/@capgo/capacitor-file-sharer"
+        },
+        "subpath" : "capacitor-file-sharer"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "capacitor-keep-awake",
+          "kind" : "fileSystem",
+          "location" : "/Users/se818/alfaproxi/mobile/node_modules/@capgo/capacitor-keep-awake",
+          "name" : "capacitor-keep-awake"
+        },
+        "state" : {
+          "name" : "fileSystem",
+          "path" : "/Users/se818/alfaproxi/mobile/node_modules/@capgo/capacitor-keep-awake"
+        },
+        "subpath" : "capacitor-keep-awake"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "capacitor-swift-pm",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/ionic-team/capacitor-swift-pm.git",
+          "name" : "capacitor-swift-pm"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "0b6882e9a3288342aacf36348e5a94e4f1dd7b13",
+            "version" : "8.5.2"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "capacitor-swift-pm"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "capacitor-tcp-socket",
+          "kind" : "fileSystem",
+          "location" : "/Users/se818/alfaproxi/mobile/node_modules/@deedarb/capacitor-tcp-socket",
+          "name" : "capacitor-tcp-socket"
+        },
+        "state" : {
+          "name" : "fileSystem",
+          "path" : "/Users/se818/alfaproxi/mobile/node_modules/@deedarb/capacitor-tcp-socket"
+        },
+        "subpath" : "capacitor-tcp-socket"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "capapp-spm",
+          "kind" : "fileSystem",
+          "location" : "/Users/se818/alfaproxi/mobile/ios/App/CapApp-SPM",
+          "name" : "CapApp-SPM"
+        },
+        "state" : {
+          "name" : "fileSystem",
+          "path" : "/Users/se818/alfaproxi/mobile/ios/App/CapApp-SPM"
+        },
+        "subpath" : "capapp-spm"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "share",
+          "kind" : "fileSystem",
+          "location" : "/Users/se818/alfaproxi/mobile/node_modules/@capacitor/share",
+          "name" : "share"
+        },
+        "state" : {
+          "name" : "fileSystem",
+          "path" : "/Users/se818/alfaproxi/mobile/node_modules/@capacitor/share"
+        },
+        "subpath" : "share"
+      }
+    ],
+    "prebuilts" : [
+
+    ]
+  },
+  "version" : 7
+}

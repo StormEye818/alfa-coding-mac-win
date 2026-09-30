@@ -1,0 +1,408 @@
+{
+  "note": "模块 → 适配线分组。ELM327 需按 hint 换线后才能访问该模块；vLinker MS 可自动切换，无需换线。",
+  "source": "diag-data/data/params_all.tsv PROXIX1 ResultFormat（<地址><波特率>[x]）",
+  "groups": {
+    "none": {
+      "label": "直连（无需换线）",
+      "cable": "none",
+      "hint": ""
+    },
+    "comfort": {
+      "label": "舒适/车身 CAN",
+      "cable": "adapter-5-blue",
+      "hint": "请接 5 号蓝色适配线"
+    },
+    "swap": {
+      "label": "底盘/安全 CAN",
+      "cable": "adapter-6-gray",
+      "hint": "请更换为 6 号灰色适配线"
+    }
+  },
+  "modules": {
+    "JTDM23GP": {
+      "code": "JTDM23GP",
+      "name": "Bosch EDC17C69 CF6/EOBD Diesel Injection (2.2)",
+      "bus": "CCAN29",
+      "tx": "10",
+      "rx": "F1",
+      "baud": 500,
+      "group": "none",
+      "cable": "none",
+      "hint": ""
+    },
+    "DASH29": {
+      "code": "DASH29",
+      "name": "Instrument Panel Continental",
+      "bus": "CCAN29",
+      "tx": "60",
+      "rx": "F1",
+      "baud": 500,
+      "group": "none",
+      "cable": "none",
+      "hint": ""
+    },
+    "SVCRST29": {
+      "code": "SVCRST29",
+      "name": "Service Interval Reset",
+      "bus": "CCAN29",
+      "tx": "60",
+      "rx": "F1",
+      "baud": 500,
+      "group": "none",
+      "cable": "none",
+      "hint": ""
+    },
+    "BODY33": {
+      "code": "BODY33",
+      "name": "Body Computer Marelli (952)",
+      "bus": "CCAN29",
+      "tx": "40",
+      "rx": "F1",
+      "baud": 500,
+      "group": "none",
+      "cable": "none",
+      "hint": ""
+    },
+    "PROXIX1": {
+      "code": "PROXIX1",
+      "name": "CAN Setup / PROXI Alignment Procedure (952)",
+      "bus": "CCAN29",
+      "tx": "40",
+      "rx": "F1",
+      "baud": 500,
+      "group": "none",
+      "cable": "none",
+      "hint": ""
+    },
+    "CSWM2": {
+      "code": "CSWM2",
+      "name": "Comfort seat and wheel (CSWM) Bitron",
+      "bus": "BHCAN29",
+      "tx": "C2",
+      "rx": "F1",
+      "baud": 125,
+      "group": "comfort",
+      "cable": "adapter-5-blue",
+      "hint": "请接 5 号蓝色适配线"
+    },
+    "MED17.3.5": {
+      "code": "MED17.3.5",
+      "name": "Bosch Motronic MeD17.3.5 CF6 Injection (2.9 V6, Primary, Cyl. 1-2-3)",
+      "bus": "CCAN29",
+      "tx": "10",
+      "rx": "F1",
+      "baud": 500,
+      "group": "none",
+      "cable": "none",
+      "hint": ""
+    },
+    "MED17.3.5S": {
+      "code": "MED17.3.5S",
+      "name": "Bosch Motronic MeD17.3.5 CF6 Injection (2.9 V6, Secondary, Cyl. 4-5-6)",
+      "bus": "CCAN29",
+      "tx": "17",
+      "rx": "F1",
+      "baud": 500,
+      "group": "none",
+      "cable": "none",
+      "hint": ""
+    },
+    "ABSMMKC1": {
+      "code": "ABSMMKC1",
+      "name": "Continental ABS MK C1",
+      "bus": "CCAN29",
+      "tx": "28",
+      "rx": "F1",
+      "baud": 500,
+      "group": "swap",
+      "cable": "adapter-6-gray",
+      "hint": "请更换为 6 号灰色适配线"
+    },
+    "IAW10JAX": {
+      "code": "IAW10JAX",
+      "name": "Magneti Marelli IAW 10JA CF6/EOBD Injection (2.0)",
+      "bus": "CCAN29",
+      "tx": "10",
+      "rx": "F1",
+      "baud": 500,
+      "group": "none",
+      "cable": "none",
+      "hint": ""
+    },
+    "EPSZFX1": {
+      "code": "EPSZFX1",
+      "name": "ZF Electric Steering",
+      "bus": "CCAN29",
+      "tx": "30",
+      "rx": "F1",
+      "baud": 500,
+      "group": "swap",
+      "cable": "adapter-6-gray",
+      "hint": "请更换为 6 号灰色适配线"
+    },
+    "PARKSEN8": {
+      "code": "PARKSEN8",
+      "name": "Parking control Bosch",
+      "bus": "CCAN29",
+      "tx": "A0",
+      "rx": "F1",
+      "baud": 500,
+      "group": "swap",
+      "cable": "adapter-6-gray",
+      "hint": "请更换为 6 号灰色适配线"
+    },
+    "EMCM1X": {
+      "code": "EMCM1X",
+      "name": "Multimedia control module (multifunction knob/joystick/touchpad)",
+      "bus": "BHCAN29",
+      "tx": "8A",
+      "rx": "F1",
+      "baud": 125,
+      "group": "comfort",
+      "cable": "adapter-5-blue",
+      "hint": "请接 5 号蓝色适配线"
+    },
+    "CNAV13": {
+      "code": "CNAV13",
+      "name": "Marelli AlfaConnect Radio/Nav",
+      "bus": "BHCAN29",
+      "tx": "87",
+      "rx": "F1",
+      "baud": 125,
+      "group": "comfort",
+      "cable": "adapter-5-blue",
+      "hint": "请接 5 号蓝色适配线"
+    },
+    "CLIMA33": {
+      "code": "CLIMA33",
+      "name": "TRW climate control (Automatic)",
+      "bus": "BHCAN29",
+      "tx": "98",
+      "rx": "F1",
+      "baud": 125,
+      "group": "comfort",
+      "cable": "adapter-5-blue",
+      "hint": "请接 5 号蓝色适配线"
+    },
+    "ZF8HP50": {
+      "code": "ZF8HP50",
+      "name": "ZF 8HP50/75 Automatic Gearbox",
+      "bus": "CCAN29",
+      "tx": "18",
+      "rx": "F1",
+      "baud": 500,
+      "group": "none",
+      "cable": "none",
+      "hint": ""
+    },
+    "ESM1X": {
+      "code": "ESM1X",
+      "name": "ZF Electronic Gear Shift Module",
+      "bus": "CCAN29",
+      "tx": "1F",
+      "rx": "F1",
+      "baud": 500,
+      "group": "none",
+      "cable": "none",
+      "hint": ""
+    },
+    "ABG28": {
+      "code": "ABG28",
+      "name": "Bosch Airbag",
+      "bus": "CCAN29",
+      "tx": "C0",
+      "rx": "F1",
+      "baud": 500,
+      "group": "swap",
+      "cable": "adapter-6-gray",
+      "hint": "请更换为 6 号灰色适配线"
+    },
+    "LRBSS1": {
+      "code": "LRBSS1",
+      "name": "Blind Spot Sensor Autoliv (Left)",
+      "bus": "BHCAN29",
+      "tx": "62",
+      "rx": "F1",
+      "baud": 125,
+      "group": "comfort",
+      "cable": "adapter-5-blue",
+      "hint": "请接 5 号蓝色适配线"
+    },
+    "BODY30": {
+      "code": "BODY30",
+      "name": "Body Computer Marelli (949)",
+      "bus": "CCAN29",
+      "tx": "40",
+      "rx": "F1",
+      "baud": 500,
+      "group": "none",
+      "cable": "none",
+      "hint": ""
+    },
+    "AMP2": {
+      "code": "AMP2",
+      "name": "Amplifier module Ask/Beats",
+      "bus": "BHCAN29",
+      "tx": "83",
+      "rx": "F1",
+      "baud": 125,
+      "group": "comfort",
+      "cable": "adapter-5-blue",
+      "hint": "请接 5 号蓝色适配线"
+    },
+    "HDLGHT6": {
+      "code": "HDLGHT6",
+      "name": "Automotive Lighting adaptive headlights",
+      "bus": "CCAN29",
+      "tx": "70",
+      "rx": "F1",
+      "baud": 500,
+      "group": "swap",
+      "cable": "adapter-6-gray",
+      "hint": "请更换为 6 号灰色适配线"
+    },
+    "DTCM4": {
+      "code": "DTCM4",
+      "name": "Magna Q4 Transfer Case",
+      "bus": "CCAN29",
+      "tx": "1A",
+      "rx": "F1",
+      "baud": 500,
+      "group": "none",
+      "cable": "none",
+      "hint": ""
+    },
+    "SLCK2": {
+      "code": "SLCK2",
+      "name": "Steering Lock TRW",
+      "bus": "CCAN29",
+      "tx": "C4",
+      "rx": "F1",
+      "baud": 500,
+      "group": "swap",
+      "cable": "adapter-6-gray",
+      "hint": "请更换为 6 号灰色适配线"
+    },
+    "HALF1": {
+      "code": "HALF1",
+      "name": "Haptical lane feedback (HALF) camera Bosch",
+      "bus": "CCAN29",
+      "tx": "31",
+      "rx": "F1",
+      "baud": 500,
+      "group": "swap",
+      "cable": "adapter-6-gray",
+      "hint": "请更换为 6 号灰色适配线"
+    },
+    "DASM1": {
+      "code": "DASM1",
+      "name": "Driver assistant system module (DASM) radar Bosch",
+      "bus": "CCAN29",
+      "tx": "2A",
+      "rx": "F1",
+      "baud": 500,
+      "group": "none",
+      "cable": "none",
+      "hint": ""
+    },
+    "ANC1": {
+      "code": "ANC1",
+      "name": "Engine sound enhacement module (ESEM)",
+      "bus": "BHCAN29",
+      "tx": "8B",
+      "rx": "F1",
+      "baud": 125,
+      "group": "comfort",
+      "cable": "adapter-5-blue",
+      "hint": "请接 5 号蓝色适配线"
+    },
+    "TVM1": {
+      "code": "TVM1",
+      "name": "Torque vectoring module (TVM)",
+      "bus": "CCAN29",
+      "tx": "21",
+      "rx": "F1",
+      "baud": 500,
+      "group": "swap",
+      "cable": "adapter-6-gray",
+      "hint": "请更换为 6 号灰色适配线"
+    },
+    "CSWM5": {
+      "code": "CSWM5",
+      "name": "Comfort rear seat (CRSM) Bitron",
+      "bus": "BHCAN29",
+      "tx": "D0",
+      "rx": "F1",
+      "baud": 125,
+      "group": "comfort",
+      "cable": "adapter-5-blue",
+      "hint": "请接 5 号蓝色适配线"
+    },
+    "PLGM1": {
+      "code": "PLGM1",
+      "name": "Power liftgate (PLGM) BROSE",
+      "bus": "BHCAN29",
+      "tx": "41",
+      "rx": "F1",
+      "baud": 125,
+      "group": "comfort",
+      "cable": "adapter-5-blue",
+      "hint": "请接 5 号蓝色适配线"
+    },
+    "RFH30": {
+      "code": "RFH30",
+      "name": "Radio frequency hub (RFHUB) Continental",
+      "bus": "CCAN29",
+      "tx": "C7",
+      "rx": "F1",
+      "baud": 500,
+      "group": "none",
+      "cable": "none",
+      "hint": ""
+    },
+    "AAML1": {
+      "code": "AAML1",
+      "name": "Active aerodynamic module LEFT (AAML)",
+      "bus": "CCAN29",
+      "tx": "3F",
+      "rx": "F1",
+      "baud": 500,
+      "group": "swap",
+      "cable": "adapter-6-gray",
+      "hint": "请更换为 6 号灰色适配线"
+    },
+    "AAMR1": {
+      "code": "AAMR1",
+      "name": "Active aerodynamic module RIGHT (AAMR)",
+      "bus": "CCAN29",
+      "tx": "3E",
+      "rx": "F1",
+      "baud": 500,
+      "group": "swap",
+      "cable": "adapter-6-gray",
+      "hint": "请更换为 6 号灰色适配线"
+    },
+    "ADBLU1": {
+      "code": "ADBLU1",
+      "name": "Urea/AdBlue dosing module Continental",
+      "bus": "CCAN29",
+      "tx": "01",
+      "rx": "F1",
+      "baud": 500,
+      "group": "none",
+      "cable": "none",
+      "hint": ""
+    },
+    "PARKSEN14": {
+      "code": "PARKSEN14",
+      "name": "Parking control Bosch (Rear only)",
+      "bus": "CCAN29",
+      "tx": "A0",
+      "rx": "F1",
+      "baud": 500,
+      "group": "swap",
+      "cable": "adapter-6-gray",
+      "hint": "请更换为 6 号灰色适配线"
+    }
+  }
+}

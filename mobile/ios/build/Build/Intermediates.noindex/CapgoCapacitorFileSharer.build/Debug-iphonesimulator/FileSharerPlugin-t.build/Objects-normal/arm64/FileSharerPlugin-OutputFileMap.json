@@ -1,0 +1,29 @@
+{
+  "" : {
+    "diagnostics" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorFileSharer.build/Debug-iphonesimulator/FileSharerPlugin-t.build/Objects-normal/arm64/FileSharerPlugin-primary.dia",
+    "emit-module-dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorFileSharer.build/Debug-iphonesimulator/FileSharerPlugin-t.build/Objects-normal/arm64/FileSharerPlugin-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorFileSharer.build/Debug-iphonesimulator/FileSharerPlugin-t.build/Objects-normal/arm64/FileSharerPlugin-primary-emit-module.dia",
+    "pch" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorFileSharer.build/Debug-iphonesimulator/FileSharerPlugin-t.build/Objects-normal/arm64/FileSharerPlugin-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorFileSharer.build/Debug-iphonesimulator/FileSharerPlugin-t.build/Objects-normal/arm64/FileSharerPlugin-primary.swiftdeps"
+  },
+  "/Users/se818/alfaproxi/mobile/node_modules/@capgo/capacitor-file-sharer/ios/Sources/FileSharerPlugin/FileSharer.swift" : {
+    "const-values" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorFileSharer.build/Debug-iphonesimulator/FileSharerPlugin-t.build/Objects-normal/arm64/FileSharer.swiftconstvalues",
+    "dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorFileSharer.build/Debug-iphonesimulator/FileSharerPlugin-t.build/Objects-normal/arm64/FileSharer.d",
+    "diagnostics" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorFileSharer.build/Debug-iphonesimulator/FileSharerPlugin-t.build/Objects-normal/arm64/FileSharer.dia",
+    "index-unit-output-path" : "/CapgoCapacitorFileSharer.build/Debug-iphonesimulator/FileSharerPlugin-t.build/Objects-normal/arm64/FileSharer.o",
+    "llvm-bc" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorFileSharer.build/Debug-iphonesimulator/FileSharerPlugin-t.build/Objects-normal/arm64/FileSharer.bc",
+    "object" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorFileSharer.build/Debug-iphonesimulator/FileSharerPlugin-t.build/Objects-normal/arm64/FileSharer.o",
+    "swift-dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorFileSharer.build/Debug-iphonesimulator/FileSharerPlugin-t.build/Objects-normal/arm64/FileSharer.swiftdeps",
+    "swiftmodule" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorFileSharer.build/Debug-iphonesimulator/FileSharerPlugin-t.build/Objects-normal/arm64/FileSharer~partial.swiftmodule"
+  },
+  "/Users/se818/alfaproxi/mobile/node_modules/@capgo/capacitor-file-sharer/ios/Sources/FileSharerPlugin/FileSharerPlugin.swift" : {
+    "const-values" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorFileSharer.build/Debug-iphonesimulator/FileSharerPlugin-t.build/Objects-normal/arm64/FileSharerPlugin.swiftconstvalues",
+    "dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorFileSharer.build/Debug-iphonesimulator/FileSharerPlugin-t.build/Objects-normal/arm64/FileSharerPlugin.d",
+    "diagnostics" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorFileSharer.build/Debug-iphonesimulator/FileSharerPlugin-t.build/Objects-normal/arm64/FileSharerPlugin.dia",
+    "index-unit-output-path" : "/CapgoCapacitorFileSharer.build/Debug-iphonesimulator/FileSharerPlugin-t.build/Objects-normal/arm64/FileSharerPlugin.o",
+    "llvm-bc" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorFileSharer.build/Debug-iphonesimulator/FileSharerPlugin-t.build/Objects-normal/arm64/FileSharerPlugin.bc",
+    "object" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorFileSharer.build/Debug-iphonesimulator/FileSharerPlugin-t.build/Objects-normal/arm64/FileSharerPlugin.o",
+    "swift-dependencies" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorFileSharer.build/Debug-iphonesimulator/FileSharerPlugin-t.build/Objects-normal/arm64/FileSharerPlugin.swiftdeps",
+    "swiftmodule" : "/Users/se818/alfaproxi/mobile/ios/build/Build/Intermediates.noindex/CapgoCapacitorFileSharer.build/Debug-iphonesimulator/FileSharerPlugin-t.build/Objects-normal/arm64/FileSharerPlugin~partial.swiftmodule"
+  }
+}

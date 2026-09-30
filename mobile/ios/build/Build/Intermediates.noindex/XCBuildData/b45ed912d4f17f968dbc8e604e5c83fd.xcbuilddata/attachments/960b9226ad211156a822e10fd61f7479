@@ -1,0 +1,4 @@
+module FileSharerPlugin {
+header "FileSharerPlugin-Swift.h"
+export *
+}

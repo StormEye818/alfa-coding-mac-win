@@ -30,7 +30,8 @@ const MIME = {
   '.txt': 'text/plain; charset=utf-8',
 };
 
-/** 静态服务：只允许访问 app/ 与 src/ 下的文件 */
+/** 静态服务：只允许访问 app/ 与 src/ 下的文件。
+ *  端口被占（如开发时的 http.server）自动向后试 8848-8858，不让应用死在端口冲突上。 */
 function startHttpServer() {
   const server = http.createServer((req, res) => {
     try {
@@ -48,16 +49,25 @@ function startHttpServer() {
       res.writeHead(200, { 'Content-Type': MIME[path.extname(full)] || 'application/octet-stream' });
       res.end(data);
     } catch {
-      res.writeHead(404); res.end('not found');
+      res.writeHead(404); return res.end('not found');
     }
   });
   return new Promise((resolve, reject) => {
-    server.once('error', reject);
-    server.listen(HTTP_PORT, '127.0.0.1', () => resolve(server));
+    let port = HTTP_PORT;
+    const tryPort = () => server.listen(port, '127.0.0.1');
+    server.on('error', (e) => {
+      if (e.code === 'EADDRINUSE' && port < HTTP_PORT + 10) {
+        port += 1;
+        console.log(`[alfaproxi] 端口 ${port - 1} 被占，改用 ${port}`);
+        tryPort();                       // 重试必须继续走 'listening' 解析（勿直接挂回调）
+      } else reject(e);
+    });
+    server.once('listening', () => resolve({ server, port }));
+    tryPort();
   });
 }
 
-function createWindow() {
+function createWindow(port) {
   const win = new BrowserWindow({
     width: 1440,
     height: 920,
@@ -69,7 +79,7 @@ function createWindow() {
       nodeIntegration: false,
     },
   });
-  win.loadURL(`http://127.0.0.1:${HTTP_PORT}/app/`);
+  win.loadURL(`http://127.0.0.1:${port}/app/`);
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (/^https?:\/\//.test(url)) shell.openExternal(url);
     return { action: 'deny' };
@@ -87,24 +97,34 @@ if (!app.requestSingleInstanceLock()) {
 
   app.whenReady().then(async () => {
     // 1) 串口桥（内嵌，ESM 动态加载）：失败不阻塞界面，连接时会再报错
+    //    注意：绝不能用 showErrorBox（同步阻塞，会卡死启动）——用异步 showMessageBox
     try {
       await import(pathToFileURL(path.join(ROOT, 'bridge', 'server.js')).href);
       console.log('[alfaproxi] 串口桥已内嵌启动');
     } catch (e) {
       console.error('[alfaproxi] 串口桥启动失败：', e);
-      dialog.showErrorBox('串口桥启动失败', String((e && e.message) || e) +
-        '\n\n将无法连接适配器。请检查是否有其他实例占用了端口 8850。');
+      dialog.showMessageBox({
+        type: 'warning',
+        title: '串口桥未启动',
+        message: '串口桥启动失败：' + String((e && e.message) || e) +
+          '\n\n将无法连接适配器（可能是端口 8850 被占用）。界面可继续使用模拟模式。',
+      }).catch(() => {});
     }
-    // 2) 静态服务
+    // 2) 静态服务（端口被占自动顺延）
+    let port;
     try {
-      await startHttpServer();
+      ({ port } = await startHttpServer());
     } catch (e) {
-      dialog.showErrorBox('本地服务启动失败', String((e && e.message) || e) +
-        '\n\n请检查是否有其他实例占用了端口 8848。');
+      dialog.showMessageBox({
+        type: 'error',
+        title: '启动失败',
+        message: '本地服务启动失败：' + String((e && e.message) || e) +
+          '\n\n8848-8858 端口均不可用。',
+      }).catch(() => {});
       return app.quit();
     }
     // 3) 界面
-    createWindow();
+    createWindow(port);
   });
 
   app.on('window-all-closed', () => app.quit());

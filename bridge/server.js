@@ -27,7 +27,9 @@ function send(ws, obj) { ws.send(JSON.stringify(obj)); }
 async function listPorts() {
   try {
     const list = await SerialPort.list();
-    return list.map((p) => ({
+    // mac 系统节点（调试控制台/蓝牙传入端口）不是适配器，过滤掉免得误选/空探
+    const isSystemNode = (p) => /debug-console|Bluetooth-Incoming-Port/i.test(p.path || '');
+    return list.filter((p) => !isSystemNode(p)).map((p) => ({
       path: p.path,
       manufacturer: p.manufacturer || '',
       friendly: p.friendlyName || '',

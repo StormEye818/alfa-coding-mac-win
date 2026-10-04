@@ -47,7 +47,7 @@ export class Tool {
             else await this.bridge.open(this.opts.port, this.opts.baud || 38400);
             this.link = new Elm327(new BridgePort(this.bridge), { adapter: 'vlinker-ms', log: this.log });
         }
-        await this.link.init({ protocol: 8 });
+        await this.link.init({ protocol: 7 });
         this.uds = new Uds(this.link);
         this.session = new Session(this.link, { cables, platform: this.opts.platform || '952', log: this.log });
         this.session.on('cableRequired', (e) => { this.log('换线提示: ' + e.hint); this.session.confirmCable(); });

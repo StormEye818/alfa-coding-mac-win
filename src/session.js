@@ -73,7 +73,7 @@ class Session extends Emitter {
             this.emit('cableDone', { module: m });
         }
 
-        await this.link.setAddress({ tx: parseInt(m.tx, 16), rx: parseInt(m.rx, 16), code });
+        await this.link.setAddress({ tx: parseInt(m.tx, 16), rx: parseInt(m.rx, 16), baud: m.baud, code });
         this.current = m;
         this.currentGroup = wantGroup;
         this.log(`已连接 ${m.name}（${code} @ 0x${m.tx}，${m.baud}k）`);
@@ -122,7 +122,7 @@ class Session extends Emitter {
             this.emit('cableDone', {});
         }
         await this.link.setAddress({
-            tx: parseInt(node.addr, 16), rx: 0xf1, code: node.addr,
+            tx: parseInt(node.addr, 16), rx: 0xf1, baud: node.baud, code: node.addr,
         });
         this.currentGroup = group;
         this.current = { code: node.addr, name: node.name, zh: node.name, tx: node.addr, baud: node.baud };

@@ -54,7 +54,7 @@ async function main() {
     adapter: 'vlinker-ms',
     log: (m2) => out('  · ' + m2),
   });
-  await link.init({ protocol: 8 });
+  await link.init({ protocol: 7 });
   check('connect', true, 'ELM 初始化完成');
 
   const [mods, named] = await Promise.all([readJson('../src/data/modules.json'), readJson('../src/data/named-settings.json')]);

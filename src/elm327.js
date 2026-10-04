@@ -139,8 +139,12 @@ class Elm327 {
         });
     }
 
-    /** 初始化适配器。protocol: 8 = ISO15765-4 CAN 29bit 500k（952/949 走这个） */
-    async init({ protocol = 8 } = {}) {
+    /** 初始化适配器。
+     *  protocol（ELM327 ATSP 编号）：6=CAN 11bit/500k，7=CAN 29bit/500k，8=CAN 11bit/250k，9=CAN 29bit/250k。
+     *  952/949 全部 29 位：主总线 500k 用 7，舒适总线 125k 用 9（connectNode 会按节点 baud 自动切）。
+     *  ⚠️ 历史坑：曾误用 8（11 位 250k）——沙箱不校验故长期未暴露，实车直接 CAN ERROR。
+     */
+    async init({ protocol = 7 } = {}) {
         await this.#send('ATZ', 8000);
         await this.#send('ATE0');
         await this.#send('ATL0');
@@ -148,17 +152,27 @@ class Elm327 {
         await this.#send('ATH1');           // 要 CAN ID，才能做 ISO-TP 重组
         await this.#send('ATCAF0');         // 关自动格式化，拿原始帧
         await this.#send('ATSP' + protocol);
+        this.protocol = protocol;
         await this.#send('ATST32');         // 帧间超时
         await this.#send('ATSW00');         // 不自动发流控，由我们控制
     }
 
     /**
      * 设定目标 ECU。
-     * @param {{tx:number|string, rx:number|string}} addr  诊断数据里的 tx/rx（如 0x40 / 0xF1）
+     * @param {{tx:number|string, rx:number|string, baud?:number}} addr
+     *   tx/rx = 诊断数据里的地址（如 0x40 / 0xF1）；baud = 该总线速率（500/125），
+     *   给了就按速率切 ATSP（500k→7、125k→9，均 29 位），协议变化时才下发。
      */
-    async setAddress({ tx, rx }) {
+    async setAddress({ tx, rx, baud }) {
         const t = typeof tx === 'number' ? tx : parseInt(tx, 16);
         const r = typeof rx === 'number' ? rx : parseInt(rx, 16);
+        if (baud) {
+            const proto = baud === 125 ? 9 : 7;
+            if (this.protocol !== proto) {
+                await this.#send('ATSP' + proto);
+                this.protocol = proto;
+            }
+        }
         this.target = t; this.tester = r;
         const reqId = 0x18DA0000 | (t << 8) | r;
         this.reqId = reqId;

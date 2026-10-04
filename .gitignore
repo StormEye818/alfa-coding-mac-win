@@ -21,3 +21,4 @@ mobile/release.keystore
 /AlfaProxi.Setup*.exe
 mobile/ios/build/
 mobile/android/app/build/
+mobile/www/

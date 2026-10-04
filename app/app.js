@@ -347,7 +347,7 @@ async function connect(forceSim) {
       });
       state.realAdapter = true;
     }
-    await state.link.init({ protocol: 8 });
+    await state.link.init({ protocol: 7 });
     state.uds = new Uds(state.link);
     state.session = new Session(state.link, {
       cables: state.cables,

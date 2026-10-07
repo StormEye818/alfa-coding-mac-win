@@ -357,3 +357,22 @@ body.mobile .conn.mobile-open {
   display: flex; justify-content: space-between; align-items: center; gap: 10px;
 }
 .pp-item small { opacity: 0.65; font-size: 11px; }
+
+/* --- 折叠机/宽屏展开态适配（2026-10-07）---
+   折叠机展开后视口可到 ~600pt，全部 body.mobile 规则天然生效；
+   这里只做宽屏观感：内容与浮层限宽居中，不摊满。 */
+body.mobile main {
+  max-width: 580px;
+  margin: 0 auto;
+}
+body.mobile #floatWriteBar,
+body.mobile .help-sheet,
+body.mobile .apx-toast {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  width: min(580px, calc(100vw - 16px));
+}
+body.mobile .stage-bar {
+  max-width: min(580px, 92vw);
+}

@@ -12,10 +12,11 @@
 import { TcpSocket } from '@deedarb/capacitor-tcp-socket';
 import { BleClient, dataViewToHexString, hexStringToDataView } from '@capacitor-community/bluetooth-le';
 import { BluetoothSerial } from '@ascentio-it/capacitor-bluetooth-serial';
-import { registerPlugin } from '@capacitor/core';
+import { registerPlugin, Capacitor } from '@capacitor/core';
 
 // iOS MFi External Accessory 通道（vLinker MS 等 MFi 认证适配器，见 ios/App/App/MfiSerialPlugin.swift）
-const MfiSerial = registerPlugin('MfiSerial');
+// 注意：ExternalAccessory 是 iOS 专有框架——Android/桌面无 MFi，仅 iOS 注册与调用
+const MfiSerial = Capacitor.getPlatform() === 'ios' ? registerPlugin('MfiSerial') : null;
 
 const log = (...a) => console.log('[mobile-bridge]', ...a);
 
@@ -346,8 +347,8 @@ class MobileBridge {
   async listPorts() {
     const out = [];
     const OBD = /vlinker|vl-?link|elm|obd|vgate|veepeak|obdlink|carista|autel|thinkdiag|carplay|mdi|golo|teltonika/i;
-    // --- MFi External Accessory（iOS）：系统已连接的 MFi 适配器，无需扫描，永远置顶 ---
-    try {
+    // --- MFi External Accessory（仅 iOS）：系统已连接的 MFi 适配器，无需扫描，永远置顶 ---
+    if (MfiSerial) try {
       const r = await MfiSerial.list();
       const devs = r.devices || [];
       globalThis.__apxLastScan = Object.assign(globalThis.__apxLastScan || {}, {

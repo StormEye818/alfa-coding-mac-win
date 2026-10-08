@@ -539,10 +539,14 @@ function renderFeatures() {
     const stt = state.writeState.get('feat:' + f.id) || (state.selected.has(f.id) ? 'pending' : null);
     card.className = 'card' + (state.selected.has(f.id) ? ' on' : '') + stateClass(stt);
     card.dataset.id = f.id;
-    const optHtml = f.options
-      ? `<div class="opt-row">${f.options.map((o, i) =>
-          `<div class="opt${state.selected.get(f.id) === i ? ' sel' : ''}" data-opt="${i}">${o.label}</div>`).join('')}</div>`
-      : '';
+    // 与命名配置项统一交互：下拉框选择（— 不修改 — / 各选项 / 无选项项为 启用）
+    const hasOpts = Array.isArray(f.options) && f.options.length > 0;
+    const pickedIdx = state.selected.get(f.id);
+    const selOpts = hasOpts
+      ? f.options.map((o, i) => `<option value="${i}"${pickedIdx === i ? ' selected' : ''}>${t(o.label)}</option>`).join('')
+      : `<option value="on"${state.selected.has(f.id) ? ' selected' : ''}>启用</option>`;
+    const selHtml = `<select data-feat="${f.id}"${state.readDone ? '' : ' disabled'}>
+        <option value="">— 不修改 —</option>${selOpts}</select>`;
     const cur = featureCurrentState(f);
     const curHtml = state.readDone && cur !== null
       ? `<div class="cur-state ${cur ? 'yes' : 'no'}">当前：${cur ? '已启用' : '未启用'}</div>`
@@ -552,33 +556,24 @@ function renderFeatures() {
       <p>${f.desc || ''}</p>
       ${curHtml}
       <div class="bits">${featurePatchText(f)}</div>
-      ${optHtml}
+      ${selHtml}
       <div class="src">来源：${f.source || '—'}</div>
       ${f.notes ? `<div class="src note">${f.notes}</div>` : ''}`;
 
-    card.addEventListener('click', (e) => {
-      const optEl = e.target.closest('.opt');
-      if (optEl) {
-        const idx = Number(optEl.dataset.opt);
-        const already = state.selected.get(f.id);
-        if (already === idx && state.selected.has(f.id)) {
-          state.selected.delete(f.id);
-          setWriteState('feat:' + f.id, null);
-        } else {
-          state.selected.set(f.id, idx);
-          setWriteState('feat:' + f.id, 'pending');   // 选中即「待写入」，与命名项统一
-        }
-        renderFeatures();           // 重渲染刷新三态徽标与选中态
-        return;
-      }
-      if (state.selected.has(f.id)) {
+    card.querySelector('select').addEventListener('change', (e) => {
+      const v = e.target.value;
+      if (v === '') {
         state.selected.delete(f.id);
         setWriteState('feat:' + f.id, null);
+      } else if (v === 'on') {
+        state.selected.set(f.id, null);
+        setWriteState('feat:' + f.id, 'pending');   // 选中即「待写入」，与命名项统一
       } else {
-        state.selected.set(f.id, f.options ? 0 : null);
+        state.selected.set(f.id, Number(v));
         setWriteState('feat:' + f.id, 'pending');
       }
       renderFeatures();
+      detectConflicts();
     });
     grid.appendChild(card);
   }

@@ -85,8 +85,13 @@ await page.click('[data-tab="features"]');
 const featPick = await page.evaluate(() => {
   const card = document.querySelector('#featGrid .card');
   if (!card) return null;
-  const opt = card.querySelector('.opt');
-  if (opt) opt.click(); else card.click();
+  // 扩展项与命名项统一为下拉交互：选第一个非空选项
+  const sel = card.querySelector('select');
+  const opt = sel && [...sel.options].find((o) => o.value !== '');
+  if (sel && opt) {
+    sel.value = opt.value;
+    sel.dispatchEvent(new Event('change', { bubbles: true }));
+  }
   return document.querySelector('#featGrid').textContent;
 });
 check('扩展项选中后显示「待写入」', featPick && /待写入/.test(featPick), featPick?.slice(0, 120).replace(/\s+/g, ' '));

@@ -177,6 +177,9 @@ class Elm327 {
         const reqId = 0x18DA0000 | (t << 8) | r;
         this.reqId = reqId;
         this.respId = 0x18DA0000 | (r << 8) | t;
+        // 每次寻址前重申链路状态（实车踩坑：ATZ/界面探测把适配器重置回默认态——
+        // 空格输出+回显+CAN 格式化——导致"无法解析响应"与 7F 03 11 假服务号）
+        for (const c of ['ATE0', 'ATL0', 'ATS0', 'ATH1', 'ATCAF0']) await this.#send(c);
         await this.#send('ATSH' + reqId.toString(16).toUpperCase().padStart(8, '0'));
         await this.#send('ATCRA' + this.respId.toString(16).toUpperCase().padStart(8, '0'));
     }
@@ -190,9 +193,12 @@ class Elm327 {
         const raw = payload.length > 7
             ? await this.#sendMulti(payload, timeoutMs)
             : await this.#send(bytesToHex(this.#singleFrame(payload)), timeoutMs);
+        // 解析容错：适配器可能处于空格输出(ATS1)/回显(ATE1)等非初始化态
+        // （ATZ/界面探测会重置适配器设置）——统一去空格、剥掉响应 ID 再校验
+        const respIdRe = new RegExp(this.respId.toString(16), 'gi');
         const frames = cleanLines(raw)
-            .map((l) => l.replace(new RegExp('^' + this.respId.toString(16), 'i'), ''))
-            .filter((l) => /^[0-9A-Fa-f]+$/.test(l));
+            .map((l) => l.replace(/\s+/g, '').replace(respIdRe, ''))
+            .filter((l) => /^[0-9A-Fa-f]+$/.test(l) && l.length >= 2 && l.length % 2 === 0);
         const msgs = reassembleIsoTp(frames);
         if (msgs.length === 0) {
             if (/NO DATA|UNABLE|ERROR|STOPPED/i.test(raw)) {

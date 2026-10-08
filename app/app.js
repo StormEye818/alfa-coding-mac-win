@@ -539,14 +539,17 @@ function renderFeatures() {
     const stt = state.writeState.get('feat:' + f.id) || (state.selected.has(f.id) ? 'pending' : null);
     card.className = 'card' + (state.selected.has(f.id) ? ' on' : '') + stateClass(stt);
     card.dataset.id = f.id;
-    // 与命名配置项统一交互：下拉框选择（— 不修改 — / 各选项 / 无选项项为 启用）
+    // 与命名配置项统一交互：下拉框选择（— 不修改 — / 各选项或启用 / 不启用 / 恢复原状）
     const hasOpts = Array.isArray(f.options) && f.options.length > 0;
     const pickedIdx = state.selected.get(f.id);
-    const selOpts = hasOpts
+    const mainOpts = hasOpts
       ? f.options.map((o, i) => `<option value="${i}"${pickedIdx === i ? ' selected' : ''}>${t(o.label)}</option>`).join('')
-      : `<option value="on"${state.selected.has(f.id) ? ' selected' : ''}>启用</option>`;
+      : `<option value="on"${pickedIdx === null && state.selected.has(f.id) ? ' selected' : ''}>启用</option>`;
+    const tailOpts =
+      (featureHasOffOption(f) ? `<option value="off"${pickedIdx === 'off' ? ' selected' : ''}>不启用</option>` : '') +
+      `<option value="revert"${pickedIdx === 'revert' ? ' selected' : ''}>恢复原状</option>`;
     const selHtml = `<select data-feat="${f.id}"${state.readDone ? '' : ' disabled'}>
-        <option value="">— 不修改 —</option>${selOpts}</select>`;
+        <option value="">— 不修改 —</option>${mainOpts}${tailOpts}</select>`;
     const cur = featureCurrentState(f);
     const curHtml = state.readDone && cur !== null
       ? `<div class="cur-state ${cur ? 'yes' : 'no'}">当前：${cur ? '已启用' : '未启用'}</div>`
@@ -567,6 +570,9 @@ function renderFeatures() {
         setWriteState('feat:' + f.id, null);
       } else if (v === 'on') {
         state.selected.set(f.id, null);
+        setWriteState('feat:' + f.id, 'pending');
+      } else if (v === 'off' || v === 'revert') {
+        state.selected.set(f.id, v);
         setWriteState('feat:' + f.id, 'pending');   // 选中即「待写入」，与命名项统一
       } else {
         state.selected.set(f.id, Number(v));
@@ -592,6 +598,42 @@ function optionToPatch(f, idx) {
   };
 }
 
+/**
+ * 扩展项选择值 → 补丁。值域：
+ *   number   = 选项索引（有选项项）
+ *   null     = 启用（无选项项的默认补丁）
+ *   'off'    = 不启用（纯位启用型：对应位写 0）
+ *   'revert' = 恢复原状（覆盖的位/字节写回基线读取值）
+ */
+function resolveFeaturePatch(f, selValue, baseline) {
+  if (selValue === 'off') {
+    return {
+      bytes: (f.patches || []).map((p) => ({
+        addr: p.addr,
+        bits: Object.fromEntries(Object.keys(p.bits || {}).map((b) => [b, 0])),
+      })),
+    };
+  }
+  if (selValue === 'revert') {
+    return {
+      bytes: (f.patches || []).map((p) => {
+        const base = baseline ? baseline.getByte(p.addr) : 0;
+        if (p.fixed !== undefined && p.fixed !== null) return { addr: p.addr, fixed: base };
+        const bits = {};
+        for (const b of Object.keys(p.bits || {})) bits[b] = (base >> Number(b)) & 1;
+        return { addr: p.addr, bits };
+      }),
+    };
+  }
+  if (typeof selValue === 'number') return optionToPatch(f, selValue);
+  return { bytes: f.patches };      // null → 启用（无选项项）
+}
+
+/** 纯位启用型补丁（无 fixed 字节）才提供「不启用」 */
+function featureHasOffOption(f) {
+  return (f.patches || []).length > 0 && (f.patches || []).every((p) => p.fixed === undefined || p.fixed === null);
+}
+
 /** 冲突检测：命名项 + 扩展项统一按位比较（教程 §3.3「同字节冲突会红字告警」） */
 function detectConflicts() {
   const map = new Map();          // 'byte:bit' -> [{id, val}]
@@ -609,7 +651,7 @@ function detectConflicts() {
   for (const [fid, optIdx] of state.selected) {
     const f = state.features.active.find((x) => x.id === fid);
     if (!f) continue;
-    const patch = f.options && optIdx !== null ? optionToPatch(f, optIdx) : { bytes: f.patches };
+    const patch = resolveFeaturePatch(f, optIdx, state.baseline);
     for (const p of patch.bytes || []) {
       if (p.fixed !== undefined && p.fixed !== null) {
         for (let b = 0; b < 8; b++) addBit(f.name, p.addr, b, (p.fixed >> b) & 1);
@@ -643,7 +685,7 @@ function applyPicksToBlock() {
   }
   for (const [fid, optIdx] of state.selected) {
     const f = state.features.active.find((x) => x.id === fid);
-    const patch = f.options && optIdx !== null ? optionToPatch(f, optIdx) : { bytes: f.patches };
+    const patch = resolveFeaturePatch(f, optIdx, state.baseline);
     changes.push(...state.block.applyPatch(patch));
   }
   state.block.seal();

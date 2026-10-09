@@ -127,15 +127,8 @@ class Elm327 {
         for (const b of this.rx) s += String.fromCharCode(b);
         // 多帧应答流控（实车必需）：收到响应首帧（PCI 0x1x）立即回 FC 30 00 00 …，
         // 否则真车 ECU 发完首帧就停——模拟车曾"一口气发完"掩盖了此缺口
-        if (!this.fcSent && this.respId) {
-            const flat = s.replace(/\s+/g, '');
-            const ffRe = new RegExp(this.respId.toString(16) + '1[0-9A-F]', 'i');
-            if (ffRe.test(flat)) {
-                this.fcSent = true;
-                this.#log('>> [FC] 30 00 00 00 00 00 00 00（应答首帧流控）');
-                try { this.port.write('3000000000000000\r'); } catch {}
-            }
-        }
+        // ❌ 手动 FC 已禁用（2026-10-09 实车日志定论）：ELM 收应答窗口内收到任何输入
+        //    都会中止接收并回 STOPPED——FC 必须由适配器内建机制发（ATCFC1+ATFC*，见 setAddress）
         // 逐提示符分包：一个 '>' 只交付一段，余量留给下一个命令
         // （此前整包交付一个等待者，造成 OK>OK> 等应答错位）
         let idx;
@@ -212,7 +205,7 @@ class Elm327 {
         await this.#send('ATSP' + protocol);
         this.protocol = protocol;
         await this.#send('ATST32');         // 帧间超时
-        await this.#send('ATCFC0');         // 关自动流控：多帧应答的 FC 由本层 #onData 手动回
+        await this.#send('ATCFC1');         // 自动流控 ON（适配器内建发 FC，MES 配方）
         // MES 对照词汇（审计 #3/#1）：ATAL 允许长消息、ATCP18 29 位优先级域、ATAT0 关自适应
         await this.#send('ATAL');
         await this.#send('ATCP18');
@@ -247,11 +240,11 @@ class Elm327 {
         for (const c of ['ATE0', 'ATL0', 'ATS0', 'ATH1', 'ATCAF0', 'ATAL', 'ATCP18', 'ATAT0']) await this.#send(c);
         await this.#send('ATSH' + reqId.toString(16).toUpperCase().padStart(8, '0'));
         await this.#send('ATCRA' + this.respId.toString(16).toUpperCase().padStart(8, '0'));
-        // MES 流控配方就位（审计 #1）：FC 头=请求地址，FC 内容=30 00 00…（BS=0/STmin=0）。
-        // ATCFC0 下模板不自动发——生效机制是本层手动 FC（已沙箱验证），避免双 FC；
-        // 若真机日志显示手动 FC 时序不稳，翻成 ATCFC1 即切到适配器内建流控（MES 原样）
+        // MES 流控配方原样（审计 #1，2026-10-09 实车定论）：FC 必须由适配器内建发——
+        // 手动注入会在收应答窗口触发 STOPPED 中止。注意 ATFCSD 必须带空格（无空格回 '?'）
+        await this.#send('ATCFC1');
         await this.#send('ATFCSH' + reqId.toString(16).toUpperCase().padStart(8, '0'));
-        await this.#send('ATFCSD3000000000000000');
+        await this.#send('ATFCSD 30 00 00 00 00 00 00 00');
         await this.#send('ATFCSM0');
     }
 

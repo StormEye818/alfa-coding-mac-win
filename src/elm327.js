@@ -295,10 +295,15 @@ class Elm327 {
     /** 从原始应答提取合法 ISO-TP 帧（容错：空格/响应 ID/回显混杂） */
     #parseFrames(raw) {
         const respIdRe = new RegExp(this.respId.toString(16), 'gi');
-        return cleanLines(raw)
-            .map((l) => l.replace(/\s+/g, '').replace(respIdRe, ''))
+        // 真车 ELM 用 \r 分隔帧、以 \r\r> 结尾（无 \n）——必须按 [\r\n]+ 切帧，
+        // 否则 cleanLines 删 \r 后所有帧粘成一条（实车日志 dump 全连在一起就是证据）
+        return String(raw).split(/[\r\n]+/)
+            // 真车 ELM 结尾是「\r\r>」无换行——'>' 粘在最后一帧行尾（实车踩坑），
+            // 必须先剥掉提示符再做 hex 校验，否则多帧应答永远缺最后一帧
+            .map((l) => l.replace(/[\s>]/g, '').replace(respIdRe, ''))
             .filter((l) => /^[0-9A-Fa-f]+$/.test(l) && l.length >= 2 && l.length % 2 === 0);
     }
+
 
     #singleFrame(payload) {
         const frame = new Uint8Array(payload.length + 1);

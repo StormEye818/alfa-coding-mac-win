@@ -37,7 +37,7 @@ function makeConn(sock) {
   function sendHex(bytes) {
     // 行分隔符用 \r\n：src/elm327.js 的 cleanLines 按 \n 分行（只删 \r），
     // 裸 \r 会把所有帧拼成一行导致 ISO-TP 重组失败
-    send(Array.from(bytes).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join('') + '\r\n');
+    send(Array.from(bytes).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join('') + '\r');
   }
 
   /** 把 UDS 应答按 ISO-TP 分帧发回 */
@@ -45,16 +45,16 @@ function makeConn(sock) {
     const id = (0x18DA0000 | (st.tester << 8) | st.target).toString(16).toUpperCase().padStart(8, '0');
     const h = (b) => b.toString(16).toUpperCase().padStart(2, '0');
     if (payload.length <= 7) {
-      send(id + h(payload.length) + Array.from(payload).map(h).join('') + '\r\n');
+      send(id + h(payload.length) + Array.from(payload).map(h).join('') + '\r');
       return;
     }
     const total = payload.length;
-    send(id + h(0x10 | ((total >> 8) & 0x0f)) + h(total & 0xff) + Array.from(payload.slice(0, 6)).map(h).join('') + '\r\n');
+    send(id + h(0x10 | ((total >> 8) & 0x0f)) + h(total & 0xff) + Array.from(payload.slice(0, 6)).map(h).join('') + '\r');
     // 先给流控
-    send(id + h(0x30) + '00' + '00' + '\r\n');
+    send(id + h(0x30) + '00' + '00' + '\r');
     let idx = 1, off = 6;
     while (off < total) {
-      send(id + h(0x20 | (idx & 0x0f)) + Array.from(payload.slice(off, off + 7)).map(h).join('') + '\r\n');
+      send(id + h(0x20 | (idx & 0x0f)) + Array.from(payload.slice(off, off + 7)).map(h).join('') + '\r');
       off += 7; idx = (idx + 1) & 0x0f;
     }
   }
@@ -87,7 +87,7 @@ function makeConn(sock) {
       const len = pci & 0x0f;
       const payload = bytes.slice(1, 1 + len);
       dispatch(payload);
-      send('>');                      // 数据应答也要以 '>' 结束，工具端按提示符收包
+      send('\r\r>');               // 真车提示符约定
     } else if (type === 0x1) {
       const total = ((pci & 0x0f) << 8) | bytes[1];
       st.rxPending = { total, chunks: bytes.slice(2), got: bytes.length - 2 };

@@ -40,7 +40,7 @@ class MockAdapter extends Emitter {
         // 异步回包，模拟串口
         setImmediate(() => {
             const out = this.#handle(cmd);
-            if (out !== null) this.emit('data', out + '\r\n>');
+            if (out !== null) this.emit('data', out + '\r\r>');   // 真车 ELM 提示符约定（无换行）
         });
     }
 
@@ -107,7 +107,7 @@ class MockAdapter extends Emitter {
         const lines = [];
         if (payload.length <= 7) {
             lines.push(id + h(payload.length) + payload.map(h).join(''));
-            return lines.join('\n');
+            return lines.join('\r');   // 真车 ELM 用 \r 分隔帧
         }
         const total = payload.length;
         lines.push(id + h(0x10 | ((total >> 8) & 0x0f)) + h(total & 0xff) +
@@ -119,7 +119,7 @@ class MockAdapter extends Emitter {
             off += 7;
             idx = (idx + 1) & 0x0f;
         }
-        return lines.join('\n');
+        return lines.join('\r');   // 真车 ELM 用 \r 分隔帧
     }
 
     #uds(p) {

@@ -40,7 +40,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     check('读 PROXI DATA1 成功', d1.length === 289, `got ${d1.length} 字节`);
 
     const blk = new ProxiBlock(d1);
-    check('块头部是 ASCII 406200...', blk.headerAscii().startsWith('406200'), blk.headerAscii().slice(0, 12));
+    check('块头部是实车样例 ASCII 066390...', blk.headerAscii().startsWith('066390'), blk.headerAscii().slice(0, 12));
     check('未改动时 CRC 自洽', blk.verify().ok, JSON.stringify(blk.verify()));
 
     console.log('\n改一个功能 → 封缄 → 写入 → 再读回');

@@ -26,7 +26,7 @@ class MockAdapter extends Emitter {
     /** 造一块结构正确的 PROXI：ASCII 头 + 零配置 + 已封缄的 CRC */
     static defaultProxi() {
         const b = new Uint8Array(289);
-        const head = '406200000001OUTPUT-SIT %';  // CRC 位先留 00000
+        const head = '06639064587OUTPUT-SIT #0000000000';  // 实车样例头部（CRC 区 00000 由 seal 重算）
         for (let i = 0; i < 24; i++) b[i] = head.charCodeAt(i);
         const blk = new ProxiBlock(b);
         blk.seal();

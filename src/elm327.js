@@ -110,6 +110,7 @@ class Elm327 {
         this.log = opts.log || (() => {});
         this.rx = new Uint8Array(0);
         this.segQueue = [];   // 已到但无人认领的应答段（逐 '>' 分包）
+        this.altProtocols = [];   // 备选协议（NO DATA 时回退，MES 探测思想）
         this.lastRaw = '';
         this.waiters = [];
         port.on('data', (chunk) => this.#onData(chunk));
@@ -212,6 +213,10 @@ class Elm327 {
         this.protocol = protocol;
         await this.#send('ATST32');         // 帧间超时
         await this.#send('ATCFC0');         // 关自动流控：多帧应答的 FC 由本层 #onData 手动回
+        // MES 对照词汇（审计 #3/#1）：ATAL 允许长消息、ATCP18 29 位优先级域、ATAT0 关自适应
+        await this.#send('ATAL');
+        await this.#send('ATCP18');
+        await this.#send('ATAT0');
     }
 
     /**
@@ -229,6 +234,9 @@ class Elm327 {
                 await this.#send('ATSP' + proto);
                 this.protocol = proto;
             }
+            // 备选协议阶梯（审计 #2/#5）：MES 对非标速率用 USER 协议（ATSPB/C，参数碎片不足以复原）
+            // → 采用「主协议 + NO DATA 回退」：500k 回退自动探测；125k 先 250k 近似再自动
+            this.altProtocols = baud === 125 ? [0] : [0];
         }
         this.target = t; this.tester = r;
         const reqId = 0x18DA0000 | (t << 8) | r;
@@ -236,9 +244,15 @@ class Elm327 {
         this.respId = 0x18DA0000 | (r << 8) | t;
         // 每次寻址前重申链路状态（实车踩坑：ATZ/界面探测把适配器重置回默认态——
         // 空格输出+回显+CAN 格式化——导致"无法解析响应"与 7F 03 11 假服务号）
-        for (const c of ['ATE0', 'ATL0', 'ATS0', 'ATH1', 'ATCAF0']) await this.#send(c);
+        for (const c of ['ATE0', 'ATL0', 'ATS0', 'ATH1', 'ATCAF0', 'ATAL', 'ATCP18', 'ATAT0']) await this.#send(c);
         await this.#send('ATSH' + reqId.toString(16).toUpperCase().padStart(8, '0'));
         await this.#send('ATCRA' + this.respId.toString(16).toUpperCase().padStart(8, '0'));
+        // MES 流控配方就位（审计 #1）：FC 头=请求地址，FC 内容=30 00 00…（BS=0/STmin=0）。
+        // ATCFC0 下模板不自动发——生效机制是本层手动 FC（已沙箱验证），避免双 FC；
+        // 若真机日志显示手动 FC 时序不稳，翻成 ATCFC1 即切到适配器内建流控（MES 原样）
+        await this.#send('ATFCSH' + reqId.toString(16).toUpperCase().padStart(8, '0'));
+        await this.#send('ATFCSD3000000000000000');
+        await this.#send('ATFCSM0');
     }
 
     /**
@@ -248,6 +262,23 @@ class Elm327 {
      */
     async request(payload, { timeoutMs = ELM_TIMEOUT_MS } = {}) {
         this.fcSent = false;   // 每次请求独立计流控
+        try {
+            return await this.#requestOnce(payload, timeoutMs);
+        } catch (e) {
+            // MES 探测思想（审计 #2/#5）：NO DATA 时按备选协议切一次再试
+            if (e && e.code === 'NO_DATA' && this.altProtocols.length > 0) {
+                const alt = this.altProtocols.shift();
+                this.#log(`>> [协议回退] ATSP${alt}`);
+                await this.#send('ATSP' + alt);
+                this.#flush();
+                return await this.#requestOnce(payload, timeoutMs);
+            }
+            throw e;
+        }
+    }
+
+    async #requestOnce(payload, timeoutMs) {
+        this.fcSent = false;
         const t0 = Date.now();
         let raw = payload.length > 7
             ? await this.#sendMulti(payload, timeoutMs)

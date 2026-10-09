@@ -10,7 +10,9 @@ class InterfaceTester {
     constructor(bridge) {
         this.bridge = bridge;
         this.rx = '';
+        const prevOnData = this.bridge.onData;   // 链式转发：不得劫持 Elm327 的数据通道（实车踩坑）
         this.bridge.onData = (hex) => {
+            if (prevOnData) prevOnData(hex);
             let s = '';
             for (let i = 0; i < hex.length; i += 2) s += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
             this.rx += s;

@@ -1526,11 +1526,45 @@ $('btnScan').addEventListener('click', async () => {
   stageDone(`扫描完成：${ok} 个有应答${none ? ` / ${none} 个无应答` : ''}${skipped ? ` / ${skipped} 个跨总线未探测（需换适配线）` : ''}`);
 });
 
+/** 手动连接指定模块（像 MES：选模块→连接） */
+async function connectModuleManual(code) {
+  try {
+    if (!(await ensureConnected())) return;
+    stage('正在连接模块 ' + modLabel(code) + '…');
+    await state.session.ensureModule(code);
+    $('modState').textContent = '已连接模块：' + modLabel(code);
+    $('modState').className = 'pill mod on';
+    stageDone('已连接 ' + modLabel(code));
+  } catch (e) {
+    stageFail('连接失败：' + e.message);
+    alert('连接失败：' + e.message + (e.nrcText ? '（' + e.nrcText + '）' : ''));
+  }
+  renderModules();
+}
+
+/** 手动断开当前模块 */
+function disconnectModuleManual() {
+  if (state.session) state.session.current = null;
+  $('modState').textContent = '未连接模块';
+  $('modState').className = 'pill mod';
+  renderModules();
+}
+
+$('moduleList').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-mod]');
+  if (!b) return;
+  const code = b.getAttribute('data-mod');
+  const currentCode = state.session && state.session.current ? state.session.current.code : null;
+  if (code === currentCode) disconnectModuleManual();
+  else connectModuleManual(code);
+});
+
 function renderModules() {
   const q = ($('modSearch') && $('modSearch').value) || '';
   const list = state.modules.modules.filter((m) =>
     hit(q, m.code, m.name, modLabel(m.code), m.bus, m.tx));
   $('moduleList').innerHTML = list.length ? '' : '<div class="dim" style="padding:14px">没有匹配的模块</div>';
+  const currentCode = state.session && state.session.current ? state.session.current.code : null;
   $('moduleList').innerHTML += list.map((m) => `
     <div class="mrow">
       <div class="code">${m.code}</div>
@@ -1544,6 +1578,7 @@ function renderModules() {
           { none: '无需换线', comfort: '5 号蓝色适配线', swap: '6 号灰色适配线' }[(state.cables.modules[m.code] || {}).group || 'none']
         }</div>
       </div>
+      <button class="small ${m.code === currentCode ? 'primary' : 'ghost'}" data-mod="${m.code}">${m.code === currentCode ? '断开' : '连接'}</button>
     </div>`).join('');
 }
 

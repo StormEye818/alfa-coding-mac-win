@@ -152,6 +152,14 @@ class Elm327 {
         }
     }
 
+    /** 清空接收流：残留段、未认领余量、末段缓存（连接/重连时调用） */
+    #flush() {
+        this.rx = new Uint8Array(0);
+        this.segQueue = [];
+        this.lastRaw = '';
+        this.fcSent = false;
+    }
+
     /** 轻量诊断日志（供界面「复制/导出日志」） */
     #log(line) {
         const g = globalThis;
@@ -193,6 +201,7 @@ class Elm327 {
      *  ⚠️ 历史坑：曾误用 8（11 位 250k）——沙箱不校验故长期未暴露，实车直接 CAN ERROR。
      */
     async init({ protocol = 7 } = {}) {
+        this.#flush();                 // 清残留应答/错位余量（多次连接后必做）
         await this.#send('ATZ', 8000);
         await this.#send('ATE0');
         await this.#send('ATL0');

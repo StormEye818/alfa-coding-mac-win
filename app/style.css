@@ -559,3 +559,6 @@ main { padding: 22px; max-width: 1360px; margin: 0 auto; }
     justify-content: space-between;
   }
 }
+
+/* 模块行手动连接/断开按钮 */
+.mrow > button { flex: none; min-width: 76px; }

@@ -253,15 +253,22 @@ class MfiPort {
   constructor(opts) {
     this.opts = opts;              // { connectionId, protocol?, name? }
     this.onDataCb = null; this.onClosedCb = null; this.onErrorCb = null;
-    this.sub = null;
+    this.subs = [];                // 监听句柄，close 时注销
+    this.closed = false;
   }
 
   async connect() {
-    this.sub = await MfiSerial.addListener('data', (ev) => {
-      const bytes = base64ToBytes(ev.data || '');
-      if (bytes.length && this.onDataCb) this.onDataCb(bytes);
-    });
-    await MfiSerial.addListener('closed', () => this.onClosedCb && this.onClosedCb());
+    // 监听器只注册一次——泄漏会导致每个应答被投递 N 次（实车日志：OK>OK> 应答风暴）
+    if (this.subs.length === 0) {
+      const s1 = await MfiSerial.addListener('data', (ev) => {
+        const bytes = base64ToBytes(ev.data || '');
+        if (bytes.length && this.onDataCb) this.onDataCb(bytes);
+      });
+      const s2 = await MfiSerial.addListener('closed', () => {
+        if (!this.closed && this.onClosedCb) this.onClosedCb();
+      });
+      this.subs.push(s1, s2);
+    }
     await MfiSerial.open({ connectionId: this.opts.connectionId, protocol: this.opts.protocol || null });
     return this;
   }
@@ -280,6 +287,12 @@ class MfiPort {
   }
 
   async close() {
+    this.closed = true;
+    // 先注销监听（防止幽灵监听器继续投递），再关会话
+    for (const s of this.subs) {
+      try { await s.remove(); } catch {}
+    }
+    this.subs = [];
     try { await MfiSerial.close(); } catch {}
   }
 }

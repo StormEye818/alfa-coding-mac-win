@@ -226,6 +226,25 @@ async function disconnectBridge() {
   log('已断开连接');
 }
 
+/** 通信日志（elm327 层逐条记录 >> 命令 / << 应答 / FC） */
+function logText() {
+  const g = globalThis.__apxLog || [];
+  const head = `AlfaProxi 通信日志 ${new Date().toISOString()} · ${navigator.userAgent.slice(0, 80)} · ${g.length} 条`;
+  return head + '\n' + (g.length ? g.join('\n') : '（暂无记录）');
+}
+$('btnLogCopy').addEventListener('click', async () => {
+  const txt = logText();
+  try {
+    await navigator.clipboard.writeText(txt);
+    alert('日志已复制到剪贴板（' + (globalThis.__apxLog || []).length + ' 条）');
+  } catch {
+    downloadFile('alfaproxi-log-' + Date.now() + '.txt', txt);   // 剪贴板不可用时转导出
+  }
+});
+$('btnLogSave').addEventListener('click', () => {
+  downloadFile('alfaproxi-log-' + Date.now() + '.txt', logText());
+});
+
 /** 导出文件：桌面 Blob 下载；移动端走系统分享/保存（iOS WebView 对 download 支持弱） */
 async function downloadFile(name, text, mime = 'text/plain') {
   const Cap = window.Capacitor;

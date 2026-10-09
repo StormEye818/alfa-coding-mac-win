@@ -75,6 +75,9 @@ class MockAdapter extends Emitter {
             this.rxPending = { total, chunks: body.slice(1), got: body.length - 1 };
             return this.#frame([0x30, 0x00, 0x00]);           // FC: continue, BS=0, STmin=0
         }
+        if (type === 0x3) {
+            return null;                                      // 流控帧：工具→ECU 方向，不应答（真车语义）
+        }
         if (type === 0x2 && this.rxPending) {                 // 连续帧
             this.rxPending.chunks.push(...body);
             this.rxPending.got += body.length;

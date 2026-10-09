@@ -89,6 +89,12 @@ function hexToBytes(hex) {
     return out;
 }
 
+function strToBytes(str) {
+    const out = new Uint8Array(str.length);
+    for (let i = 0; i < str.length; i++) out[i] = str.charCodeAt(i) & 0xff;
+    return out;
+}
+
 function bytesToHex(bytes) {
     return Array.from(bytes).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join('');
 }
@@ -103,6 +109,7 @@ class Elm327 {
         this.adapter = opts.adapter || 'elm327';
         this.log = opts.log || (() => {});
         this.rx = new Uint8Array(0);
+        this.segQueue = [];   // 已到但无人认领的应答段（逐 '>' 分包）
         this.lastRaw = '';
         this.waiters = [];
         port.on('data', (chunk) => this.#onData(chunk));
@@ -117,27 +124,68 @@ class Elm327 {
         this.rx = concatBytes(this.rx, toBytes(chunk));
         let s = '';
         for (const b of this.rx) s += String.fromCharCode(b);
-        if (s.includes('>')) {
-            this.rx = new Uint8Array(0);
-            const w = this.waiters.shift();
-            if (w) w.resolve(s);
+        // 多帧应答流控（实车必需）：收到响应首帧（PCI 0x1x）立即回 FC 30 00 00 …，
+        // 否则真车 ECU 发完首帧就停——模拟车曾"一口气发完"掩盖了此缺口
+        if (!this.fcSent && this.respId) {
+            const flat = s.replace(/\s+/g, '');
+            const ffRe = new RegExp(this.respId.toString(16) + '1[0-9A-F]', 'i');
+            if (ffRe.test(flat)) {
+                this.fcSent = true;
+                this.#log('>> [FC] 30 00 00 00 00 00 00 00（应答首帧流控）');
+                try { this.port.write('3000000000000000\r'); } catch {}
+            }
         }
+        // 逐提示符分包：一个 '>' 只交付一段，余量留给下一个命令
+        // （此前整包交付一个等待者，造成 OK>OK> 等应答错位）
+        let idx;
+        while ((idx = s.indexOf('>')) >= 0) {
+            const one = s.slice(0, idx + 1);
+            const rest = s.slice(idx + 1);
+            this.rx = strToBytes(rest);
+            this.lastRaw = one;             // 供 #sendMulti 读取"最后一帧应答"
+            const w = this.waiters.shift();
+            this.#log('<< ' + one.trim());
+            if (w) w.resolve(one);
+            else this.segQueue.push(one);   // 无等待者先存队列（假提示符/错位余量）
+            s = rest;
+            if (!s.includes('>')) break;
+        }
+    }
+
+    /** 轻量诊断日志（供界面「复制/导出日志」） */
+    #log(line) {
+        const g = globalThis;
+        if (!g.__apxLog) g.__apxLog = [];
+        const t = new Date();
+        const ts = String(t.getHours()).padStart(2, '0') + ':' + String(t.getMinutes()).padStart(2, '0') +
+            ':' + String(t.getSeconds()).padStart(2, '0') + '.' + String(t.getMilliseconds()).padStart(3, '0');
+        g.__apxLog.push(`${ts} ${line}`);
+        if (g.__apxLog.length > 4000) g.__apxLog.splice(0, g.__apxLog.length - 4000);
     }
 
     #send(cmd, timeoutMs = ELM_TIMEOUT_MS) {
         this.log('>> ' + cmd);
+        this.#log('>> ' + cmd);
+        try { this.port.write(cmd + '\r'); } catch (e) {
+            return Promise.reject(new Elm327Error('写失败：' + e.message, 'WRITE'));
+        }
+        return this.#nextSeg(timeoutMs, cmd);
+    }
+
+    /** 取一段应答（到下一个 '>' 为止）；先消费积压队列，FIFO 保序 */
+    #nextSeg(timeoutMs, cmd = '等待响应') {
         return new Promise((resolve, reject) => {
+            if (this.segQueue.length) return resolve(this.segQueue.shift());
             const timer = setTimeout(() => {
-                const i = this.waiters.findIndex((w) => w.resolve === resolve);
+                const i = this.waiters.findIndex((w) => w.resolve === done);
                 if (i >= 0) this.waiters.splice(i, 1);
                 reject(new Elm327Error(`适配器超时：${cmd}`, 'TIMEOUT'));
             }, timeoutMs);
-            this.waiters.push({
-                resolve: (s) => { clearTimeout(timer); this.log('<< ' + s.replace(/\s+/g, ' ').trim()); this.lastRaw = s; resolve(s); },
-            });
-            this.port.write(cmd + '\r');
+            const done = (v) => { clearTimeout(timer); resolve(v); };
+            this.waiters.push({ resolve: done });
         });
     }
+
 
     /** 初始化适配器。
      *  protocol（ELM327 ATSP 编号）：6=CAN 11bit/500k，7=CAN 29bit/500k，8=CAN 11bit/250k，9=CAN 29bit/250k。
@@ -154,7 +202,7 @@ class Elm327 {
         await this.#send('ATSP' + protocol);
         this.protocol = protocol;
         await this.#send('ATST32');         // 帧间超时
-        await this.#send('ATSW00');         // 不自动发流控，由我们控制
+        await this.#send('ATCFC0');         // 关自动流控：多帧应答的 FC 由本层 #onData 手动回
     }
 
     /**
@@ -190,23 +238,33 @@ class Elm327 {
      * @param {Uint8Array} payload 例如 0x22 0x20 0x23
      */
     async request(payload, { timeoutMs = ELM_TIMEOUT_MS } = {}) {
-        const raw = payload.length > 7
+        this.fcSent = false;   // 每次请求独立计流控
+        const t0 = Date.now();
+        let raw = payload.length > 7
             ? await this.#sendMulti(payload, timeoutMs)
             : await this.#send(bytesToHex(this.#singleFrame(payload)), timeoutMs);
-        // 解析容错：适配器可能处于空格输出(ATS1)/回显(ATE1)等非初始化态
-        // （ATZ/界面探测会重置适配器设置）——统一去空格、剥掉响应 ID 再校验
+        // 多帧应答可能被假提示符截断（FC 发送引出的 '>'）——收集到完整消息或预算用尽
+        for (;;) {
+            const msgs = reassembleIsoTp(this.#parseFrames(raw));
+            if (msgs.length > 0) return msgs[0];
+            const flat = raw.replace(/\s+/g, '');
+            const remain = timeoutMs - (Date.now() - t0);
+            const sawResp = this.respId && flat.includes(this.respId.toString(16));
+            if (!sawResp || remain <= 200) break;
+            raw += await this.#nextSeg(Math.min(remain, 3000), '应答续传');
+        }
+        if (/NO DATA|UNABLE|ERROR|STOPPED/i.test(raw)) {
+            throw new Elm327Error('ECU 无响应：' + raw.trim(), 'NO_DATA');
+        }
+        throw new Elm327Error('无法解析响应：' + raw.trim(), 'BAD_FRAME');
+    }
+
+    /** 从原始应答提取合法 ISO-TP 帧（容错：空格/响应 ID/回显混杂） */
+    #parseFrames(raw) {
         const respIdRe = new RegExp(this.respId.toString(16), 'gi');
-        const frames = cleanLines(raw)
+        return cleanLines(raw)
             .map((l) => l.replace(/\s+/g, '').replace(respIdRe, ''))
             .filter((l) => /^[0-9A-Fa-f]+$/.test(l) && l.length >= 2 && l.length % 2 === 0);
-        const msgs = reassembleIsoTp(frames);
-        if (msgs.length === 0) {
-            if (/NO DATA|UNABLE|ERROR|STOPPED/i.test(raw)) {
-                throw new Elm327Error('ECU 无响应：' + raw.trim(), 'NO_DATA');
-            }
-            throw new Elm327Error('无法解析响应：' + raw.trim(), 'BAD_FRAME');
-        }
-        return msgs[0];
     }
 
     #singleFrame(payload) {

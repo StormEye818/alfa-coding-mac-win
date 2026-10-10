@@ -65,5 +65,44 @@ const txt = d1.toHexText();
 check('toHexText 每行 24 字节', txt.split('\n')[0].split(' ').length === 24);
 check('fromHex 可还原', ProxiBlock.fromHex(txt).diff(d1).length === 0);
 
+console.log('\nmerge DATA3（MES 对齐同款）');
+{
+  // PROXIX 80B：DATA1[25..56] = DATA3[32..63]（正序）
+  const b = new ProxiBlock(new Uint8Array(80).fill(0xAA));
+  b.seal();
+  const crcBefore = b.storedCrc();
+  const d3 = new Uint8Array(80);
+  for (let i = 0; i < 80; i++) d3[i] = i;          // 0x00..0x4F 便于核对
+  const r = b.mergeData3(d3);
+  check('80B 分支合并执行', r.merged === true, JSON.stringify(r));
+  check('changed=32（全改）', r.changed === 32, `got ${r.changed}`);
+  check('DATA1[25]=DATA3[32]', b.bytes[25] === d3[32], `got ${b.bytes[25]}`);
+  check('DATA1[40]=DATA3[47]', b.bytes[40] === d3[47], `got ${b.bytes[40]}`);
+  check('DATA1[56]=DATA3[63]', b.bytes[56] === d3[63], `got ${b.bytes[56]}`);
+  check('区外不动（DATA1[57]）', b.bytes[57] === 0xAA);
+  check('合并后 CRC 重算自洽', b.verify().ok);
+  check('CRC 随数据变化', b.storedCrc() !== crcBefore);
+
+  // 幂等：同一 DATA3 再合一次，零变化
+  const r2 = b.mergeData3(d3);
+  check('重复合并零变化', r2.merged && r2.changed === 0, JSON.stringify(r2));
+
+  // 全零 DATA3 跳过（沙箱占位保护）
+  const b2 = new ProxiBlock(new Uint8Array(80).fill(0xAA));
+  const r3 = b2.mergeData3(new Uint8Array(80));
+  check('全零 DATA3 跳过', r3.merged === false, JSON.stringify(r3));
+  check('跳过时块未被污染', b2.bytes[25] === 0xAA);
+
+  // 40B 分支：只动 DATA1[25..40]
+  const b3 = new ProxiBlock(new Uint8Array(80).fill(0xAA));
+  const d3s = new Uint8Array(40);
+  for (let i = 0; i < 40; i++) d3s[i] = 0x10 + i;
+  const r4 = b3.mergeData3(d3s);
+  check('40B 分支合并', r4.merged === true && r4.changed === 16, JSON.stringify(r4));
+  check('40B：DATA1[25]=DATA3[16]', b3.bytes[25] === d3s[16]);
+  check('40B：DATA1[40]=DATA3[31]', b3.bytes[40] === d3s[31]);
+  check('40B：DATA1[41] 不动', b3.bytes[41] === 0xAA);
+}
+
 console.log(`\n结果：${pass} 通过 / ${fail} 失败`);
 process.exit(fail ? 1 : 0);

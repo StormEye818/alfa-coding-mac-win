@@ -7,7 +7,7 @@
  *
  * 模拟模式下适配器为 MockAdapter，同样走完整链路，便于验证流程与交互。
  */
-import { ProxiBlock } from '../src/proxi.js';
+import { ProxiBlock, CRC_OFFSET, CRC_DIGITS } from '../src/proxi.js';
 import { Elm327, hexToBytes } from '../src/elm327.js';
 import { Uds } from '../src/uds.js';
 import { DemoLink } from '../src/demo-link.js';
@@ -226,6 +226,21 @@ async function disconnectBridge() {
   log('已断开连接');
 }
 
+/** 供移动端连接 chip 调用：断开并复位状态（「点此断开或重连」） */
+window.__apxDisconnect = async () => {
+  try { await disconnectBridge(); } catch {}
+  state.connected = false;
+  state.readDone = false;
+  if (state.session) state.session.current = null;
+  $('connState').textContent = '未连接';
+  $('connState').className = 'pill offline';
+  $('modState').textContent = '未连接模块';
+  $('modState').className = 'pill mod';
+  $('readState').textContent = '未读取配置';
+  $('readState').className = 'pill offline';
+  log('已断开连接并复位');
+};
+
 /** 通信日志（elm327 层逐条记录 >> 命令 / << 应答 / FC） */
 function logText() {
   const g = globalThis.__apxLog || [];
@@ -245,22 +260,98 @@ $('btnLogSave').addEventListener('click', () => {
   downloadFile('alfaproxi-log-' + Date.now() + '.txt', logText());
 });
 
-/** 导出文件：桌面 Blob 下载；移动端走系统分享/保存（iOS WebView 对 download 支持弱） */
+/**
+ * 导出 PROXI 采数：DATA1/2/3 三块原始 hex + 关键区摘录。
+ * 用途：破解 MES「merge DATA3 into DATA1[25..56]」的字节映射（SGW 对齐相关）。
+ * 采数时机：① 无 SGW 基线 ② SGW 车装 bypass 前 ③ 装 bypass 后 ④ MES 对齐后再采一次。
+ */
+async function exportProxiSample() {
+  if (!(await ensureConnected())) return;
+  try {
+    await state.session.ensureModule(state.session.bodyModule);
+    stage('正在读取 DATA1 / DATA2 / DATA3…');
+    const { data1, data2, data3 } = await state.uds.readProxiAll();
+    const blk = new ProxiBlock(data1);
+    const v = blk.verify();
+    const hex24 = (u8) => {
+      const out = [];
+      for (let i = 0; i < u8.length; i += 24) {
+        out.push(Array.from(u8.slice(i, i + 24)).map((b) => hex8(b)).join(' '));
+      }
+      return out.join('\n');
+    };
+    const zone = Array.from(data1.slice(25, 57)).map((b) => hex8(b)).join(' ');
+    const crcStr = Array.from(data1.slice(6, 11)).map((c) => String.fromCharCode(c)).join('');
+    const txt = [
+      `AlfaProxi PROXI 采数 · ${new Date().toISOString()}`,
+      `平台 ${navigator.platform || '?'} · ${navigator.userAgent}`,
+      '',
+      `# 用途：破解 MES merge DATA3→DATA1[25..56] 映射（SGW 对齐）。请在文件名或备注里注明场景：`,
+      `#   no-sgw / sgw-before / sgw-after / mes-aligned`,
+      '',
+      `## DATA1 (DID 0x2023) · ${data1.length} 字节 · CRC 存储=${crcStr} · 校验${v.ok ? '自洽' : '不一致（计算 ' + v.computed + '）'}`,
+      `### DATA1[25..56]（merge 目标区，32 字节）`,
+      zone,
+      `### DATA1 全文`,
+      hex24(data1),
+      '',
+      `## DATA2 (DID 0x40A1) · ${data2.length} 字节`,
+      hex24(data2),
+      '',
+      `## DATA3 (DID 0x40A2) · ${data3.length} 字节`,
+      hex24(data3),
+      '',
+    ].join('\n');
+    const name = `proxi-sample-${Date.now()}.txt`;
+    const ok = await downloadFile(name, txt);
+    if (ok) stageDone(`采数已导出（DATA1 ${data1.length}B / DATA2 ${data2.length}B / DATA3 ${data3.length}B）`);
+  } catch (e) {
+    stageFail('采数失败：' + e.message);
+    alert('采数失败：' + e.message);
+  }
+}
+$('btnSample').addEventListener('click', exportProxiSample);
+
+/**
+ * 导出文件：桌面 Blob 下载；移动端走系统分享面板（iOS WebView 对 download 不响应）。
+ * 实车踩坑（2026-10-09）：@capgo/capacitor-file-sharer 的方法名是 share()/save()，
+ * 早先误写 shareFile() 直接 undefined → 静默回退 Blob → 手机上「点了没反应」。
+ * 返回是否成功，供调用方决定要不要提示。
+ */
 async function downloadFile(name, text, mime = 'text/plain') {
   const Cap = window.Capacitor;
   if (Cap && Cap.isNativePlatform && Cap.isNativePlatform()) {
+    const b64 = btoa(unescape(encodeURIComponent(text)));
+    const Sharer = Cap.Plugins && Cap.Plugins.FileSharer;
+    // 优先 share()（弹系统分享面板，可存到文件/发微信等）；旧版插件可能只有 save()
+    const fn = Sharer && (typeof Sharer.share === 'function' ? Sharer.share
+      : (typeof Sharer.save === 'function' ? Sharer.save : null));
+    if (fn) {
+      try {
+        await fn.call(Sharer, { filename: name, base64Data: b64, contentType: mime });
+        return true;
+      } catch (e) {
+        log('系统分享失败: ' + (e && e.message));
+      }
+    } else {
+      log('FileSharer 插件不可用');
+    }
+    // iOS 上 Blob 下载无效——退到剪贴板，至少让用户有办法带走
     try {
-      const b64 = btoa(unescape(encodeURIComponent(text)));
-      await Cap.Plugins.FileSharer.shareFile({ filename: name, base64Data: b64, contentType: mime });
-      return;
-    } catch (e) {
-      log('分享失败，回退下载: ' + (e && e.message));
+      await navigator.clipboard.writeText(text);
+      alert(`系统分享不可用，内容已复制到剪贴板，可自行粘贴保存。\n（${name}）`);
+      return true;
+    } catch {
+      alert('导出失败：系统分享不可用。请改用「导出日志」或截图保留。');
+      return false;
     }
   }
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([text], { type: mime }));
   a.download = name;
   a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  return true;
 }
 
 $('ifaceType').addEventListener('change', async () => {
@@ -360,8 +451,13 @@ async function connect(forceSim) {
         if (!opts.port) throw new Error('请先选择串口');
         await state.bridge.open(opts.port, opts.baud);
       }
+      // 适配器能力：多通道能自动切总线的，对齐时免换线。
+      // MES 实证（2026-10-10 反编译 UI 下拉 17 项 + qq() 判定）：
+      //   类型 6=CANtieCAR(USB/BT)、13=CANtieCAR(WiFi)、15=vLinker MS 免换线；
+      //   其余（ELM327/OBDKey/OBDLink 等）要按线号换适配线。
+      const autoBus = spec.kind === 'vlinker' || spec.kind === 'cantiecar';
       state.link = new Elm327(new BridgePort(state.bridge), {
-        adapter: spec.kind === 'vlinker' ? 'vlinker-ms' : 'elm327',
+        adapter: autoBus ? (spec.kind === 'vlinker' ? 'vlinker-ms' : 'cantiecar') : 'elm327',
         log: (m) => log(m),
       });
       state.realAdapter = true;
@@ -736,10 +832,46 @@ $('btnApply').addEventListener('click', async () => {
   alert(`已应用 ${n} 项配置（命名配置 ${namedPicks.size} 项 / 扩展配置 ${state.selected.size} 项）\n共变更 ${changes.length} 处字节\n\n请在「字节编辑器」核对后写入。`);
 });
 
-$('btnBackup').addEventListener('click', () => {
+$('btnBackup').addEventListener('click', async () => {
   if (!state.block) return alert('请先读取车辆配置');
-  downloadFile(`proxi-backup-${Date.now()}.txt`, state.block.toHexText());
-  stageDone('配置备份已导出');
+  const ok = await downloadFile(`proxi-backup-${Date.now()}.txt`, state.block.toHexText());
+  if (ok) stageDone('配置备份已导出');
+});
+
+/** 一键恢复：载入之前导出的备份到字节编辑器（不自动写车，仍需点「写入 ECU」） */
+$('btnRestore').addEventListener('click', () => $('restoreFile').click());
+$('restoreFile').addEventListener('change', async (e) => {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = '';   // 清掉以便重复选同一文件
+  if (!f) return;
+  let blk;
+  try {
+    blk = ProxiBlock.fromHex(await f.text());
+  } catch (err) {
+    return alert('导入失败：不是有效的配置备份（' + err.message + '）');
+  }
+  if (blk.length < 32) return alert('导入失败：备份太短（' + blk.length + ' 字节），疑似文件不对');
+  // 基线保持车上读取值，这样编辑器能看出「备份 vs 车上」的差异；没读过车就以备份为基线
+  if (!state.baseline) state.baseline = blk.clone();
+  state.block = blk;
+  state.namedPicks.clear();
+  state.selected.clear();
+  state.writeState.clear();
+  state.bitEditIndex = null;
+  const diffs = blk.diff(state.baseline).length;
+  let v = blk.verify();
+  let sealNote = '';
+  if (!v.ok) {
+    // 备份文件被手改过 / 来自别的工具导致校验不自洽：自动重算（与 MES 写入前行为一致），
+    // 否则后面写入/对齐必被 ECU 拒（NRC 0x31）
+    blk.seal();
+    v = blk.verify();
+    sealNote = '；备份校验值与内容不符，已自动重算 CRC';
+  }
+  renderEditor(); renderNamed(); renderFeatures(); detectConflicts();
+  const msg = `已载入备份：${blk.length} 字节，校验${v.ok ? '自洽' : '仍异常'}，与车上基线差异 ${diffs} 处${sealNote}`;
+  log(msg);
+  alert(msg + '\n\n已在字节编辑器载入（未写车）。核对后点「写入 ECU」才会真正刷写。');
 });
 
 /* ================= 字节编辑器 ================= */
@@ -762,14 +894,24 @@ function renderEditor() {
   const grid = $('hexGrid');
   grid.innerHTML = '';
   for (let i = 0; i < b.length; i++) {
-    const cur = b.getByte(i);
-    const orig = state.baseline ? state.baseline.getByte(i) : cur;
+    // 显示与访问都用 MES 编号（1-based，B1=首字节）——与命名项/社区口径一致
+    const no = i + 1;
+    const cur = b.getByte(no);
+    const orig = state.baseline ? state.baseline.getByte(no) : cur;
+    // CRC 校验区（MES B7–B11，5 位十进制 ASCII）：任何配置改动都会让它自动重算
+    const isCrc = no >= CRC_OFFSET + 1 && no <= CRC_OFFSET + CRC_DIGITS;
+    const changed = cur !== orig;
     const el = document.createElement('div');
-    el.className = 'hbyte' + (cur !== orig ? ' changed' : '') + (state.bitEditIndex === i ? ' active' : '');
+    el.className = 'hbyte'
+      + (isCrc ? ' crc' : '')
+      + (changed ? (isCrc ? ' changed' : ' changed') : '')
+      + (state.bitEditIndex === i ? ' active' : '');
     let bits = '';
     for (let k = 7; k >= 0; k--) bits += `<div class="b${(cur >> k) & 1 ? ' on' : ''}"></div>`;
-    el.innerHTML = `<div class="addr">B${i}</div><div class="val">${hex8(cur)}</div><div class="bits">${bits}</div>`;
-    el.title = `Byte ${i} = ${hex8(cur)}`;
+    el.innerHTML = `<div class="addr">B${no}${isCrc ? ' ·CRC' : ''}</div><div class="val">${hex8(cur)}</div><div class="bits">${bits}</div>`;
+    el.title = isCrc
+      ? `Byte ${no} = ${hex8(cur)}\nCRC 校验区：改动配置后自动重算属正常，不必手动改`
+      : `Byte ${no} = ${hex8(cur)}`;
     el.addEventListener('click', () => {
       state.bitEditIndex = state.bitEditIndex === i ? null : i;
       renderEditor();
@@ -784,8 +926,8 @@ function renderBitPanel() {
   const i = state.bitEditIndex;
   if (i === null || !state.block) { panel.classList.add('hidden'); return; }
   panel.classList.remove('hidden');
-  const cur = state.block.getByte(i);
-  const orig = state.baseline ? state.baseline.getByte(i) : cur;
+  const cur = state.block.getByte(i + 1);
+  const orig = state.baseline ? state.baseline.getByte(i + 1) : cur;
   let cells = '';
   for (let k = 7; k >= 0; k--) {
     const on = (cur >> k) & 1;
@@ -794,7 +936,7 @@ function renderBitPanel() {
       <div class="bn">bit${k}</div><div class="bv">${on}</div></div>`;
   }
   panel.innerHTML = `
-    <h4>Byte ${i} 位编辑<span class="dim">点击方块直接翻转该位</span><button class="small close" id="bitClose">收起</button></h4>
+    <h4>Byte ${i + 1} 位编辑<span class="dim">点击方块直接翻转该位</span><button class="small close" id="bitClose">收起</button></h4>
     <div class="bit-row">${cells}</div>
     <div class="vals">
       <label>十六进制<input id="bitHex" value="${hex8(cur)}" maxlength="2" spellcheck="false"></label>
@@ -805,20 +947,20 @@ function renderBitPanel() {
   panel.querySelectorAll('.bit-cell').forEach((el) => {
     el.addEventListener('click', () => {
       const k = Number(el.dataset.bit);
-      state.block.setBit(i, k, state.block.getBit(i, k) ? 0 : 1);
+      state.block.setBit(i + 1, k, state.block.getBit(i + 1, k) ? 0 : 1);
       afterByteEdit();
     });
   });
   $('bitClose').addEventListener('click', () => { state.bitEditIndex = null; renderEditor(); });
   $('bitReset').addEventListener('click', () => {
-    if (state.baseline) state.block.setByte(i, state.baseline.getByte(i));
+    if (state.baseline) state.block.setByte(i + 1, state.baseline.getByte(i + 1));
     afterByteEdit();
   });
   $('bitHex').addEventListener('change', (e) => {
     const raw = e.target.value.trim().replace(/^0x/i, '').replace(/[^0-9a-fA-F]/g, '');
     const v = raw === '' ? NaN : parseInt(raw, 16);
     if (Number.isNaN(v) || v < 0 || v > 255) return alert('输入无效：需要 00 – FF');
-    state.block.setByte(i, v);
+    state.block.setByte(i + 1, v);
     afterByteEdit();
   });
 }
@@ -860,6 +1002,7 @@ async function writeToEcu() {
     if (changes.length) renderEditor();
     stage('正在写入配置…');
     state.block.seal();
+    // 注：PROXI 写入不需要 Security Access（与 MES qq() 一致，反编译已核实）
     await state.uds.writeProxi(state.block.bytes);
     stage('正在读回校验…');
     const back = new ProxiBlock(await state.uds.readProxi());
@@ -1189,6 +1332,31 @@ $('btnAlign').addEventListener('click', async () => {
   if (!confirm(warn)) return;
   const chosen = selectedNodes();
   if (!chosen.length) return alert('请先勾选要对齐的节点');
+  // —— 与 MES qq() 同构的对齐前置：merge DATA3 → 重算 CRC ——
+  // 依据 MES 5.4 反编译：PROXIX 家族 DATA1[25..56] = DATA3[32..63]（正序），SGW 在 Byte41 落在该区。
+  try {
+    stage('正在读取 DATA3 并合并 CAN 配置（MES 对齐同款步骤）…');
+    const { data3 } = await state.uds.readProxiAll();
+    const m = state.block.mergeData3(data3);
+    if (m.merged && m.changed > 0) {
+      renderEditor();
+      const go = confirm(
+        `DATA3 的 CAN 配置与当前块不一致，已合并 ${m.changed} 处到 Byte26–57（含 SGW 状态等）。\n\n`
+        + '这是 MES 对齐的同款步骤：用实际 CAN 配置刷新 PROXI 镜像区。\n'
+        + '「字节编辑器」里这些字节会显示为变化，属正常。\n\n继续对齐？'
+      );
+      if (!go) return;
+    } else if (!m.merged && m.reason) {
+      log('DATA3 合并跳过：' + m.reason);
+    } else {
+      log('DATA3 与 DATA1[25..57] 已一致，无需合并');
+    }
+  } catch (e) {
+    log('DATA3 读取失败（跳过合并，仍按当前块对齐）：' + e.message);
+  }
+  // 与 MES 一致：发 2E 20 23 前无条件重算 CRC（B7–B11）。
+  // 手动改字节时 afterByteEdit 已 seal 过，mergeData3 内也会 seal——这里再兜一次底。
+  state.block.seal();
   const chosenIdx = new Set(chosen.map((n) => n._idx));
   state.aligning = true;
   const total = chosen.length;
@@ -1330,16 +1498,46 @@ function askInput(item) {
 
 /* ================= 特殊功能 ================= */
 /** 把命令串拆成 UDS 载荷逐帧下发 */
+/**
+ * 执行特殊功能命令串（MES 模板格式：逗号分隔的 token，每个 `NN<data>`）。
+ *
+ * token 类型（2026-10-10 全量审计 MES params_all.tsv / functions.json 确认）：
+ *   · NN=0x01–0x07   单帧 UDS：payload = data[0..NN]
+ *   · NN=0x08–0x99   多帧 UDS：payload = data[0..NN]（如 VIN 写 0x14、喷油嘴 0x0C、PROXI 整块 0x99）
+ *                    → 直接交 link.request，它内部 #sendMulti 已做 ISO-TP 多帧
+ *   · NN=0xFE        脚本步骤/循环计数器（FE0002→FE0003…）：不发送，仅步进
+ *   · NN=0xFF        延时（FF00NN = 延时 NN ms）：FF000A=10ms
+ *   · NN=0x00        期望响应模板（00 71 03…/00 FF FF…）：不发送，校验用
+ *
+ * 早期版本误 `if (len > 7) continue` 把多帧 UDS + FE/FF 全静默丢弃（61 个功能条目受影响）——
+ * 反编译只对齐了主干写入，漏了功能层的命令模板分支，实测才暴露。
+ */
 async function runCommandString(cmdStr) {
   const sent = [];
   for (const part of cmdStr.split(',')) {
-    const raw = hexToBytes(part.trim());
-    if (raw.length < 2) continue;
-    const len = raw[0];
-    if (len > 7) continue;          // 多帧模板由专用流程处理
+    const h = part.trim().replace(/\s/g, '');
+    if (!h) continue;
+    const raw = hexToBytes(h);
+    if (raw.length < 1) continue;
+    const tag = raw[0];
+    // FE：脚本步骤/循环计数器，不发送（步进语义，MES 用它标记流程节点）
+    if (tag === 0xFE) { sent.push(`[步进 ${h.slice(2)}]`); continue; }
+    // FF：延时 FF00NN = NN ms
+    if (tag === 0xFF) {
+      const ms = raw.length >= 3 ? ((raw[1] << 8) | raw[2]) : 10;
+      sent.push(`[延时 ${ms}ms]`);
+      if (ms > 0) await stageWait(Math.min(ms, 3000));
+      continue;
+    }
+    // 00：期望响应模板（校验用），不发送
+    if (tag === 0x00) { sent.push(`[响应模板 ${h.slice(2)}]`); continue; }
+    // 真实 UDS：单帧或多帧，payload = raw[1..1+len]，交 link.request（内部处理 ISO-TP）
+    const len = tag;
+    if (len < 1 || raw.length < 1 + len) continue;
     const payload = raw.slice(1, 1 + len);
     await state.link.request(payload);
-    sent.push(Array.from(payload).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' '));
+    sent.push(Array.from(payload).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ')
+      + (len > 7 ? '（多帧）' : ''));
   }
   return sent;
 }

@@ -117,6 +117,8 @@
       <div class="actions">
         <button id="btnRead" class="ghost">读取车辆配置</button>
         <button id="btnBackup" class="ghost">导出配置备份</button>
+        <button id="btnRestore" class="ghost" title="载入之前导出的备份到字节编辑器，核对后可写回（不自动写车）">导入配置备份</button>
+        <input type="file" id="restoreFile" accept=".txt,.hex,text/plain" hidden>
         <button id="btnApply" class="ghost" title="仅把所选合入字节编辑器预览，不写入车辆；写入车辆请点「写入 ECU」">应用到字节（预览）</button>
         <button id="btnWriteFeatures" class="primary" title="把所选项真正写入车辆（自动合入+写入+读回校验）">写入 ECU</button>
       </div>
@@ -145,7 +147,7 @@
     <div class="panel-head">
       <div>
         <h2>PROXI 字节编辑器</h2>
-        <p class="dim">点击字节可展开位编辑，逐位切换；改动会高亮显示。写入前自动重算校验。</p>
+        <p class="dim">点击字节可展开位编辑，逐位切换；改动会高亮显示。写入前自动重算校验。虚线格 B7–B11 是 CRC 校验区，改动配置后它们跟着变是正常的（不重算 ECU 会拒收）。</p>
       </div>
       <div class="actions">
         <button id="btnSeal" class="ghost">重算校验</button>
@@ -283,6 +285,7 @@
       <div class="actions">
         <input id="modSearch" class="search" placeholder="搜索模块名称 / 代号…">
         <button id="btnScan" class="primary">扫描模块</button>
+        <button id="btnSample" class="ghost" title="导出 DATA1/2/3 三块原始数据（SGW 对齐映射破解用样本）">导出 PROXI 采数</button>
       </div>
     </div>
     <div id="moduleList" class="module-list"></div>

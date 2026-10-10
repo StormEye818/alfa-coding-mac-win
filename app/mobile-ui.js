@@ -46,9 +46,17 @@
     if (st && window.MutationObserver) new MutationObserver(syncChip).observe(st, { childList: true, characterData: true, subtree: true });
     syncChip();
 
-    chip.addEventListener('click', () => {
-      // 只展开/收起，不滚动页面（真机反馈：自动下滑很烦）
-      conn.classList.toggle('mobile-open');
+    chip.addEventListener('click', async () => {
+      // 已连接 → 断开（复位状态）；未连接 → 展开设置面板
+      const st = document.getElementById('connState');
+      const on = st && /已连接/.test(st.textContent || '');
+      if (on && window.__apxDisconnect) {
+        await window.__apxDisconnect();
+        syncChip();
+        conn.classList.remove('mobile-open');
+      } else {
+        conn.classList.toggle('mobile-open');
+      }
     });
   }
 

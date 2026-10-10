@@ -75,7 +75,7 @@ console.log('\n场景 2b：回读校验报出差异组（字节号, 异或掩码
     // 用「写入不完整」的车模拟 EEPROM 没写进去的字节，验证 22 10 2A 的差异编码
     const flakyCar = new GiuliaCar({
         partialWriteRate: 1, rng: () => 0, log: () => {},
-        partialWriteBytes: [88, 115, 202],
+        partialWriteBytes: [87, 114, 201],                      // 内部索引 = MES 88/115/202
     });
     const fb = flakyCar.ecuByAddress(0x40);
     const blk = new ProxiBlock(Uint8Array.from(flakyCar.handle(fb, [0x22, 0x20, 0x23]).slice(3)));
@@ -90,13 +90,13 @@ console.log('\n场景 2b：回读校验报出差异组（字节号, 异或掩码
     check('3 组差异 → 应答 16 字节（62 10 2A + 13 数据）', vf.length === 16, `长度 ${vf.length}`);
     const d = vf.slice(3);
     const groups = [[5, 6], [8, 9], [11, 12]].map(([i, m]) => ({ byte: d[i], mask: d[m] }));
-    // 字节号为 1 基（与 src/uds.js 的 expected[n-1] 一致）：下标 88/115/202 → 89/116/203
+    // 差异组字节号为 MES 口径（1 基，与 src/uds.js 的 expected[n-1] 一致）：内部 87/114/201 → 88/115/202
     check('差异组位于数据 [5,6] [8,9] [11,12]（与 src/uds.js 槽位一致）',
-        groups[0].byte === 89 && groups[1].byte === 116 && groups[2].byte === 203,
+        groups[0].byte === 88 && groups[1].byte === 115 && groups[2].byte === 202,
         JSON.stringify(groups));
-    check('异或掩码 = 存储值 ⊕ 写入值（Byte89: 0x0C）', groups[0].mask === 0x0c, `got 0x${groups[0].mask.toString(16)}`);
+    check('异或掩码 = 存储值 ⊕ 写入值（Byte88: 0x0C）', groups[0].mask === 0x0c, `got 0x${groups[0].mask.toString(16)}`);
     // 与工具侧 src/uds.js 的解析语义一致：want ⊕ mask = 实际存储值
-    const want = blk.bytes[89 - 1];
+    const want = blk.getByte(88);                               // MES 88 = 内部[87]
     check('uds.js 解析语义：want ⊕ mask = 存储值', (want ^ groups[0].mask) === old88,
         `${want.toString(16)} ^ ${groups[0].mask.toString(16)} vs ${old88.toString(16)}`);
     const flakySnap = flakyCar.snapshot();

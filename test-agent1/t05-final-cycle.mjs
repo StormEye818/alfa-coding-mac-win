@@ -6,7 +6,7 @@
  *   4) 反向：未对齐时里程表应闪烁
  */
 import { Tool } from '../sandbox/drive.mjs';
-import { probeSnapshot, ABSENT_NODES } from './probe.mjs';
+import { probeSnapshot, ABSENT_NODES, expectedInstalledCount } from './probe.mjs';
 
 const results = [];
 const check = (name, expected, actual, ok) => {
@@ -42,7 +42,7 @@ check('§九-4 反向：写入后未对齐 → odoFlash=true', 'true', String(sn
 
 // 2) 全部对齐 → 不应闪烁
 const al = await t.alignNodes((n) => !ABSENT_NODES.has(n.name));
-check('§九-2 全部对齐', `55 成功 0 失败`, `成功 ${al.done} / 失败 ${al.fail}`, al.done === 55 && al.fail === 0);
+check('§九-2 全部对齐', `${expectedInstalledCount()} 成功 0 失败`, `成功 ${al.done} / 失败 ${al.fail}`, al.done === expectedInstalledCount() && al.fail === 0);
 const snapEnd = await probeSnapshot(t, { verbose: true });
 check('§九-2/4 对齐后 odoFlash=false（里程表不闪烁）', 'false', String(snapEnd.odoFlash), snapEnd.odoFlash === false);
 const st = await t.checkAlignment();

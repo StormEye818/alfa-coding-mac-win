@@ -11,10 +11,11 @@ import fs from 'fs';
 
 const readJson = (p) => JSON.parse(fs.readFileSync(new URL(p, import.meta.url), 'utf8'));
 
-/** 模拟车文档声明的未安装节点（giulia-car.mjs ABSENT_NODES） */
+/** 模拟车文档声明的未安装节点（giulia-car.mjs ABSENT_NODES，两边必须同步） */
 export const ABSENT_NODES = new Set([
     'Compact Disk Node (CDM)',
-    'Satellite Receiver Node (SRM)',
+    'Amplifier Node (AMP)',                          // CRC 数字位 bit6 恒 0，只能未安装
+    'Selective Catalytic Reduction Module (SCRM)',   // 汽油车无 SCR；与 VPAM 同字节位冲突
     'Rear Left Climate Control Node (RLCM)',
     'Additional Heater Node (CTM)',
     'Driver monitoring system module (DMSM)',
@@ -32,8 +33,15 @@ export const ABSENT_NODES = new Set([
     'Coupling Control Node (CCM)',
     'Traffic message module (TMM)',
 ]);
+// SRM（卫星收音）不在清单：mask 0x20 落在 CRC 数字位 bit5（ASCII 恒 1），物理上无法标未安装
 
 const dataDir = new URL('../src/data/', import.meta.url);
+
+/** 模拟车「应已安装」节点数（非 excluded 且不在 ABSENT_NODES）——清单改了测试自动跟随 */
+export function expectedInstalledCount() {
+    const mods = JSON.parse(fs.readFileSync(new URL('modules.json', dataDir), 'utf8'));
+    return mods.alignmentNodes.filter((n) => !n.excluded && !ABSENT_NODES.has(n.name)).length;
+}
 
 export async function probeSnapshot(t, { verbose = false } = {}) {
     const mods = JSON.parse(fs.readFileSync(new URL('modules.json', dataDir), 'utf8'));

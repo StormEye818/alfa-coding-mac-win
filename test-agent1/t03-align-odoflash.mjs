@@ -9,7 +9,7 @@
  *   D. 未安装节点不应被对齐（写入应拒绝/忽略）
  */
 import { Tool } from '../sandbox/drive.mjs';
-import { probeSnapshot, ABSENT_NODES } from './probe.mjs';
+import { probeSnapshot, ABSENT_NODES, expectedInstalledCount } from './probe.mjs';
 
 const results = [];
 const check = (name, expected, actual, ok) => {
@@ -22,17 +22,18 @@ await t.connect();
 await t.readConfig();
 
 const installedPredicate = (n) => !ABSENT_NODES.has(n.name);   // 模拟车已安装集合
+const N_INST = expectedInstalledCount();                        // 清单/数据改了自动跟随
 
 // ---------- A. 全部对齐 ----------
 console.log('--- A. 全部对齐（清掉出厂未对齐 + 历史改动）---');
 const a1 = await t.alignNodes(installedPredicate);
-check('全部对齐执行', '成功=55 已安装节点，失败=0', `成功 ${a1.done} / 失败 ${a1.fail}`, a1.done === 55 && a1.fail === 0);
+check('全部对齐执行', `成功=${N_INST} 已安装节点，失败=0`, `成功 ${a1.done} / 失败 ${a1.fail}`, a1.done === N_INST && a1.fail === 0);
 const snapA = await probeSnapshot(t, { verbose: true });
 check('对齐后 odoFlash 真值（§九-4 正向）', 'false（全部一致）', String(snapA.odoFlash), snapA.odoFlash === false);
 const stA = await t.checkAlignment();
 check('§九-2 对齐状态结论', '整车对齐正常，无里程表闪烁', stA.verdict, stA.verdict === '整车对齐正常，无里程表闪烁');
-check('§九-2 全部已安装节点 ✓ 已对齐', `aligned=55 misaligned=0 failed=0`, `aligned=${stA.aligned} misaligned=${stA.misaligned} failed=${stA.failed} absent=${stA.absent}`,
-    stA.aligned === 55 && stA.misaligned === 0 && stA.failed === 0);
+check('§九-2 全部已安装节点 ✓ 已对齐', `aligned=${N_INST} misaligned=0 failed=0`, `aligned=${stA.aligned} misaligned=${stA.misaligned} failed=${stA.failed} absent=${stA.absent}`,
+    stA.aligned === N_INST && stA.misaligned === 0 && stA.failed === 0);
 
 // ---------- B. 反向：只写车身电脑 → 应闪烁 ----------
 console.log('--- B. 反向验证：仅写车身电脑，节点未补写 ---');

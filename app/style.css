@@ -194,6 +194,11 @@ main { padding: 22px; max-width: 1360px; margin: 0 auto; }
 }
 .hbyte:hover { border-color: var(--accent); }
 .hbyte.changed { border-color: var(--amber); background: var(--amber-bg); }
+/* CRC 校验区（B7–B11）：虚线框标出；变化用绿色（自动重算）区别于用户改动的琥珀色 */
+.hbyte.crc { border-style: dashed; }
+.hbyte.crc .addr { color: var(--green); }
+.hbyte.crc.changed { border-color: var(--green); background: var(--green-bg); }
+.hbyte.crc.changed .val { color: #56d364; }
 .hbyte .addr { font-size: 9.5px; color: var(--dim); font-family: var(--mono); }
 .hbyte .val {
   font-family: var(--mono); font-size: 17px; font-weight: 700; letter-spacing: 1px;

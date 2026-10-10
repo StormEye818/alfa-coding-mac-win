@@ -164,6 +164,12 @@ body.mobile .hex-grid .hbyte .addr {
   font-size: 10px;
   opacity: 0.7;
 }
+body.mobile .hex-grid .hbyte.crc .addr {
+  opacity: 1;
+  color: var(--green);
+  font-size: 9px;               /* 「B7 ·CRC」放进 44px 格 */
+}
+body.mobile .hex-grid .hbyte.crc.changed .val { color: #56d364; }
 body.mobile .hex-grid .hbyte .bits {
   height: 6px;                  /* 位条由 4px 加粗到可点（整格点按进位编辑） */
   margin-top: 4px;

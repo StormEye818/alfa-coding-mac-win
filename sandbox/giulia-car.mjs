@@ -40,27 +40,33 @@ const PROXI_LENGTH = 289;
 const BODY_COUNTER = 12;
 /**
  * 初始块的研磨目标 CRC（5 位十进制 '20275'）。
- * DATA1[6..10] 既是 CRC ASCII 区，又落在对齐节点在场位（startByte 0..16）之内，
+ * DATA1[6..10] 既是 CRC ASCII 区，又落在对齐节点在场位（MES Byte1..16）之内，
  * 二者天然冲突；选定目标 CRC 使这 5 个数字节的位模式恰好给出一套合理的在场位，
  * 再对 DATA1[25..] 尾部研磨出该 CRC，使「CRC 自洽」与「在场位正确」同时成立。
  */
-const CRC_TARGET = 20275;
+const CRC_TARGET = 16758;
 
 /**
  * 本车配置：以下对齐节点视为未安装（其余非 excluded 节点均已安装）。
- * 注：startByte 落在 CRC 区（6..10）的节点，其在场位由 CRC 数字位决定，
+ * 注：startByte 落在 CRC 区（MES 7..11 = 内部 6..10）的节点，其在场位由 CRC 数字位决定。
+ * ASCII 数字位特征（byte = 0x30 + d）：bit4-5 恒 1、bit6-7 恒 0，因此
+ *   · mask 落在 bit6/7 的节点恒未安装（AMP/OCM/CDM/CMM）
+ *   · mask 落在 bit4/5 的节点恒已安装（SRM 等，物理上标不了未安装）
+ *   · SCRM(bit1) 与 VPAM(bit3) 同占内部[10]，ASCII 数字无法两者同时置 1
+ *     → 汽油车取 SCRM 未安装、VPAM 已安装（与实车 CRC 14778 的位型一致）
  * 此清单须与 CRC_TARGET 的数字位一致（init 会断言核对）。
  */
 const ABSENT_NODES = new Set([
-    'Compact Disk Node (CDM)',                       // 无 CD 换碟机
-    'Satellite Receiver Node (SRM)',                 // 无卫星收音
+    'Compact Disk Node (CDM)',                       // 无 CD 换碟机（bit7 恒 0，恰好一致）
+    'Amplifier Node (AMP)',                          // 受 CRC 数字位约束只能取未安装（bit6 恒 0）
+    'Selective Catalytic Reduction Module (SCRM)',   // 汽油车无 SCR；与 VPAM 同字节位冲突，取未安装
     'Rear Left Climate Control Node (RLCM)',         // 无后排独立空调
     'Additional Heater Node (CTM)',                  // 无驻车加热器
     'Driver monitoring system module (DMSM)',        // 无驾驶员监测
-    'Passenger Occupant Classification Node (OCM)',  // 受 CRC 数字位约束只能取未安装
+    'Passenger Occupant Classification Node (OCM)',  // 受 CRC 数字位约束只能取未安装（bit6 恒 0）
     'Left Blind Spot Sensor Node (LBSS)',            // 无盲区监测
     'Vehicle Tracking Module (VTM)',                 // 无车辆追踪
-    'Collision Mitigation Module (CMM)',             // 无碰撞缓解
+    'Collision Mitigation Module (CMM)',             // 无碰撞缓解（bit7 恒 0）
     'Drive Train Control Node (DTCM)',               // 后驱（无耦合控制）
     'Passenger Door Latch Module (PDML)',            // 受 CRC 数字位约束只能取未安装
     'Engine control Module 2 (ECM2)',                // 2.0T 单 ECU
@@ -71,6 +77,8 @@ const ABSENT_NODES = new Set([
     'Coupling Control Node (CCM)',                   // 后驱
     'Traffic message module (TMM)',                  // 无 TMC
 ]);
+// 注：SRM（卫星收音）语义上本车没有，但它的 mask 0x20 落在 bit5（ASCII 数字恒 1），
+// 数字位永远报「已安装」——放进清单只会自相矛盾，故留在已安装集合。
 
 /** 默认初始未对齐的节点地址（ABS / EPS / DASM）：让里程表一开始就闪，便于测试对齐流程 */
 const DEFAULT_MISALIGNED = ['28', '30', '2A'];
@@ -177,7 +185,7 @@ export class GiuliaCar {
          * 但回读校验 22 10 2A 会报出 (字节号, 异或掩码) 差异组（真实车的常见现象）。
          */
         this.partialWriteRate = opts.partialWriteRate || 0;
-        this.partialWriteBytes = opts.partialWriteBytes || [88, 115, 202];
+        this.partialWriteBytes = opts.partialWriteBytes || [87, 114, 201];   // 内部索引（MES 88/115/202，与出厂示意值同字节）
         this.platform = opts.platform || '952';
         this.bodyCode = this.platform === '949' ? 'BODY30' : 'BODY33';
 
@@ -208,21 +216,22 @@ export class GiuliaCar {
         // ---- 2) 构造 DATA1：在场位 + CRC 研磨 ----
         const bytes = new Uint8Array(PROXI_LENGTH);
         for (const n of nodes) {
-            const sb = n.startByte;
-            if (sb >= 6 && sb <= 10) continue;         // CRC ASCII 区，稍后由数字位决定
+            const idx = n.startByte - 1;                 // MES 编号 → 内部索引
+            if (idx >= 6 && idx <= 10) continue;         // CRC ASCII 区（内部 6..10 = MES 7..11），稍后由数字位决定
             const { mask, presentVal, absentVal } = presenceInfo(n);
             if (!mask || presentVal === null) continue;
             const on = this.installed.get(n.name);
             const bits = on ? presentVal : ((absentVal !== null && absentVal !== presentVal) ? absentVal : 0);
-            bytes[sb] = (bytes[sb] & ~mask) | bits;
+            bytes[idx] = (bytes[idx] & ~mask) | bits;
         }
         // CRC 区先放目标数字，再研磨数据尾部使计算值等于目标
         const digits = String(CRC_TARGET).padStart(5, '0');
         for (let i = 0; i < 5; i++) bytes[6 + i] = digits.charCodeAt(i);
         // 数据区给一点“出厂”示意值（与 demo-link 同位置，便于肉眼核对）
-        bytes[58] = 0x00; bytes[59] = 0x00; bytes[66] = 0x00; bytes[88] = 0xAC;
-        bytes[115] = 0x14; bytes[149] = 0x04; bytes[156] = 0x10; bytes[159] = 0x00;
-        bytes[166] = 0x04; bytes[177] = 0x00; bytes[202] = 0x00;
+        // 出厂值按 MES 编号写入（内部索引 = MES - 1）；Race Type1=0xAC 在 MES Byte88 → 内部[87]
+        bytes[57] = 0x00; bytes[58] = 0x00; bytes[65] = 0x00; bytes[87] = 0xAC;
+        bytes[114] = 0x14; bytes[148] = 0x04; bytes[155] = 0x10; bytes[158] = 0x00;
+        bytes[165] = 0x04; bytes[176] = 0x00; bytes[201] = 0x00;
         if (!grindCrc(bytes, CRC_TARGET)) {
             throw new Error('PROXI 初始块 CRC 研磨失败');
         }
@@ -231,12 +240,27 @@ export class GiuliaCar {
         if (!blk.verify().ok) throw new Error('PROXI 初始块 CRC 校验未通过');
         this.bodyProxi = Uint8Array.from(blk.bytes);
 
-        // ---- 3) 以块内实际位为准回读在场位（6..10 由 CRC 数字位决定） ----
+        // ---- 3) 以块内实际位为准回读在场位（内部 6..10 由 CRC 数字位决定） ----
         for (const n of nodes) {
             const { mask, presentVal } = presenceInfo(n);
             if (!mask || presentVal === null) continue;
-            const on = ((this.bodyProxi[n.startByte] & mask) === presentVal) && !n.excluded;
+            const on = ((this.bodyProxi[n.startByte - 1] & mask) === presentVal) && !n.excluded;
             this.installed.set(n.name, on);
+        }
+        // 断言：CRC 区节点的数字位在场位必须与 ABSENT_NODES 意图一致。
+        // 不一致 = CRC_TARGET 与清单配错（或字节号口径又错位），直接起不来，别拖到对齐测试才炸。
+        for (const n of nodes) {
+            const idx = n.startByte - 1;
+            if (idx < 6 || idx > 10) continue;
+            const want = !n.excluded && !ABSENT_NODES.has(n.name);
+            const got = !!this.installed.get(n.name);
+            if (want !== got) {
+                throw new Error(
+                    `CRC 数字位与未安装清单冲突：${n.name}（MES Byte${n.startByte}）`
+                    + ` 清单=${want ? '已安装' : '未安装'} 数字位=${got ? '已安装' : '未安装'}`
+                    + `——请调整 CRC_TARGET（当前 ${CRC_TARGET}）或 ABSENT_NODES`
+                );
+            }
         }
 
         // ---- 4) 建立 ECU（模块 tx + 对齐节点 addr 全部可寻址） ----

@@ -102,7 +102,7 @@ function bytesToHex(bytes) {
 class Elm327 {
     /**
      * @param {PortLike} port 串口/蓝牙/模拟器
-     * @param {{adapter?: 'elm327'|'vlinker-ms'|'sim', log?: Function}} opts
+     * @param {{adapter?: 'elm327'|'vlinker-ms'|'cantiecar'|'sim', log?: Function}} opts
      */
     constructor(port, opts = {}) {
         this.port = port;
@@ -116,9 +116,14 @@ class Elm327 {
         port.on('data', (chunk) => this.#onData(chunk));
     }
 
-    /** 只有 vLinker MS 支持多路 CAN 自动切换；ELM327 与模拟模式都要提示换适配线 */
+    /**
+     * 多路 CAN 自动切换能力——决定对齐/进模块时要不要提示换适配线。
+     * MES 反编译实证（2026-10-10，qq() 判定 `!_0089_0094_0090() && type != 15`）：
+     *   免换线 = 类型 6（CANtieCAR USB/BT）/ 13（CANtieCAR WiFi）/ 15（vLinker MS）；
+     *   其余（ELM327 / OBDKey / OBDLink 等）需按线号（5 蓝 / 6 灰）换适配线。
+     */
     get autoSwitchesBus() {
-        return this.adapter === 'vlinker-ms';
+        return this.adapter === 'vlinker-ms' || this.adapter === 'cantiecar';
     }
 
     #onData(chunk) {
@@ -329,11 +334,15 @@ class Elm327 {
 
         let idx = 1, off = 6, sinceFc = 0;
         while (off < total) {
-            const cf = new Uint8Array(8);
+            // ISO-TP 最后一帧用短帧（不足 7 字节不填充），与 ECU 发送风格一致；
+            // 实车教训（2026-10-09）：填充到 8 字节会被严格校验的 ECU 拒（NRC 0x31）
+            const remaining = total - off;
+            const dataLen = Math.min(7, remaining);
+            const cf = new Uint8Array(1 + dataLen);
             cf[0] = 0x20 | (idx & 0x0f);
-            cf.set(payload.slice(off, off + 7), 1);
+            cf.set(payload.slice(off, off + dataLen), 1);
             const raw = await this.#send(bytesToHex(cf), timeoutMs);
-            off += 7;
+            off += dataLen;
             idx = (idx + 1) & 0x0f;
             sinceFc++;
             if (fc.blockSize && sinceFc >= fc.blockSize && off < total) {
@@ -368,6 +377,33 @@ class Elm327 {
     async switchBus(busGroup) {
         if (this.autoSwitchesBus) return { swapped: false, auto: true };
         return { swapped: false, auto: false, hint: `请更换适配线：${busGroup}` };
+    }
+
+    /**
+     * CANtieCAR 软件引脚路由（免换线）——与 MES 的 `AT MC<PINS>` 同构。
+     *
+     * MES 反编译实证（2026-10-10）：CANtieCAR 靠 `AT MC` + PINS 值软件编 OBD 引脚实现免换线，
+     * PINS 值 = 引脚号 << 4（pin 3→0x30、12→0xC0、13→0xD0…）。
+     * 引脚映射（内存线材事实）：swap(6号灰)=12/13、comfort(5号蓝)=3/11、none=主CAN(6/14)默认不路由。
+     *
+     * ⚠️ 风险控制：只发 AT MC（每总线一次、不持久），**不碰 AT PP 2C/2D**（可编程参数、掉电保留，
+     * 猜错会持久搞乱 CANtieCAR 配置——等有硬件验证再上）。CAN 是 H/L 成对引脚，AT MC 取哪根
+     * （12 还是 13）无法 100% 确定 → 取 CAN-H 脚作为总线标识，若实测不通由调用方回退换线提示。
+     *
+     * @param {string} busGroup 'none' | 'comfort' | 'swap'
+     * @returns {Promise<boolean>} 路由命令是否被适配器接受
+     */
+    async routePins(busGroup) {
+        if (this.adapter !== 'cantiecar') return true;
+        const PINS = { swap: 'C0', comfort: '30' }[busGroup];   // CAN-H 脚<<4：12→C0、3→30
+        if (!PINS) return true;                                  // none / 未知：默认总线，不路由
+        try {
+            const r = await this.#send('ATMC' + PINS);
+            const bad = /\?/.test(String(r || ''));              // ELM327 出错回 '?'
+            return !bad;
+        } catch {
+            return false;
+        }
     }
 }
 

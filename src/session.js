@@ -58,11 +58,21 @@ class Session extends Emitter {
         // 已经连着就不重复设地址
         if (this.current && this.current.code === code) return this.current;
 
-        // ELM327：换线提示（vLinker 自动切，不提示）
+        // ELM327：换线提示（vLinker 自动切，不提示）。
+        // CANtieCAR：先试软件引脚路由（免换线），失败回退换线提示——绝不静默。
         const wantGroup = m.group;
-        const mustSwap = !this.link.autoSwitchesBus
+        let mustSwap = !this.link.autoSwitchesBus
             && wantGroup !== 'none'
             && this.currentGroup !== wantGroup;
+
+        if (!mustSwap && this.link.routePins
+            && wantGroup !== 'none' && this.currentGroup !== wantGroup) {
+            const routed = await this.link.routePins(wantGroup);
+            if (!routed) {
+                this.log(`CANtieCAR 引脚路由失败，回退换线提示`);
+                mustSwap = true;
+            }
+        }
 
         if (mustSwap) {
             this.log(`需要换适配线：${m.hint}`);
@@ -107,9 +117,18 @@ class Session extends Emitter {
      */
     async connectNode(node) {
         const group = node.swapCable ? 'swap' : (node.baud === 125 ? 'comfort' : 'none');
-        const mustSwap = !this.link.autoSwitchesBus
+        let mustSwap = !this.link.autoSwitchesBus
             && group !== 'none'
             && this.currentGroup !== group;
+        // CANtieCAR：先试软件引脚路由（免换线），失败回退换线提示——绝不静默
+        if (!mustSwap && this.link.routePins
+            && group !== 'none' && this.currentGroup !== group) {
+            const routed = await this.link.routePins(group);
+            if (!routed) {
+                this.log(`CANtieCAR 引脚路由失败，回退换线提示`);
+                mustSwap = true;
+            }
+        }
         if (mustSwap) {
             const hint = group === 'swap' ? '请更换为 6 号灰色适配线' : '请接 5 号蓝色适配线';
             this.log(`需要换适配线：${hint}`);

@@ -77,7 +77,7 @@ class Uds {
      * 实车定论（2026-10-10）：写入 NRC 0x31 的根因就是没进扩展会话——
      * 读取在默认会话能过，写入（2E）必须扩展会话。ECU 的 S3 会话超时通常 5 秒，
      * 用户编辑字节常花十几秒，所以**每次写入前都必须重进**，不能只在连接时进一次。
-     * 对齐 MES 的模块连接流程（每次连接发 10 03 并强制校验 50 03）。
+     * 对齐模块连接标准流程（每次连接发 10 03 并强制校验 50 03）。
      */
     async enterExtendedSession() {
         const resp = await this.link.request(new Uint8Array([0x10, 0x03]), { timeoutMs: 3000 });

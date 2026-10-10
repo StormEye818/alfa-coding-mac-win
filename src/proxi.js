@@ -2,7 +2,7 @@
 /**
  * PROXI 数据块核心逻辑 —— 与 UI 框架无关，可在 Node/浏览器/测试里直接用。
  *
- * 依据 诊断软件 逆向结论（见 ~/diag-data/PROGRESS.md）：
+ * 协议规格（见 ~/diag-data/PROGRESS.md）：
  *   - 读：UDS 0x22 DID 0x2023 → DATA1（PROXI 配置块）
  *   - 写：UDS 0x2E DID 0x2023 <DATA1>，写后用 0x22 DID 0x102A 校验
  *   - 校验：CRC-16/KERMIT（poly 0x8408 反射，init 0，refin/refout true）

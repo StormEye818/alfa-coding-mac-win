@@ -326,7 +326,7 @@ class Elm327 {
      * 节奏（实车定论 2026-10-10）：ECU 流控常给 STmin=0（要求背靠背发完），
      * 逐帧等 NO DATA 会让每帧卡 250ms、36 帧传 10 秒，超出 N_Cr 帧间超时边缘。
      * 解法：连续帧期间切 ATST03（适配器 12ms 超时，帧间隙压到 ~15ms），
-     * 尾帧前恢复 ATST99 等最终响应——与 MES 多帧发送同款节奏。
+     * 尾帧前恢复 ATST99 等最终响应——标准多帧发送节奏。
      */
     async #sendMulti(payload, timeoutMs) {
         const total = payload.length;
@@ -339,7 +339,7 @@ class Elm327 {
         const fc = this.#parseFlowControl(fcRaw);
         if (fc.flowStatus === 0x02) throw new Elm327Error('ECU 流控：溢出，写入中止', 'OVERFLOW');
 
-        // 连续帧用短超时快发（MES 同款 ATST03），避免逐帧卡满响应超时
+        // 连续帧用短超时快发（ATST03=12ms），避免逐帧卡满响应超时
         await this.#send('ATST03');
 
         let idx = 1, off = 6, sinceFc = 0;
@@ -356,7 +356,7 @@ class Elm327 {
                 cf.set(payload.slice(off, off + dataLen), 1);
                 const isLast = off + dataLen >= total;
                 if (isLast) {
-                    // 尾帧前恢复正常超时，等 ECU 的最终 UDS 响应（MES 同款 ATST99）
+                    // 尾帧前恢复正常超时，等 ECU 的最终 UDS 响应（ATST99）
                     await this.#send('ATST99');
                     restored = true;
                 }

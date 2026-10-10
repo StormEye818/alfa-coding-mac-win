@@ -40,7 +40,7 @@ const PROXI_LENGTH = 289;
 const BODY_COUNTER = 12;
 /**
  * 初始块的研磨目标 CRC（5 位十进制 '20275'）。
- * DATA1[6..10] 既是 CRC ASCII 区，又落在对齐节点在场位（MES Byte1..16）之内，
+ * DATA1[6..10] 既是 CRC ASCII 区，又落在对齐节点在场位（Byte1..16）之内，
  * 二者天然冲突；选定目标 CRC 使这 5 个数字节的位模式恰好给出一套合理的在场位，
  * 再对 DATA1[25..] 尾部研磨出该 CRC，使「CRC 自洽」与「在场位正确」同时成立。
  */
@@ -48,7 +48,7 @@ const CRC_TARGET = 16758;
 
 /**
  * 本车配置：以下对齐节点视为未安装（其余非 excluded 节点均已安装）。
- * 注：startByte 落在 CRC 区（MES 7..11 = 内部 6..10）的节点，其在场位由 CRC 数字位决定。
+ * 注：startByte 落在 CRC 区（Byte7..11 = 内部 6..10）的节点，其在场位由 CRC 数字位决定。
  * ASCII 数字位特征（byte = 0x30 + d）：bit4-5 恒 1、bit6-7 恒 0，因此
  *   · mask 落在 bit6/7 的节点恒未安装（AMP/OCM/CDM/CMM）
  *   · mask 落在 bit4/5 的节点恒已安装（SRM 等，物理上标不了未安装）
@@ -185,7 +185,7 @@ export class GiuliaCar {
          * 但回读校验 22 10 2A 会报出 (字节号, 异或掩码) 差异组（真实车的常见现象）。
          */
         this.partialWriteRate = opts.partialWriteRate || 0;
-        this.partialWriteBytes = opts.partialWriteBytes || [87, 114, 201];   // 内部索引（MES 88/115/202，与出厂示意值同字节）
+        this.partialWriteBytes = opts.partialWriteBytes || [87, 114, 201];   // 内部索引（Byte88/115/202，与出厂示意值同字节）
         this.platform = opts.platform || '952';
         this.bodyCode = this.platform === '949' ? 'BODY30' : 'BODY33';
 
@@ -216,8 +216,8 @@ export class GiuliaCar {
         // ---- 2) 构造 DATA1：在场位 + CRC 研磨 ----
         const bytes = new Uint8Array(PROXI_LENGTH);
         for (const n of nodes) {
-            const idx = n.startByte - 1;                 // MES 编号 → 内部索引
-            if (idx >= 6 && idx <= 10) continue;         // CRC ASCII 区（内部 6..10 = MES 7..11），稍后由数字位决定
+            const idx = n.startByte - 1;                 // 社区编号（1-based） → 内部索引
+            if (idx >= 6 && idx <= 10) continue;         // CRC ASCII 区（内部 6..10 = Byte7..11），稍后由数字位决定
             const { mask, presentVal, absentVal } = presenceInfo(n);
             if (!mask || presentVal === null) continue;
             const on = this.installed.get(n.name);
@@ -228,7 +228,7 @@ export class GiuliaCar {
         const digits = String(CRC_TARGET).padStart(5, '0');
         for (let i = 0; i < 5; i++) bytes[6 + i] = digits.charCodeAt(i);
         // 数据区给一点“出厂”示意值（与 demo-link 同位置，便于肉眼核对）
-        // 出厂值按 MES 编号写入（内部索引 = MES - 1）；Race Type1=0xAC 在 MES Byte88 → 内部[87]
+        // 出厂值按社区编号写入（内部索引 = 编号 - 1）；Race Type1=0xAC 在 Byte88 → 内部[87]
         bytes[57] = 0x00; bytes[58] = 0x00; bytes[65] = 0x00; bytes[87] = 0xAC;
         bytes[114] = 0x14; bytes[148] = 0x04; bytes[155] = 0x10; bytes[158] = 0x00;
         bytes[165] = 0x04; bytes[176] = 0x00; bytes[201] = 0x00;
@@ -256,7 +256,7 @@ export class GiuliaCar {
             const got = !!this.installed.get(n.name);
             if (want !== got) {
                 throw new Error(
-                    `CRC 数字位与未安装清单冲突：${n.name}（MES Byte${n.startByte}）`
+                    `CRC 数字位与未安装清单冲突：${n.name}（Byte${n.startByte}）`
                     + ` 清单=${want ? '已安装' : '未安装'} 数字位=${got ? '已安装' : '未安装'}`
                     + `——请调整 CRC_TARGET（当前 ${CRC_TARGET}）或 ABSENT_NODES`
                 );

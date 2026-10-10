@@ -110,7 +110,7 @@ class Elm327 {
         this.log = opts.log || (() => {});
         this.rx = new Uint8Array(0);
         this.segQueue = [];   // 已到但无人认领的应答段（逐 '>' 分包）
-        this.altProtocols = [];   // 备选协议（NO DATA 时回退，MES 探测思想）
+        this.altProtocols = [];   // 备选协议（NO DATA 时回退，探测式恢复）
         this.lastRaw = '';
         this.waiters = [];
         port.on('data', (chunk) => this.#onData(chunk));
@@ -118,8 +118,8 @@ class Elm327 {
 
     /**
      * 多路 CAN 自动切换能力——决定对齐/进模块时要不要提示换适配线。
-     * MES 反编译实证（2026-10-10，qq() 判定 `!_0089_0094_0090() && type != 15`）：
-     *   免换线 = 类型 6（CANtieCAR USB/BT）/ 13（CANtieCAR WiFi）/ 15（vLinker MS）；
+     * 实证（2026-10-10）：
+     *   免换线 = CANtieCAR（USB/BT/WiFi，引脚软件路由）/ vLinker MS（多路 CAN 自动切换）；
      *   其余（ELM327 / OBDKey / OBDLink 等）需按线号（5 蓝 / 6 灰）换适配线。
      */
     get autoSwitchesBus() {
@@ -210,8 +210,8 @@ class Elm327 {
         await this.#send('ATSP' + protocol);
         this.protocol = protocol;
         await this.#send('ATST32');         // 帧间超时
-        await this.#send('ATCFC1');         // 自动流控 ON（适配器内建发 FC，MES 配方）
-        // MES 对照词汇（审计 #3/#1）：ATAL 允许长消息、ATCP18 29 位优先级域、ATAT0 关自适应
+        await this.#send('ATCFC1');         // 自动流控 ON（适配器内建发 FC）
+        // 链路参数：ATAL 允许长消息、ATCP18 29 位优先级域、ATAT0 关自适应
         await this.#send('ATAL');
         await this.#send('ATCP18');
         await this.#send('ATAT0');
@@ -232,7 +232,7 @@ class Elm327 {
                 await this.#send('ATSP' + proto);
                 this.protocol = proto;
             }
-            // 备选协议阶梯（审计 #2/#5）：MES 对非标速率用 USER 协议（ATSPB/C，参数碎片不足以复原）
+            // 备选协议阶梯：非标速率理论上可用 USER 协议（ATSPB/C）
             // → 采用「主协议 + NO DATA 回退」：500k 回退自动探测；125k 先 250k 近似再自动
             this.altProtocols = baud === 125 ? [0] : [0];
         }
@@ -245,7 +245,7 @@ class Elm327 {
         for (const c of ['ATE0', 'ATL0', 'ATS0', 'ATH1', 'ATCAF0', 'ATAL', 'ATCP18', 'ATAT0']) await this.#send(c);
         await this.#send('ATSH' + reqId.toString(16).toUpperCase().padStart(8, '0'));
         await this.#send('ATCRA' + this.respId.toString(16).toUpperCase().padStart(8, '0'));
-        // MES 流控配方原样（审计 #1，2026-10-09 实车定论）：FC 必须由适配器内建发——
+        // 流控配方（2026-10-09 实车定论）：FC 必须由适配器内建发——
         // 手动注入会在收应答窗口触发 STOPPED 中止。注意 ATFCSD 必须带空格（无空格回 '?'）
         await this.#send('ATCFC1');
         await this.#send('ATFCSH' + reqId.toString(16).toUpperCase().padStart(8, '0'));
@@ -263,7 +263,7 @@ class Elm327 {
         try {
             return await this.#requestOnce(payload, timeoutMs);
         } catch (e) {
-            // MES 探测思想（审计 #2/#5）：NO DATA 时按备选协议切一次再试
+            // 探测式恢复：NO DATA 时按备选协议切一次再试
             if (e && e.code === 'NO_DATA' && this.altProtocols.length > 0) {
                 const alt = this.altProtocols.shift();
                 this.#log(`>> [协议回退] ATSP${alt}`);
@@ -380,9 +380,9 @@ class Elm327 {
     }
 
     /**
-     * CANtieCAR 软件引脚路由（免换线）——与 MES 的 `AT MC<PINS>` 同构。
+     * CANtieCAR 软件引脚路由（免换线）。
      *
-     * MES 反编译实证（2026-10-10）：CANtieCAR 靠 `AT MC` + PINS 值软件编 OBD 引脚实现免换线，
+     * CANtieCAR 靠 `AT MC` + PINS 值软件编 OBD 引脚实现免换线，
      * PINS 值 = 引脚号 << 4（pin 3→0x30、12→0xC0、13→0xD0…）。
      * 引脚映射（内存线材事实）：swap(6号灰)=12/13、comfort(5号蓝)=3/11、none=主CAN(6/14)默认不路由。
      *

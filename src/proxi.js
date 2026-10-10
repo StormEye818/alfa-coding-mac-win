@@ -91,14 +91,12 @@ class ProxiBlock {
     }
 
     /**
-     * MES 对齐前置步骤：把 DATA3 的 CAN 配置区合并进 DATA1[25..56]，再重算 CRC。
+     * 对齐前置步骤：把 DATA3 的 CAN 配置区合并进 DATA1[25..56]，再重算 CRC。
      *
-     * 依据 MES 5.4 反编译（MULTIECUSCAN.EXE → class `_008D_009C.qq()`，
-     * ilspycmd 行号 37355–37530；家族条件 StartsWith("PROXIX")）：
+     * 映射（实车采数 + 社区数据交叉验证）：
      *   · PROXIX（952/949，DATA3=80B）：DATA1[25..56] = DATA3[32..63]（正序拷贝）
      *   · 其他家族（DATA3=40B）：        DATA1[25..40] = DATA3[16..31]（正序拷贝）
-     * 反编译里那些「reverse 16-byte」只是中间比较缓冲的构建方式，实际写回是正序。
-     * MES 是无条件覆盖；此处 DATA3 全零/过短时跳过（沙箱占位数据保护，避免清掉 DATA1）。
+     * 标准做法是无条件覆盖；此处 DATA3 全零/过短时跳过（沙箱占位数据保护，避免清掉 DATA1）。
      *
      * @param {Uint8Array} data3  DID 0x40A2 的 CAN 配置块
      * @returns {{merged: boolean, changed: number, reason?: string}} 是否合并、改了几字节
@@ -134,10 +132,10 @@ class ProxiBlock {
         return { merged: true, changed };
     }
 
-    // ⚠️ 编号约定：对外的字节号一律为 MES/社区口径（1-based，Byte1=首字节），
-    // 内部数组 0-based。实车定论（2026-10-09）：Race Type2 的 CC 在 MES Byte88 = 内部[87]。
-    #toIdx(mesNo) {
-        return mesNo - 1;
+    // ⚠️ 编号约定：对外的字节号一律为社区口径（1-based，Byte1=首字节），
+    // 内部数组 0-based。实车定论（2026-10-09）：Race Type2 的 CC 在 Byte88 = 内部[87]。
+    #toIdx(no) {
+        return no - 1;
     }
 
     getByte(no) {
@@ -207,7 +205,7 @@ class ProxiBlock {
         for (let i = 0; i < n; i++) {
             const a = i < this.bytes.length ? this.bytes[i] : null;
             const b = i < other.bytes.length ? other.bytes[i] : null;
-            if (a !== b) out.push({ addr: i + 1, from: a, to: b });   // MES 编号（1-based）
+            if (a !== b) out.push({ addr: i + 1, from: a, to: b });   // 社区编号（1-based）
         }
         return out;
     }

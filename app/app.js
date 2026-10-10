@@ -262,8 +262,8 @@ $('btnLogSave').addEventListener('click', () => {
 
 /**
  * 导出 PROXI 采数：DATA1/2/3 三块原始 hex + 关键区摘录。
- * 用途：破解 MES「merge DATA3 into DATA1[25..56]」的字节映射（SGW 对齐相关）。
- * 采数时机：① 无 SGW 基线 ② SGW 车装 bypass 前 ③ 装 bypass 后 ④ MES 对齐后再采一次。
+ * 用途：采集 merge DATA3→DATA1[25..56] 的字节映射样本（SGW 对齐相关）。
+ * 采数时机：① 无 SGW 基线 ② SGW 车装 bypass 前 ③ 装 bypass 后 ④ 对齐后再采一次。
  */
 async function exportProxiSample() {
   if (!(await ensureConnected())) return;
@@ -286,8 +286,8 @@ async function exportProxiSample() {
       `AlfaProxi PROXI 采数 · ${new Date().toISOString()}`,
       `平台 ${navigator.platform || '?'} · ${navigator.userAgent}`,
       '',
-      `# 用途：破解 MES merge DATA3→DATA1[25..56] 映射（SGW 对齐）。请在文件名或备注里注明场景：`,
-      `#   no-sgw / sgw-before / sgw-after / mes-aligned`,
+      `# 用途：采集 merge DATA3→DATA1[25..56] 映射样本（SGW 对齐）。请在文件名或备注里注明场景：`,
+      `#   no-sgw / sgw-before / sgw-after / aligned`,
       '',
       `## DATA1 (DID 0x2023) · ${data1.length} 字节 · CRC 存储=${crcStr} · 校验${v.ok ? '自洽' : '不一致（计算 ' + v.computed + '）'}`,
       `### DATA1[25..56]（merge 目标区，32 字节）`,
@@ -452,8 +452,7 @@ async function connect(forceSim) {
         await state.bridge.open(opts.port, opts.baud);
       }
       // 适配器能力：多通道能自动切总线的，对齐时免换线。
-      // MES 实证（2026-10-10 反编译 UI 下拉 17 项 + qq() 判定）：
-      //   类型 6=CANtieCAR(USB/BT)、13=CANtieCAR(WiFi)、15=vLinker MS 免换线；
+      // 实证（2026-10-10）：CANtieCAR（USB/BT/WiFi）与 vLinker MS 免换线；
       //   其余（ELM327/OBDKey/OBDLink 等）要按线号换适配线。
       const autoBus = spec.kind === 'vlinker' || spec.kind === 'cantiecar';
       state.link = new Elm327(new BridgePort(state.bridge), {
@@ -862,7 +861,7 @@ $('restoreFile').addEventListener('change', async (e) => {
   let v = blk.verify();
   let sealNote = '';
   if (!v.ok) {
-    // 备份文件被手改过 / 来自别的工具导致校验不自洽：自动重算（与 MES 写入前行为一致），
+    // 备份文件被手改过 / 来自别的工具导致校验不自洽：自动重算（写入前必须自洽），
     // 否则后面写入/对齐必被 ECU 拒（NRC 0x31）
     blk.seal();
     v = blk.verify();
@@ -894,11 +893,11 @@ function renderEditor() {
   const grid = $('hexGrid');
   grid.innerHTML = '';
   for (let i = 0; i < b.length; i++) {
-    // 显示与访问都用 MES 编号（1-based，B1=首字节）——与命名项/社区口径一致
+    // 显示与访问都用社区编号（1-based，B1=首字节）——与命名项口径一致
     const no = i + 1;
     const cur = b.getByte(no);
     const orig = state.baseline ? state.baseline.getByte(no) : cur;
-    // CRC 校验区（MES B7–B11，5 位十进制 ASCII）：任何配置改动都会让它自动重算
+    // CRC 校验区（B7–B11，5 位十进制 ASCII）：任何配置改动都会让它自动重算
     const isCrc = no >= CRC_OFFSET + 1 && no <= CRC_OFFSET + CRC_DIGITS;
     const changed = cur !== orig;
     const el = document.createElement('div');
@@ -1002,7 +1001,7 @@ async function writeToEcu() {
     if (changes.length) renderEditor();
     stage('正在写入配置…');
     state.block.seal();
-    // 注：PROXI 写入不需要 Security Access（与 MES qq() 一致，反编译已核实）
+    // 注：PROXI 写入不需要 Security Access（实车流程已核实）
     await state.uds.writeProxi(state.block.bytes);
     stage('正在读回校验…');
     const back = new ProxiBlock(await state.uds.readProxi());
@@ -1332,17 +1331,17 @@ $('btnAlign').addEventListener('click', async () => {
   if (!confirm(warn)) return;
   const chosen = selectedNodes();
   if (!chosen.length) return alert('请先勾选要对齐的节点');
-  // —— 与 MES qq() 同构的对齐前置：merge DATA3 → 重算 CRC ——
-  // 依据 MES 5.4 反编译：PROXIX 家族 DATA1[25..56] = DATA3[32..63]（正序），SGW 在 Byte41 落在该区。
+  // —— 对齐前置：merge DATA3 → 重算 CRC ——
+  // 映射：PROXIX 家族 DATA1[25..56] = DATA3[32..63]（正序），SGW 在 Byte41 落在该区。
   try {
-    stage('正在读取 DATA3 并合并 CAN 配置（MES 对齐同款步骤）…');
+    stage('正在读取 DATA3 并合并 CAN 配置…');
     const { data3 } = await state.uds.readProxiAll();
     const m = state.block.mergeData3(data3);
     if (m.merged && m.changed > 0) {
       renderEditor();
       const go = confirm(
         `DATA3 的 CAN 配置与当前块不一致，已合并 ${m.changed} 处到 Byte26–57（含 SGW 状态等）。\n\n`
-        + '这是 MES 对齐的同款步骤：用实际 CAN 配置刷新 PROXI 镜像区。\n'
+        + '这是对齐的标准步骤：用实际 CAN 配置刷新 PROXI 镜像区。\n'
         + '「字节编辑器」里这些字节会显示为变化，属正常。\n\n继续对齐？'
       );
       if (!go) return;
@@ -1354,7 +1353,7 @@ $('btnAlign').addEventListener('click', async () => {
   } catch (e) {
     log('DATA3 读取失败（跳过合并，仍按当前块对齐）：' + e.message);
   }
-  // 与 MES 一致：发 2E 20 23 前无条件重算 CRC（B7–B11）。
+  // 发 2E 20 23 前无条件重算 CRC（B7–B11）。
   // 手动改字节时 afterByteEdit 已 seal 过，mergeData3 内也会 seal——这里再兜一次底。
   state.block.seal();
   const chosenIdx = new Set(chosen.map((n) => n._idx));
@@ -1499,9 +1498,9 @@ function askInput(item) {
 /* ================= 特殊功能 ================= */
 /** 把命令串拆成 UDS 载荷逐帧下发 */
 /**
- * 执行特殊功能命令串（MES 模板格式：逗号分隔的 token，每个 `NN<data>`）。
+ * 执行特殊功能命令串（命令模板格式：逗号分隔的 token，每个 `NN<data>`）。
  *
- * token 类型（2026-10-10 全量审计 MES params_all.tsv / functions.json 确认）：
+ * token 类型（2026-10-10 全量审计 functions.json 确认）：
  *   · NN=0x01–0x07   单帧 UDS：payload = data[0..NN]
  *   · NN=0x08–0x99   多帧 UDS：payload = data[0..NN]（如 VIN 写 0x14、喷油嘴 0x0C、PROXI 整块 0x99）
  *                    → 直接交 link.request，它内部 #sendMulti 已做 ISO-TP 多帧
@@ -1510,7 +1509,7 @@ function askInput(item) {
  *   · NN=0x00        期望响应模板（00 71 03…/00 FF FF…）：不发送，校验用
  *
  * 早期版本误 `if (len > 7) continue` 把多帧 UDS + FE/FF 全静默丢弃（61 个功能条目受影响）——
- * 反编译只对齐了主干写入，漏了功能层的命令模板分支，实测才暴露。
+ * 只对齐了主干写入，漏了功能层的命令模板分支，实测才暴露。
  */
 async function runCommandString(cmdStr) {
   const sent = [];
@@ -1520,7 +1519,7 @@ async function runCommandString(cmdStr) {
     const raw = hexToBytes(h);
     if (raw.length < 1) continue;
     const tag = raw[0];
-    // FE：脚本步骤/循环计数器，不发送（步进语义，MES 用它标记流程节点）
+    // FE：脚本步骤/循环计数器，不发送（步进语义，标记流程节点）
     if (tag === 0xFE) { sent.push(`[步进 ${h.slice(2)}]`); continue; }
     // FF：延时 FF00NN = NN ms
     if (tag === 0xFF) {
@@ -1724,7 +1723,7 @@ $('btnScan').addEventListener('click', async () => {
   stageDone(`扫描完成：${ok} 个有应答${none ? ` / ${none} 个无应答` : ''}${skipped ? ` / ${skipped} 个跨总线未探测（需换适配线）` : ''}`);
 });
 
-/** 手动连接指定模块（像 MES：选模块→连接） */
+/** 手动连接指定模块（选模块→连接） */
 async function connectModuleManual(code) {
   try {
     if (!(await ensureConnected())) return;

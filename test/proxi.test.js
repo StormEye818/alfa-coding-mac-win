@@ -65,7 +65,7 @@ const txt = d1.toHexText();
 check('toHexText 每行 24 字节', txt.split('\n')[0].split(' ').length === 24);
 check('fromHex 可还原', ProxiBlock.fromHex(txt).diff(d1).length === 0);
 
-console.log('\nmerge DATA3（MES 对齐同款）');
+console.log('\nmerge DATA3（对齐前置）');
 {
   // PROXIX 80B：DATA1[25..56] = DATA3[32..63]（正序）
   const b = new ProxiBlock(new Uint8Array(80).fill(0xAA));

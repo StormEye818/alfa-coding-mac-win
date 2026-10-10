@@ -178,6 +178,8 @@ class Uds {
      * 对齐判定的主依据。`expected` 传基准块：基准值 ⊕ 掩码 = 实际存储值。
      */
     async verifyProxi(expected) {
+        // 写入+校验序列：Sleep(200) → 2E 20 23 → 22 10 2A → 22 40 AA（三条命令一体）
+        await new Promise((r) => setTimeout(r, 200));
         const resp = assertPositive(await this.link.request(new Uint8Array([0x22, 0x10, 0x2A])), '回读校验');
         const d = resp.slice(3);
         const diffs = [];
@@ -195,6 +197,9 @@ class Uds {
                 });
             }
         }
+        // 校验后补发 22 40 AA（写入序列的第三条命令，与标准流程一致）
+        await this.link.request(new Uint8Array([0x22, 0x40, 0xAA]), { timeoutMs: 3000 })
+            .catch(() => {});
         return { ok: diffs.length === 0, diffs, raw: d };
     }
 }

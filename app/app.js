@@ -1,7 +1,7 @@
 /**
  * AlfaProxi 界面逻辑。
  *
- * 流程（与诊断软件一致）：
+ * 流程：
  *   连接适配器 → 连接目标 ECU（必要时提示换适配线）→ 读取配置 → 显示当前值
  *   → 修改 → 写入 → 读回校验
  *
@@ -1409,9 +1409,12 @@ $('btnAlign').addEventListener('click', async () => {
         $('stDone').textContent = done;
         $('stFail').textContent = fail;
         $('stPending').textContent = total - done - fail;
-        await stageWait(240);
+        // 每节点之间留 ECU 存储沉降时间（标准流程 2.5 秒）
+        await stageWait(2500);
       }
     }
+    // 全部节点完成后留 ECU 收尾时间（标准流程 1 秒）
+    await stageWait(1000);
     if (failed.length) {
       stageFail(`对齐结束：成功 ${done} / 失败 ${fail}`);
       alert(`PROXI 对齐结束\n\n成功 ${done} 个节点\n失败 ${fail} 个节点：\n\n${failed.slice(0, 10).join('\n')}${failed.length > 10 ? '\n…' : ''}\n\n失败节点可重试。`);

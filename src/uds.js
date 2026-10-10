@@ -101,15 +101,25 @@ class Uds {
         req[0] = 0x2e; req[1] = hi; req[2] = lo; req.set(data, 3);
         // 写入前强制进扩展会话（S3 超时会掉回默认会话，那时写入必被拒 0x31）
         await this.enterExtendedSession();
-        try {
-            return assertPositive(await this.link.request(req, { timeoutMs: 8000 }), '写入');
-        } catch (e) {
-            // 0x31 = 请求超出范围：典型原因是会话掉了/未在扩展会话。重进一次会话再试。
-            if (e instanceof UdsError && e.nrc === 0x31) {
-                await this.enterExtendedSession();
+        for (let attempt = 0; ; attempt++) {
+            try {
                 return assertPositive(await this.link.request(req, { timeoutMs: 8000 }), '写入');
+            } catch (e) {
+                const nrc = e instanceof UdsError ? e.nrc : undefined;
+                // 0x31 = 请求超出范围：典型原因是会话掉了/未在扩展会话 → 重进会话再试
+                if (nrc === 0x31 && attempt === 0) {
+                    await this.enterExtendedSession();
+                    continue;
+                }
+                // 瞬时失败（无响应/0x21 太频繁/0x22 条件不满足/0x78 等）：等 2 秒重试一次，
+                // 与标准逐节点写入的重试语义一致
+                if (attempt === 0 && (e instanceof Elm327Error || nrc === 0x21 || nrc === 0x22 || nrc === 0x10)) {
+                    await new Promise((r) => setTimeout(r, 2000));
+                    await this.enterExtendedSession();
+                    continue;
+                }
+                throw e;
             }
-            throw e;
         }
     }
 
@@ -161,17 +171,18 @@ class Uds {
     }
 
     /**
-     * 按节点回读校验（与诊断软件一致，DID 0x102A）。
-     * 响应 13 字节：62 10 2A <...> ，其中含最多 3 组 (字节号, 异或掩码)，
-     * 指出该节点存储块与基准块（车身电脑当前 PROXI）的差异位置——
-     * 对齐判定的主依据。`expected` 传基准块用于还原差异字节的存储值。
+     * 按节点回读校验（DID 0x102A）。
+     * 响应固定 12 字节：62 10 2A + 9 数据 = 3 组 [标志, 字节号, 异或掩码]，
+     * 差异组 (字节号, 异或掩码) 位于数据 [1,2] / [4,5] / [7,8]。
+     * 字节号非 0 且掩码非 0 视为有效差异组，指出该节点存储块与基准块的差异位置——
+     * 对齐判定的主依据。`expected` 传基准块：基准值 ⊕ 掩码 = 实际存储值。
      */
     async verifyProxi(expected) {
         const resp = assertPositive(await this.link.request(new Uint8Array([0x22, 0x10, 0x2A])), '回读校验');
         const d = resp.slice(3);
         const diffs = [];
-        // 通行的解析方式：data[n-1] ^ mask 即该字节应有的值差异；n=0 表示无该项
-        for (const [idxPos, maskPos] of [[5, 6], [8, 9], [11, 12]]) {
+        // 3 组差异槽位：每组 3 字节 [标志, 字节号, 异或掩码]，(字节号, 掩码) 在 [1,2]、[4,5]、[7,8]
+        for (const [idxPos, maskPos] of [[1, 2], [4, 5], [7, 8]]) {
             const n = d[idxPos];
             const m = d[maskPos];
             if (n && m) {

@@ -47,11 +47,11 @@ console.log('场景 1：读 PROXI → 写入（正确 CRC）→ 读回一致 →
         && back.every((b, i) => b === blk.bytes[i]));
 
     const vf = car.handle(body, [0x22, 0x10, 0x2a]);
-    check('22 10 2A 应答 13 字节（62 10 2A + 10 数据）', vf.length === 13
+    check('22 10 2A 应答 12 字节（62 10 2A + 9 数据）', vf.length === 12
         && vf[0] === 0x62 && vf[1] === 0x10 && vf[2] === 0x2a, `长度 ${vf.length}`);
     const d = vf.slice(3);
     const diffs = [];
-    for (const [i, m] of [[5, 6], [8, 9], [11, 12]]) if (d[i] && d[m]) diffs.push({ byte: d[i], mask: d[m] });
+    for (const [i, m] of [[1, 2], [4, 5], [7, 8]]) if (d[i] && d[m]) diffs.push({ byte: d[i], mask: d[m] });
     check('回读校验无差异（差异组全 0）', diffs.length === 0, JSON.stringify(diffs));
 }
 
@@ -87,11 +87,11 @@ console.log('\n场景 2b：回读校验报出差异组（字节号, 异或掩码
     flakyCar.handle(fb, [0x2e, 0x20, 0x23, ...blk.bytes]);      // 写入“成功”但 3 字节未更新
 
     const vf = flakyCar.handle(fb, [0x22, 0x10, 0x2a]);
-    check('3 组差异 → 应答 16 字节（62 10 2A + 13 数据）', vf.length === 16, `长度 ${vf.length}`);
+    check('3 组差异 → 应答仍 12 字节（62 10 2A + 9 数据）', vf.length === 12, `长度 ${vf.length}`);
     const d = vf.slice(3);
-    const groups = [[5, 6], [8, 9], [11, 12]].map(([i, m]) => ({ byte: d[i], mask: d[m] }));
+    const groups = [[1, 2], [4, 5], [7, 8]].map(([i, m]) => ({ byte: d[i], mask: d[m] }));
     // 差异组字节号为社区口径（1 基，与 src/uds.js 的 expected[n-1] 一致）：内部 87/114/201 → 88/115/202
-    check('差异组位于数据 [5,6] [8,9] [11,12]（与 src/uds.js 槽位一致）',
+    check('差异组位于数据 [1,2] [4,5] [7,8]（与 src/uds.js 槽位一致）',
         groups[0].byte === 88 && groups[1].byte === 115 && groups[2].byte === 202,
         JSON.stringify(groups));
     check('异或掩码 = 存储值 ⊕ 写入值（Byte88: 0x0C）', groups[0].mask === 0x0c, `got 0x${groups[0].mask.toString(16)}`);

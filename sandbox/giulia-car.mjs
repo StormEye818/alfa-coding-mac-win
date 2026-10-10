@@ -550,10 +550,10 @@ export class GiuliaCar {
         for (let i = 0; i < n && diffs.length < 3; i++) {
             if (got[i] !== exp[i]) diffs.push({ byte: i + 1, xorMask: got[i] ^ exp[i] });
         }
-        // 应答 13 字节：62 10 2A + 10 数据，差异组 (字节号, 异或掩码) 位于 [5,6]、[8,9]；
-        // 第 3 组位于 [11,12]（与 src/uds.js 的槽位一致，需 16 字节应答）
-        const data = new Array(diffs.length >= 3 ? 13 : 10).fill(0);
-        const slots = [[5, 6], [8, 9], [11, 12]];
+        // 应答固定 12 字节：62 10 2A + 9 数据 = 3 组 [标志, 字节号, 异或掩码]
+        // 差异组 (字节号, 异或掩码) 位于数据 [1,2]、[4,5]、[7,8]（与 src/uds.js 槽位一致）
+        const data = new Array(9).fill(0);
+        const slots = [[1, 2], [4, 5], [7, 8]];
         diffs.forEach((d, i) => {
             data[slots[i][0]] = d.byte;
             data[slots[i][1]] = d.xorMask;

@@ -1522,13 +1522,18 @@ async function runCommandString(cmdStr) {
     const raw = hexToBytes(h);
     if (raw.length < 1) continue;
     const tag = raw[0];
-    // FE：脚本步骤/循环计数器，不发送（步进语义，标记流程节点）
-    if (tag === 0xFE) { sent.push(`[步进 ${h.slice(2)}]`); continue; }
-    // FF：延时 FF00NN = NN ms
+    // FE：脚本步骤标记。参考语义是 UI 提示步进文本并等待（子命令=raw[1]，索引=raw[2]）
+    // 我们数据侧无步进文本，退化为显示标记并短暂停留
+    if (tag === 0xFE) {
+      sent.push(`[步进 ${h.slice(2)}]`);
+      await stageWait(400);
+      continue;
+    }
+    // FF：延时。参考语义 num2 = 10*(256*b1+b2) 次 × 100ms → FF00NN = NN 秒
     if (tag === 0xFF) {
-      const ms = raw.length >= 3 ? ((raw[1] << 8) | raw[2]) : 10;
-      sent.push(`[延时 ${ms}ms]`);
-      if (ms > 0) await stageWait(Math.min(ms, 3000));
+      const ms = raw.length >= 3 ? ((raw[1] << 8) | raw[2]) * 1000 : 10;
+      sent.push(`[延时 ${Math.round(ms / 1000)}s]`);
+      if (ms > 0) await stageWait(Math.min(ms, 60000));
       continue;
     }
     // 00：期望响应模板（校验用），不发送
@@ -1885,10 +1890,29 @@ function applyScale(raw, item) {
   if (!raw || !raw.length) return null;
   const spec = item.spec || {};
   const nb = spec.bytes || 1;
+  const fmt = spec.format || '';
+  const slice = raw.slice(0, Math.min(raw.length, nb));
+
+  // 非数值格式：按参考语义分支
+  if (fmt === 'str') return slice.map((b) => (b >= 32 && b < 127 ? String.fromCharCode(b) : '')).join('').replace(/\0+$/, '');
+  if (fmt === 'hex') return Array.from(slice).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join('');
+  if (fmt === 'hex2') return Array.from(slice).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
+  if (fmt === 'bits' || fmt === 'bitw' || fmt === 'bitchars') {
+    // 位表未导入（数据侧缺口），退化为十六进制展示，避免报错
+    return Array.from(slice).map((b) => b.toString(2).padStart(8, '0')).join(' ');
+  }
+  if (fmt === 'date' || fmt === 'datehalf' || fmt.startsWith('eq3') || fmt.startsWith('nm') || fmt.startsWith('equ')) {
+    // 日期/多项式/位掩码：数据侧未导入换算参数，退化为 hex
+    return Array.from(slice).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
+  }
+
+  // 数值格式：参考语义为 **大端** 装配 + (raw*scale+offset)/10^decimals
   let n = 0;
-  for (let i = 0; i < Math.min(raw.length, nb); i++) n |= raw[i] << (8 * i);
-  if (spec.scale !== undefined) n = n * spec.scale + (spec.offset || 0);
-  return spec.decimals !== undefined ? Number(n.toFixed(spec.decimals)) : n;
+  for (let i = 0; i < slice.length; i++) n = n * 256 + slice[i];
+  n = n * (spec.scale ?? 1) + (spec.offset ?? 0);
+  const dec = spec.decimals ?? 0;
+  n = n / Math.pow(10, dec);
+  return Number(n.toFixed(dec));
 }
 
 function renderLive(items) {

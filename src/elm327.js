@@ -284,7 +284,9 @@ class Elm327 {
         // 多帧应答可能被假提示符截断（FC 发送引出的 '>'）——收集到完整消息或预算用尽
         for (;;) {
             const msgs = reassembleIsoTp(this.#parseFrames(raw));
-            if (msgs.length > 0) return msgs[0];
+            // 7F <svc> 78 = 响应挂起（pending）：ECU 还在处理，跳过它继续等真实响应
+            const real = msgs.filter((m) => !(m.length >= 3 && m[0] === 0x7f && m[2] === 0x78));
+            if (real.length > 0) return real[0];
             const flat = raw.replace(/\s+/g, '');
             const remain = timeoutMs - (Date.now() - t0);
             const sawResp = this.respId && flat.includes(this.respId.toString(16));
@@ -320,6 +322,11 @@ class Elm327 {
     /**
      * ISO-TP 多帧发送：
      *   首帧(0x1L LL, 6字节) → 等流控帧(0x30/0x31/0x32) → 按 BS/STmin 连续帧(0x2X, 7字节)
+     *
+     * 节奏（实车定论 2026-10-10）：ECU 流控常给 STmin=0（要求背靠背发完），
+     * 逐帧等 NO DATA 会让每帧卡 250ms、36 帧传 10 秒，超出 N_Cr 帧间超时边缘。
+     * 解法：连续帧期间切 ATST03（适配器 12ms 超时，帧间隙压到 ~15ms），
+     * 尾帧前恢复 ATST99 等最终响应——与 MES 多帧发送同款节奏。
      */
     async #sendMulti(payload, timeoutMs) {
         const total = payload.length;
@@ -332,28 +339,45 @@ class Elm327 {
         const fc = this.#parseFlowControl(fcRaw);
         if (fc.flowStatus === 0x02) throw new Elm327Error('ECU 流控：溢出，写入中止', 'OVERFLOW');
 
+        // 连续帧用短超时快发（MES 同款 ATST03），避免逐帧卡满响应超时
+        await this.#send('ATST03');
+
         let idx = 1, off = 6, sinceFc = 0;
-        while (off < total) {
-            // ISO-TP 最后一帧用短帧（不足 7 字节不填充），与 ECU 发送风格一致；
-            // 实车教训（2026-10-09）：填充到 8 字节会被严格校验的 ECU 拒（NRC 0x31）
-            const remaining = total - off;
-            const dataLen = Math.min(7, remaining);
-            const cf = new Uint8Array(1 + dataLen);
-            cf[0] = 0x20 | (idx & 0x0f);
-            cf.set(payload.slice(off, off + dataLen), 1);
-            const raw = await this.#send(bytesToHex(cf), timeoutMs);
-            off += dataLen;
-            idx = (idx + 1) & 0x0f;
-            sinceFc++;
-            if (fc.blockSize && sinceFc >= fc.blockSize && off < total) {
-                const fc2 = this.#parseFlowControl(raw);
-                sinceFc = 0;
-                if (fc2.flowStatus === 0x02) throw new Elm327Error('ECU 流控：溢出，写入中止', 'OVERFLOW');
+        let lastResp = '';
+        let restored = false;   // ATST99 下发即已恢复长超时，成功路径不再插命令（避免吞响应）
+        try {
+            while (off < total) {
+                // ISO-TP 最后一帧用短帧（不足 7 字节不填充），与 ECU 发送风格一致；
+                // 实车教训（2026-10-09）：填充到 8 字节会被严格校验的 ECU 拒（NRC 0x31）
+                const remaining = total - off;
+                const dataLen = Math.min(7, remaining);
+                const cf = new Uint8Array(1 + dataLen);
+                cf[0] = 0x20 | (idx & 0x0f);
+                cf.set(payload.slice(off, off + dataLen), 1);
+                const isLast = off + dataLen >= total;
+                if (isLast) {
+                    // 尾帧前恢复正常超时，等 ECU 的最终 UDS 响应（MES 同款 ATST99）
+                    await this.#send('ATST99');
+                    restored = true;
+                }
+                const raw = await this.#send(bytesToHex(cf), isLast ? timeoutMs : 2000);
+                if (isLast) lastResp = this.lastRaw || raw || '';
+                off += dataLen;
+                idx = (idx + 1) & 0x0f;
+                sinceFc++;
+                if (fc.blockSize && sinceFc >= fc.blockSize && off < total) {
+                    const fc2 = this.#parseFlowControl(raw);
+                    sinceFc = 0;
+                    if (fc2.flowStatus === 0x02) throw new Elm327Error('ECU 流控：溢出，写入中止', 'OVERFLOW');
+                }
+                if (fc.stMin > 0) await new Promise((r) => setTimeout(r, fc.stMin));
             }
-            if (fc.stMin > 0) await new Promise((r) => setTimeout(r, fc.stMin));
+        } finally {
+            // 仅中途出错时补恢复；成功路径已由 ATST99 恢复，不再插命令
+            if (!restored) await this.#send('ATST32').catch(() => {});
         }
         // 最后一帧的应答里可能已带响应，也可能还要再取
-        return this.lastRaw || '';
+        return lastResp;
     }
 
     /** 从 ELM327 响应里挑出流控帧（PCI 高 4 位 = 3） */

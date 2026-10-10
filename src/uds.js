@@ -71,6 +71,23 @@ class Uds {
         return this.link.request(new Uint8Array([0x3e, 0x00]));
     }
 
+    /**
+     * 进扩展会话（10 03 → 必须回 50 03）。
+     *
+     * 实车定论（2026-10-10）：写入 NRC 0x31 的根因就是没进扩展会话——
+     * 读取在默认会话能过，写入（2E）必须扩展会话。ECU 的 S3 会话超时通常 5 秒，
+     * 用户编辑字节常花十几秒，所以**每次写入前都必须重进**，不能只在连接时进一次。
+     * 对齐 MES 的模块连接流程（每次连接发 10 03 并强制校验 50 03）。
+     */
+    async enterExtendedSession() {
+        const resp = await this.link.request(new Uint8Array([0x10, 0x03]), { timeoutMs: 3000 });
+        if (!resp || resp.length < 2 || resp[0] !== 0x50 || resp[1] !== 0x03) {
+            const hex = resp ? bytesToHex(resp) : '(空)';
+            throw new UdsError(`扩展会话切换失败：期望 50 03，实得 ${hex}`, resp && resp[0] === 0x7f ? resp[2] : undefined);
+        }
+        return resp;
+    }
+
     async readDataByIdentifier(did) {
         const hi = (did >> 8) & 0xff, lo = did & 0xff;
         const resp = assertPositive(await this.link.request(new Uint8Array([0x22, hi, lo])), '读取');
@@ -82,8 +99,18 @@ class Uds {
         const hi = (did >> 8) & 0xff, lo = did & 0xff;
         const req = new Uint8Array(3 + data.length);
         req[0] = 0x2e; req[1] = hi; req[2] = lo; req.set(data, 3);
-        const resp = assertPositive(await this.link.request(req, { timeoutMs: 8000 }), '写入');
-        return resp;
+        // 写入前强制进扩展会话（S3 超时会掉回默认会话，那时写入必被拒 0x31）
+        await this.enterExtendedSession();
+        try {
+            return assertPositive(await this.link.request(req, { timeoutMs: 8000 }), '写入');
+        } catch (e) {
+            // 0x31 = 请求超出范围：典型原因是会话掉了/未在扩展会话。重进一次会话再试。
+            if (e instanceof UdsError && e.nrc === 0x31) {
+                await this.enterExtendedSession();
+                return assertPositive(await this.link.request(req, { timeoutMs: 8000 }), '写入');
+            }
+            throw e;
+        }
     }
 
     async readDtc() {

@@ -22,3 +22,4 @@ mobile/release.keystore
 mobile/ios/build/
 mobile/android/app/build/
 mobile/www/
+HANDOFF.md

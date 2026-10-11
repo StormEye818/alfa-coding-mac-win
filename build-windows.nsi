@@ -12,7 +12,7 @@ OutFile "AlfaProxi.Setup.0.2.5.exe"
 InstallDir "$LOCALAPPDATA\Programs\AlfaProxi"
 InstallDirRegKey HKCU "Software\AlfaProxi" "InstallLocation"
 RequestExecutionLevel user
-BrandingText "AlfaProxi 0.1.0"
+BrandingText "AlfaProxi 0.2.5"
 
 ; Install pages
 !insertmacro MUI_PAGE_WELCOME
@@ -42,7 +42,7 @@ Section "Install" SecMain
 
   ; Registry (HKCU uninstall entry, per-user install)
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\AlfaProxi" "DisplayName" "AlfaProxi"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\AlfaProxi" "DisplayVersion" "0.1.0"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\AlfaProxi" "DisplayVersion" "0.2.5"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\AlfaProxi" "Publisher" "bigmiao"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\AlfaProxi" "InstallLocation" "$INSTDIR"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\AlfaProxi" "DisplayIcon" "$INSTDIR\AlfaProxi.exe"

@@ -543,7 +543,12 @@ main { padding: 22px; max-width: 1360px; margin: 0 auto; }
   font-family: var(--mono); font-size: 12px; color: var(--dim);
   white-space: pre-wrap; overflow-x: auto;
 }
-.live-val { font-family: var(--mono); font-size: 17px; font-weight: 700; color: var(--accent); }
+/* 实时数据值槽：嵌在参数卡片右侧，右对齐定宽防跳动 */
+.live-val {
+  font-family: var(--mono); font-size: 17px; font-weight: 700; color: var(--dim);
+  min-width: 96px; text-align: right; font-variant-numeric: tabular-nums;
+}
+.live-val.live-val-hot { color: var(--accent); }
 
 /* 待写浮动条：有待写选择时提示，直达「写入 ECU」 */
 #floatWriteBar {

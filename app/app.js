@@ -1970,7 +1970,7 @@ function renderModuleSessionUI() {
 }
 
 /* ================= 实时数据 ================= */
-const live = { running: false, samples: [], lastItems: [], items: [] };
+const live = { running: false, samples: [], lastItems: [], items: [], picks: [] };
 
 function applyScale(raw, item) {
   if (!raw || !raw.length) return null;
@@ -2003,10 +2003,15 @@ function applyScale(raw, item) {
 
 function renderLive(items) {
   live.lastItems = items;
-  $('liveChart').innerHTML = items.map((it, i) => {
-    const last = live.samples.length ? live.samples[live.samples.length - 1].v[i] : '—';
-    return `<div style="margin:6px 0"><span style="color:var(--dim)">${it.name}</span>　<span class="live-val">${last ?? '—'}</span><span style="color:var(--dim)"> ${it.spec && it.spec.unit ? it.spec.unit : ''}</span></div>`;
-  }).join('');
+  // 数值直接刷新在勾选卡片的值槽上（不用再拉到底部）
+  const last = live.samples.length ? live.samples[live.samples.length - 1] : null;
+  (live.picks || []).forEach((p, i) => {
+    const el = document.getElementById('liveVal-' + p.idx);
+    if (!el) return;
+    const v = last ? last.v[i] : null;
+    el.textContent = (v === null || v === undefined) ? '—' : String(v);
+    el.classList.toggle('live-val-hot', v !== null && v !== undefined);
+  });
 }
 
 function renderLiveParams() {
@@ -2023,6 +2028,7 @@ function renderLiveParams() {
         <div class="name">${tSpan(i.name)}</div>
         <div class="sub">DID ${i.did} · ${i.spec && i.spec.unit ? '单位 ' + i.spec.unit + ' · ' : ''}${i.spec && i.spec.scale && i.spec.scale !== 1 ? '换算 ×' + i.spec.scale : ''}</div>
       </div>
+      <div class="live-val" id="liveVal-${idx}">—</div>
     </div>`).join('') || '<div class="dim" style="padding:14px">该模块无可读参数</div>';
 }
 $('liveModule') && $('liveModule').addEventListener('change', renderLiveParams);
@@ -2037,28 +2043,34 @@ $('btnLiveExit') && $('btnLiveExit').addEventListener('click', exitModule);
 /** 勾选即读：勾上自动开始轮询，取消勾选到 0 项自动停止 */
 function pickedLiveItems() {
   return [...document.querySelectorAll('.live-pick:checked')]
-    .map((el) => state.liveItems[Number(el.dataset.idx)])
-    .filter(Boolean);
+    .map((el) => ({ idx: Number(el.dataset.idx), it: state.liveItems[Number(el.dataset.idx)] }))
+    .filter((p) => p.it);
 }
 
 async function syncLiveAuto() {
   if (!modSess.code) return;
-  const chosen = pickedLiveItems();
-  if (chosen.length > 8) {
+  const picked = pickedLiveItems();
+  if (picked.length > 8) {
     alert('最多同时监控 8 项参数，已保留前 8 项');
-    [...document.querySelectorAll('.live-pick:checked')].slice(8).forEach((el) => { el.checked = false; });
+    [...document.querySelectorAll('.live-pick:checked')].slice(8).forEach((el) => {
+      el.checked = false;
+      const cell = document.getElementById('liveVal-' + el.dataset.idx);
+      if (cell) { cell.textContent = '—'; cell.classList.remove('live-val-hot'); }
+    });
     return syncLiveAuto();
   }
-  if (!chosen.length) {
+  if (!picked.length) {
     stopLiveLoop();
-    renderLive([]);
+    live.picks = [];
+    live.items = [];
     return;
   }
-  live.lastItems = chosen;
-  if (live.running) { live.items = chosen; return; }   // 已在轮询：热更新监控项
+  live.picks = picked;
+  live.lastItems = picked.map((p) => p.it);
+  if (live.running) { live.items = live.lastItems; return; }   // 已在轮询：热更新监控项
   live.running = true;
-  live.items = chosen;
-  stage(`正在读取实时数据（${chosen.length} 项）…`);
+  live.items = live.lastItems;
+  stage(`正在读取实时数据（${picked.length} 项）…`);
   const t0 = Date.now();
   let n = 0;
   try {
@@ -2086,7 +2098,12 @@ async function syncLiveAuto() {
 function stopLiveLoop() { live.running = false; }
 
 $('liveParams') && $('liveParams').addEventListener('change', (e) => {
-  if (e.target.classList.contains('live-pick')) syncLiveAuto();
+  if (!e.target.classList.contains('live-pick')) return;
+  if (!e.target.checked) {
+    const cell = document.getElementById('liveVal-' + e.target.dataset.idx);
+    if (cell) { cell.textContent = '—'; cell.classList.remove('live-val-hot'); }
+  }
+  syncLiveAuto();
 });
 
 $('fnEnter') && $('fnEnter').addEventListener('click', async () => {

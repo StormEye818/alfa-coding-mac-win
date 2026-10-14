@@ -1,5 +1,5 @@
 {
-  "note": "诊断软件自带的 PROXI 命名设置（一键写）。每个 = 在 DATA1 的 startByte 上按 mask 改成某个 value，然后 2E 20 23 写回 + 重算 CRC。",
+  "note": "诊断工具自带的 PROXI 命名设置（一键写）。每个 = 在 DATA1 的 startByte 上按 mask 改成某个 value，然后 2E 20 23 写回 + 重算 CRC。",
   "source": "diag-data/data/params_all.tsv (ModuleID=PROXIX1, CmdType=4)",
   "count": 44,
   "settings": [

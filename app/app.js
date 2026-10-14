@@ -1585,6 +1585,11 @@ function renderFunctions() {
   const sec = $('funcSec').value;
   const mod = modSel.value;
   const q = $('fnSearch').value;
+  // 进入模块并连接成功后才显示功能列表——避免未连接就看到按钮直接点、漏掉连接步骤
+  if (!modSess.code) {
+    wrap.innerHTML = '<div class="dim" style="padding:16px">请先在上方选择模块，点「进入模块」并确认连接成功后，这里显示该模块的功能</div>';
+    return;
+  }
   const list = all.filter((i) =>
     (!cat || i.category === cat) &&
     (!sec || i.security.level === sec) &&
@@ -1967,6 +1972,7 @@ function renderModuleSessionUI() {
     if (inMod) $('fnModule').value = modSess.code;
   }
   renderFunctions();
+  renderLiveParams();
 }
 
 /* ================= 实时数据 ================= */
@@ -2018,6 +2024,13 @@ function renderLiveParams() {
   const code = $('liveModule').value;
   const wrap = $('liveParams');
   if (!code) { wrap.innerHTML = ''; return; }
+  // 进入模块并连接成功后才显示参数列表——避免未连接就勾选、漏掉连接步骤
+  if (!modSess.code || modSess.code !== code) {
+    state.liveItems = [];
+    $('liveCount').textContent = '0';
+    wrap.innerHTML = '<div class="dim" style="padding:16px">点「进入模块」并确认连接成功后，这里显示该模块可读参数</div>';
+    return;
+  }
   const items = (state.params && state.params.modules && state.params.modules[code]) || [];
   state.liveItems = items;
   $('liveCount').textContent = items.length;

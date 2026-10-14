@@ -50,8 +50,9 @@ class Session extends Emitter {
     /**
      * 确保已连上指定模块。必要时提示换适配线。
      * @param {string} code 模块代号，如 BODY33 / ABSMMKC1
+     * @param {{cableConfirmed?: boolean}} opts cableConfirmed=调用方已在进入前提过换线并获确认
      */
-    async ensureModule(code) {
+    async ensureModule(code, opts = {}) {
         const m = this.cables.modules[code];
         if (!m) throw new SessionError(`未知模块：${code}`);
 
@@ -74,16 +75,22 @@ class Session extends Emitter {
             }
         }
 
-        if (mustSwap) {
+        if (mustSwap && !opts.cableConfirmed) {
             this.log(`需要换适配线：${m.hint}`);
             // 先建立等待句柄，再发事件：回调里同步 confirmCable() 才不会丢
             const wait = this.waitForCableConfirm();
             this.emit('cableRequired', { module: m, hint: m.hint, group: wantGroup });
             await wait;
             this.emit('cableDone', { module: m });
+        } else if (mustSwap) {
+            this.log(`换线已确认：${m.hint}`);
+            this.emit('cableDone', { module: m });
         }
 
-        await this.link.setAddress({ tx: parseInt(m.tx, 16), rx: parseInt(m.rx, 16), baud: m.baud, code });
+        await this.link.setAddress({
+            tx: parseInt(m.tx, 16), rx: parseInt(m.rx, 16), baud: m.baud, code,
+            busGroup: m.group || 'none', busProfile: m.bus || 'CCAN29',
+        });
         this.current = m;
         this.currentGroup = wantGroup;
         this.log(`已连接 ${m.name}（${code} @ 0x${m.tx}，${m.baud}k）`);
@@ -142,6 +149,7 @@ class Session extends Emitter {
         }
         await this.link.setAddress({
             tx: parseInt(node.addr, 16), rx: 0xf1, baud: node.baud, code: node.addr,
+            busGroup: group, busProfile: group === 'comfort' ? 'BHCAN29' : 'CCAN29',
         });
         this.currentGroup = group;
         this.current = { code: node.addr, name: node.name, zh: node.name, tx: node.addr, baud: node.baud };

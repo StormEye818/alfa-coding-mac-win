@@ -219,23 +219,29 @@ class Elm327 {
 
     /**
      * 设定目标 ECU。
-     * @param {{tx:number|string, rx:number|string, baud?:number}} addr
+     * @param {{tx:number|string, rx:number|string, baud?:number, busGroup?:string, busProfile?:string}} addr
      *   tx/rx = 诊断数据里的地址（如 0x40 / 0xF1）；baud = 该总线速率（500/125），
      *   给了就按速率切 ATSP（500k→7、125k→9，均 29 位），协议变化时才下发。
+     *   busGroup = 物理总线组（none=主 6/14、swap=底盘 12/13、comfort=舒适 3/11）；
+     *   busProfile = 协议档（CCAN29/BCAN29/BHCAN29）——两者决定通道切换命令的参数。
      */
-    async setAddress({ tx, rx, baud }) {
+    async setAddress({ tx, rx, baud, busGroup = 'none', busProfile = 'CCAN29' }) {
         const t = typeof tx === 'number' ? tx : parseInt(tx, 16);
         const r = typeof rx === 'number' ? rx : parseInt(rx, 16);
+        this.busGroup = busGroup;
         if (baud) {
             const proto = baud === 125 ? 9 : 7;
             if (this.protocol !== proto) {
                 await this.#send('ATSP' + proto);
                 this.protocol = proto;
             }
-            // 备选协议阶梯：非标速率理论上可用 USER 协议（ATSPB/C）
-            // → 采用「主协议 + NO DATA 回退」：500k 回退自动探测；125k 先 250k 近似再自动
-            this.altProtocols = baud === 125 ? [0] : [0];
+            // 备选协议阶梯仅限主总线（swap/comfort 的 NO DATA 是通道没切，
+            // 切协议只会雪上加霜——实车日志教训）
+            this.altProtocols = busGroup === 'none' ? [0] : [];
         }
+        // 切物理 CAN 通道（实车 NO DATA 根因）：底盘/舒适总线与主总线是不同的 OBD 引脚对，
+        // 不切通道 ECU 根本收不到帧。命令按适配器能力分流（不支持的回 '?'，容忍）。
+        await this.#setBusChannel(busGroup, busProfile);
         this.target = t; this.tester = r;
         const reqId = 0x18DA0000 | (t << 8) | r;
         this.reqId = reqId;
@@ -404,27 +410,48 @@ class Elm327 {
     }
 
     /**
-     * CANtieCAR 软件引脚路由（免换线）。
+     * 切物理 CAN 通道（总线组 = OBD 引脚对）。
      *
-     * CANtieCAR 靠 `AT MC` + PINS 值软件编 OBD 引脚实现免换线，
-     * PINS 值 = 引脚号 << 4（pin 3→0x30、12→0xC0、13→0xD0…）。
-     * 引脚映射（内存线材事实）：swap(6号灰)=12/13、comfort(5号蓝)=3/11、none=主CAN(6/14)默认不路由。
+     * 952/949 的三条总线在不同引脚对上：主高速 6/14、底盘高速 12/13、舒适 3/11。
+     * 只发 ATSH/ATCRA 不切通道，底盘/舒适模块的 ECU 根本收不到帧（实车 NO DATA 根因）。
      *
-     * ⚠️ 风险控制：只发 AT MC（每总线一次、不持久），**不碰 AT PP 2C/2D**（可编程参数、掉电保留，
-     * 猜错会持久搞乱 CANtieCAR 配置——等有硬件验证再上）。CAN 是 H/L 成对引脚，AT MC 取哪根
-     * （12 还是 13）无法 100% 确定 → 取 CAN-H 脚作为总线标识，若实测不通由调用方回退换线提示。
+     * 通道命令按适配器能力分流（对齐标准流程的 init 语义）：
+     *   - vLinker MS（Vgate）：`VTSET_CAN B/C,xx,pp,<CHAN>` 通道选择
+     *   - CANtieCAR：`ATMC<成对引脚字节>` 引脚路由（6E=6/14、CD=12/13、3B=3/11）
+     *   - ELM327 等：物理换线（上层提示），这里不发专有命令
+     * 不支持的命令回 '?'，一律容忍不报错。
+     */
+    async #setBusChannel(busGroup, busProfile) {
+        const TOKEN = { none: '6E', swap: 'CD', comfort: '3B' };       // 成对引脚字节
+        const CHAN = { none: 'HS_CAN', swap: 'CH_CAN', comfort: 'MS_CAN' };
+        const PP = { CCAN29: '01', BCAN29: '0A', BHCAN29: '04' };      // 协议档参数
+        const token = TOKEN[busGroup] || '6E';
+        const chan = CHAN[busGroup] || 'HS_CAN';
+        const pp = PP[busProfile] || '01';
+        try {
+            if (this.adapter === 'vlinker-ms') {
+                await this.#send('VTSET_CAN B,01,' + pp + ',' + chan);
+                await this.#send('VTSET_CAN C,40,' + pp + ',' + chan);
+            } else if (this.adapter === 'cantiecar') {
+                await this.#send('ATMC' + token);
+            }
+        } catch { /* 专有命令不支持：忽略，回退物理换线提示兜底 */ }
+    }
+
+    /**
+     * CANtieCAR 软件引脚路由（免换线）——setBusChannel 的独立探测入口，
+     * 供换线提示回退逻辑试路由用。PINS = 成对引脚字节（与 init 序列同口径）。
      *
      * @param {string} busGroup 'none' | 'comfort' | 'swap'
      * @returns {Promise<boolean>} 路由命令是否被适配器接受
      */
     async routePins(busGroup) {
         if (this.adapter !== 'cantiecar') return true;
-        const PINS = { swap: 'C0', comfort: '30' }[busGroup];   // CAN-H 脚<<4：12→C0、3→30
-        if (!PINS) return true;                                  // none / 未知：默认总线，不路由
+        const token = { none: '6E', swap: 'CD', comfort: '3B' }[busGroup];
+        if (!token) return true;
         try {
-            const r = await this.#send('ATMC' + PINS);
-            const bad = /\?/.test(String(r || ''));              // ELM327 出错回 '?'
-            return !bad;
+            const r = await this.#send('ATMC' + token);
+            return !/\?/.test(String(r || ''));
         } catch {
             return false;
         }

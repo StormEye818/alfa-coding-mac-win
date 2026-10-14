@@ -196,7 +196,7 @@
       <strong>关于对齐方式（依据诊断协议实现核实）</strong>
       <ul>
         <li><b>写入是逐节点独立的</b>：同一份完整配置块（<code>2E 20 23 &lt;DATA1&gt;</code>）逐个发给各节点，每节点独立连接、独立重试、独立校验，<b>无全局提交步骤</b>。因此「只补写失败节点」与「全量重跑」对这些节点的效果等价。</li>
-        <li><b>对齐判定以 <code>22 10 2A</code> 回读校验为准</b>（与诊断软件一致）：逐节点比对存储块与基准块（车身电脑当前 PROXI），响应会指出差异字节。「读取对齐状态」与对齐写入后的复核使用同一口径。</li>
+        <li><b>对齐判定以 <code>22 10 2A</code> 回读校验为准</b>（与通用诊断流程一致）：逐节点比对存储块与基准块（车身电脑当前 PROXI），响应会指出差异字节。「读取对齐状态」与对齐写入后的复核使用同一口径。</li>
         <li><b>0x292E 写入计数比对为辅助参考</b>：不一致同样按未对齐计，但差异定位以 22 10 2A 的差异字节为准。</li>
         <li><b>兜底</b>：若补写后里程表仍闪烁，请执行一次「全部对齐」（与官方平台一致，一次完成所有已安装节点）。</li>
         <li>⚠ 对齐会复位 ABS（Giulia / Stelvio），完成后需做转向角、加速度、胎压标定。</li>
@@ -216,8 +216,8 @@
       </div>
       <div class="actions">
         <select id="liveModule"><option value="">选择模块</option></select>
-        <button id="btnLiveStart" class="primary">开始读取</button>
-        <button id="btnLiveStop" class="ghost">停止</button>
+        <button id="btnLiveEnter" class="primary">进入模块</button>
+        <button id="btnLiveExit" class="ghost hidden">退出模块</button>
         <button id="btnLiveCsv" class="ghost">导出 CSV</button>
       </div>
     </div>
@@ -227,7 +227,7 @@
       <div class="stat"><b id="liveSamples">0</b><span>采样点</span></div>
     </div>
     <div class="legend-bar">
-      <span class="lg-item dim">勾选要监控的参数（最多 8 项），点击「开始读取」后持续刷新</span>
+      <span class="lg-item dim">先「进入模块」（确认后连入），再勾选参数即自动持续读取；换模块须先「退出模块」</span>
     </div>
     <div id="liveParams" class="module-list"></div>
     <div id="liveChart" class="live-chart"></div>
@@ -250,6 +250,8 @@
         <select id="fnModule">
           <option value="">全部模块</option>
         </select>
+        <button id="fnEnter" class="primary">进入模块</button>
+        <button id="fnExit" class="ghost hidden">退出模块</button>
         <select id="funcCat">
           <option value="">全部分类</option>
         </select>

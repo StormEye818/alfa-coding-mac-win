@@ -1620,18 +1620,19 @@ function renderFunctions() {
       const mod = b.dataset.mod;
       const item = all.find((x) => x.name === name && x.module === mod);
       if (!item) return;
-      if (!(await ensureConnected())) return;
+      if (!modSess.code) {
+        alert('请先「进入模块」：在上方选择本功能所属模块，点「进入模块」并确认。');
+        return;
+      }
+      if (modSess.code !== item.module) {
+        alert(`当前已进入模块 ${modLabel(modSess.code)}（${modSess.code}）。\n此功能属于 ${modLabel(item.module)}（${item.module}）。\n请先「退出模块」，再进入该模块。`);
+        return;
+      }
       const mName = modLabel(item.module);
       const bOld = b.textContent;
       try {
-        // 分段：连接模块中 → 已连接 → 执行中 → 完成（教程 §6 字面）
-        stage(`连接模块中：${mName}（${item.module}）…`);
-        await stageWait(520);
-
-        const sent = await state.session.runOn(item.module, async () => {
-          stage(`已连接 ${mName}（地址 0x${(state.cables.modules[item.module] || {}).tx || '??'}）`);
-          await stageWait(460);
-
+        stage(`已连接 ${mName}（地址 0x${(state.cables.modules[item.module] || {}).tx || '??'}）`);
+        const sent = await (async () => {
           b.disabled = true;
           b.textContent = '执行中…';
           stage(`执行中：${t(item.name)}…`);
@@ -1666,7 +1667,7 @@ function renderFunctions() {
             b.disabled = false;
             b.textContent = bOld;
           }
-        });
+        })();
 
         if (!sent) { stageDone('已取消'); return; }
         stageDone(`完成：${t(item.name)}（下发 ${sent.length} 帧）`);
@@ -1883,8 +1884,93 @@ $('btnClearDtc').addEventListener('click', async () => {
   }
 });
 
+/* ================= 模块会话（实时数据 / 特殊功能共用） =================
+ * 流程：进入模块（确认）→ 勾选即读 / 执行功能 → 退出模块（确认）→ 才能换模块。
+ * 与刷隐藏解耦：不读车身编码、不写入，只连目标模块。
+ */
+const modSess = { code: null };
+
+function cableBrief(code) {
+  const g = ((state.cables.modules[code] || {}).group) || 'none';
+  return g === 'swap' ? '需 6 号灰色适配线总线（vLinker 等多通道适配器免换线）'
+    : g === 'comfort' ? '需 5 号蓝色适配线总线（vLinker 等多通道适配器免换线）'
+      : '主总线（无需换线）';
+}
+
+async function enterModule(code) {
+  if (!code) { alert('请先选择模块'); return false; }
+  if (modSess.code) {
+    if (modSess.code === code) return true;
+    alert(`当前已进入模块 ${modLabel(modSess.code)}（${modSess.code}）。\n换模块必须先点「退出模块」并确认退出。`);
+    return false;
+  }
+  if (!(await ensureConnected())) return false;
+  const m = state.cables.modules[code] || {};
+  // 非免换线适配器：连接前提醒接对应适配线，确认后再连（与通用诊断流程一致）
+  const wantGroup = m.group || 'none';
+  const autoBus = state.link && state.link.autoSwitchesBus;
+  const mustSwap = !autoBus && wantGroup !== 'none'
+    && (!state.session || state.session.currentGroup !== wantGroup);
+  const lines = [
+    `进入模块：${modLabel(code)}（${code}）`,
+    `地址 0x${m.tx || '??'} · ${m.baud || '?'}k`,
+  ];
+  if (mustSwap) {
+    lines.push('', `⚠ 请先接好适配线：${m.hint || cableBrief(code)}`, '接好后点「确定」，App 再连接模块。');
+  } else {
+    lines.push('', cableBrief(code), '', '确认进入该模块？');
+  }
+  if (!confirm(lines.join('\n'))) return false;
+  try {
+    stage(`正在进入模块 ${modLabel(code)}…`);
+    await state.session.ensureModule(code, { cableConfirmed: mustSwap });
+    modSess.code = code;
+    $('modState').textContent = `已进入模块：${modLabel(code)}`;
+    $('modState').className = 'pill mod on';
+    stageDone(`已进入模块 ${modLabel(code)}，可勾选参数或执行功能`);
+    renderModuleSessionUI();
+    return true;
+  } catch (e) {
+    stageFail('进入模块失败：' + e.message);
+    alert('进入模块失败：' + e.message + (e.nrcText ? '（' + e.nrcText + '）' : ''));
+    return false;
+  }
+}
+
+async function exitModule() {
+  if (!modSess.code) return;
+  if (!confirm(`确认退出模块 ${modLabel(modSess.code)}（${modSess.code}）？\n退出后才能选择其他模块。`)) return;
+  stopLiveLoop();
+  if (state.session) state.session.disconnectModule();
+  const name = modLabel(modSess.code);
+  modSess.code = null;
+  $('modState').textContent = '未连接模块';
+  $('modState').className = 'pill mod';
+  stageDone(`已退出模块 ${name}`);
+  renderModuleSessionUI();
+}
+
+function renderModuleSessionUI() {
+  const inMod = !!modSess.code;
+  // 实时数据：未进入可选模块，进入后锁定并启用勾选
+  if ($('liveModule')) {
+    $('liveModule').disabled = inMod;
+    $('btnLiveEnter').classList.toggle('hidden', inMod);
+    $('btnLiveExit').classList.toggle('hidden', !inMod);
+    document.querySelectorAll('.live-pick').forEach((el) => { el.disabled = !inMod; });
+  }
+  // 特殊功能：进入后锁定模块筛选并只显示该模块
+  if ($('fnModule')) {
+    $('fnModule').disabled = inMod;
+    $('fnEnter').classList.toggle('hidden', inMod);
+    $('fnExit').classList.toggle('hidden', !inMod);
+    if (inMod) $('fnModule').value = modSess.code;
+  }
+  renderFunctions();
+}
+
 /* ================= 实时数据 ================= */
-const live = { running: false, samples: [], lastItems: [] };
+const live = { running: false, samples: [], lastItems: [], items: [] };
 
 function applyScale(raw, item) {
   if (!raw || !raw.length) return null;
@@ -1932,7 +2018,7 @@ function renderLiveParams() {
   $('liveCount').textContent = items.length;
   wrap.innerHTML = items.slice(0, 150).map((i, idx) => `
     <div class="mrow">
-      <input type="checkbox" class="live-pick" data-idx="${idx}" style="accent-color:var(--accent)">
+      <input type="checkbox" class="live-pick" data-idx="${idx}" ${modSess.code ? '' : 'disabled'} style="accent-color:var(--accent)">
       <div class="grow">
         <div class="name">${tSpan(i.name)}</div>
         <div class="sub">DID ${i.did} · ${i.spec && i.spec.unit ? '单位 ' + i.spec.unit + ' · ' : ''}${i.spec && i.spec.scale && i.spec.scale !== 1 ? '换算 ×' + i.spec.scale : ''}</div>
@@ -1941,46 +2027,75 @@ function renderLiveParams() {
 }
 $('liveModule') && $('liveModule').addEventListener('change', renderLiveParams);
 
-$('btnLiveStart').addEventListener('click', async () => {
+$('btnLiveEnter') && $('btnLiveEnter').addEventListener('click', async () => {
   const code = $('liveModule').value;
-  if (!code) return alert('请先选择模块');
-  const chosen = [...document.querySelectorAll('.live-pick:checked')].map((el) => el.dataset.idx);
-  if (!chosen.length) return alert('请先勾选要监控的参数（最多 8 项）');
-  if (chosen.length > 8) return alert('最多同时监控 8 项参数');
-  if (!(await ensureConnected())) return;
-  const items = chosen.map((i) => state.liveItems[Number(i)]);
+  if (await enterModule(code)) syncLiveAuto();
+});
+
+$('btnLiveExit') && $('btnLiveExit').addEventListener('click', exitModule);
+
+/** 勾选即读：勾上自动开始轮询，取消勾选到 0 项自动停止 */
+function pickedLiveItems() {
+  return [...document.querySelectorAll('.live-pick:checked')]
+    .map((el) => state.liveItems[Number(el.dataset.idx)])
+    .filter(Boolean);
+}
+
+async function syncLiveAuto() {
+  if (!modSess.code) return;
+  const chosen = pickedLiveItems();
+  if (chosen.length > 8) {
+    alert('最多同时监控 8 项参数，已保留前 8 项');
+    [...document.querySelectorAll('.live-pick:checked')].slice(8).forEach((el) => { el.checked = false; });
+    return syncLiveAuto();
+  }
+  if (!chosen.length) {
+    stopLiveLoop();
+    renderLive([]);
+    return;
+  }
+  live.lastItems = chosen;
+  if (live.running) { live.items = chosen; return; }   // 已在轮询：热更新监控项
   live.running = true;
-  live.samples = [];
+  live.items = chosen;
+  stage(`正在读取实时数据（${chosen.length} 项）…`);
+  const t0 = Date.now();
+  let n = 0;
   try {
-    await state.session.runOn(code, async () => {
-      stage(`正在读取实时数据（${items.length} 项）…`);
-      const t0 = Date.now();
-      let n = 0;
-      while (live.running) {
-        const row = { t: new Date().toISOString(), v: [] };
-        for (const it of items) {
-          try { row.v.push(applyScale(await state.uds.readDataByIdentifier(parseInt(it.did, 16)), it)); }
-          catch { row.v.push(null); }
-        }
-        live.samples.push(row);
-        n++;
-        $('liveSamples').textContent = live.samples.length;
-        $('liveRate').textContent = Math.round(n / Math.max(1, (Date.now() - t0) / 60000));
-        renderLive(items);
-        await new Promise((r) => setTimeout(r, 900));
+    while (live.running) {
+      const items = live.items;
+      const row = { t: new Date().toISOString(), v: [] };
+      for (const it of items) {
+        try { row.v.push(applyScale(await state.uds.readDataByIdentifier(parseInt(it.did, 16)), it)); }
+        catch { row.v.push(null); }
       }
-    });
+      live.samples.push(row);
+      n++;
+      $('liveSamples').textContent = live.samples.length;
+      $('liveRate').textContent = Math.round(n / Math.max(1, (Date.now() - t0) / 60000));
+      renderLive(items);
+      await new Promise((r) => setTimeout(r, 900));
+    }
     stageDone(`实时数据结束，共 ${live.samples.length} 个采样点`);
   } catch (e) {
     stageFail('实时读取失败：' + e.message);
     live.running = false;
   }
+}
+
+function stopLiveLoop() { live.running = false; }
+
+$('liveParams') && $('liveParams').addEventListener('change', (e) => {
+  if (e.target.classList.contains('live-pick')) syncLiveAuto();
 });
 
-$('btnLiveStop').addEventListener('click', () => {
-  live.running = false;
-  log('已停止实时读取');
+$('fnEnter') && $('fnEnter').addEventListener('click', async () => {
+  const code = $('fnModule').value;
+  if (!code) { alert('请先在模块下拉里选择要进入的模块'); return; }
+  await enterModule(code);
 });
+
+$('fnExit') && $('fnExit').addEventListener('click', exitModule);
 
 $('btnLiveCsv').addEventListener('click', () => {
   if (!live.samples.length) return alert('暂无采样数据');

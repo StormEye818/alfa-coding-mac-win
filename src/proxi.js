@@ -184,7 +184,9 @@ class ProxiBlock {
         const changed = [];
         for (const item of patch.bytes || []) {
             if (item.fixed !== undefined && item.fixed !== null) {
-                const before = this.bytes[item.addr];
+                // ⚠️ setByte/getBit 是 **1-based** 社区口径，bytes[] 是 0-based ——
+                //    取 before 必须减 1，否则变更日志显示的是**邻居**字节（写入位置本身正确）
+                const before = this.bytes[item.addr - 1];
                 this.setByte(item.addr, item.fixed);
                 changed.push({ addr: item.addr, before, after: item.fixed, kind: 'fixed' });
             }

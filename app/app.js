@@ -9,7 +9,7 @@
  */
 import { ProxiBlock, CRC_OFFSET, CRC_DIGITS } from '../src/proxi.js';
 import { Elm327, hexToBytes } from '../src/elm327.js';
-import { Uds } from '../src/uds.js';
+import { Uds, NRC } from '../src/uds.js';
 import { DemoLink } from '../src/demo-link.js';
 import { BridgeClient } from '../src/serial/bridge-client.js';
 import { InterfaceTester } from '../src/serial/detect.js';
@@ -1003,10 +1003,20 @@ async function writeToEcu() {
     state.block.seal();
     // 注：PROXI 写入不需要 Security Access（实车流程已核实）
     await state.uds.writeProxi(state.block.bytes);
-    stage('正在读回校验…');
+    // ⚠️ 标准序列写后必须接 `22 10 2A`（主判据）+ `22 40 AA`（收尾）。
+    //    此前只有整块 diff，缺这两条 —— 与对齐路径不一致，也没跑主判据。
+    //    （2026-10-16 复查 A3）
+    stage('正在回读校验（22 10 2A 主判据 + 整块比对）…');
+    const v = await state.uds.verifyProxi(state.block.bytes).catch((e) => {
+      log('22 10 2A 校验失败：' + e.message, 'warn');
+      return { ok: false, diffs: [], err: e.message };
+    });
     const back = new ProxiBlock(await state.uds.readProxi());
     const diff = back.diff(state.block);
-    const ok = diff.length === 0;
+    const ok = v.ok && diff.length === 0;
+    if (!v.ok) {
+      log('22 10 2A 判定有差异：' + (v.diffs || []).map((d) => `Byte${d.byte}`).join('、'), 'warn');
+    }
     // 按实际写入结果翻状态：成功→已写入，有差异→写入失败
     for (const k of state.namedPicks.keys()) setWriteState('named:' + k, ok ? 'written' : 'failed');
     for (const k of state.selected.keys()) setWriteState('feat:' + k, ok ? 'written' : 'failed');
@@ -1332,6 +1342,7 @@ $('btnAlign').addEventListener('click', async () => {
   const chosen = selectedNodes();
   if (!chosen.length) return alert('请先勾选要对齐的节点');
   // —— 写前双重读一致性（标准流程）：连续两次读车身块必须一致，防读链路抖动把脏数据写下去 ——
+  let liveBlock = null;   // 车身电脑当前块 —— 判定「部分对齐是否安全」的基准
   try {
     stage('写前一致性校验：连续两次读取车身配置…');
     const r1 = await state.uds.readProxi();
@@ -1342,11 +1353,21 @@ $('btnAlign').addEventListener('click', async () => {
       alert('写前一致性校验未通过：连续两次读取车身配置结果不一致。\n为避免把脏数据写入节点，对齐已中止，请稍后重试。');
       return;
     }
+    liveBlock = r1;
     log('写前一致性校验通过（两次读取一致）');
   } catch (e) {
     stageFail('写前校验失败：' + e.message);
     alert('写前一致性校验失败：' + e.message + '\n对齐已中止。');
     return;
+  }
+  // —— 对齐前言（与参考实现步骤 0 逐条一致）：读 DATA1 + DATA1S + TesterPresent ——
+  try {
+    stage('对齐前言：读取 DATA1 / DATA1S + 保活…');
+    const pre = await state.uds.alignPrelude();
+    log(`对齐前言完成：DATA1 ${pre.data1?.length ?? 0} 字节 · `
+      + `DATA1S ${pre.data1s ? pre.data1s.length + ' 字节' : '（不支持/未取到）'}`);
+  } catch (e) {
+    log('对齐前言失败（继续，但建议检查链路）：' + e.message);
   }
   // —— 对齐前置：merge DATA3 → 重算 CRC ——
   // 映射：PROXIX 家族 DATA1[25..56] = DATA3[32..63]（正序），SGW 在 Byte41 落在该区。
@@ -1373,12 +1394,51 @@ $('btnAlign').addEventListener('click', async () => {
   // 发 2E 20 23 前无条件重算 CRC（B7–B11）。
   // 手动改字节时 afterByteEdit 已 seal 过，mergeData3 内也会 seal——这里再兜一次底。
   state.block.seal();
+
+  // ===== 部分对齐安全闸（2026-16-16）=====
+  // 「单独对齐几个模块」要成立，前提是**写下去的块 == 未勾选节点当前持有的块**。
+  // 只要块被改过（DATA3 合并 / 编辑器改过 / 与车身当前块不一致），只对齐子集就会出现
+  // **分裂脑**：已对齐节点持新块、未勾选节点持旧块 → 里程表闪烁照样不停。
+  // 参考实现的节点勾选框（CheckBox 列）只用于**选择要对齐谁**，不改变这个前提。
+  const bytesEq = (a, b) => !!a && !!b && a.length === b.length && a.every((x, i) => x === b[i]);
+  const blockDrifted = !bytesEq(state.block.bytes, liveBlock);
+  const presentEls = [...document.querySelectorAll('.node')]
+    .filter((el) => nodePresent(state.modules.alignmentNodes[Number(el.dataset.idx)]) !== false);
+  const allIdx = new Set(presentEls.map((el) => Number(el.dataset.idx)));
   const chosenIdx = new Set(chosen.map((n) => n._idx));
+  const isSubset = chosen.length > 0 && chosen.length < allIdx.size;
+
+  if (blockDrifted && isSubset) {
+    const auto = confirm(
+      '⚠ 当前要写入的配置块与车身电脑当前块不一致（DATA3 合并或手动改过字节）。\n\n'
+      + `此时只对齐选中的 ${chosen.length} 个节点，会让其余 ${allIdx.size - chosen.length} 个已安装节点`
+      + '仍持有旧配置 —— **里程表闪烁不会停止**。\n\n'
+      + '「单独对齐」只在「块没变、只有个别节点跑偏」时才成立。\n\n'
+      + '点「确定」= 自动改为对齐全部已安装节点（推荐）\n'
+      + '点「取消」= 仍只对齐选中节点（不推荐，会留下分裂脑）'
+    );
+    if (auto) {
+      for (const el of presentEls) {
+        const cb = el.querySelector('.pick');
+        if (cb) cb.checked = true;
+      }
+      chosenIdx.clear();
+      for (const i of allIdx) chosenIdx.add(i);
+      log(`已自动改为对齐全部 ${allIdx.size} 个已安装节点（配置块已变化，部分对齐不安全）`);
+    } else {
+      log(`⚠ 用户选择在块已变化时只对齐 ${chosen.length} 个节点 —— 未选节点将持有旧块，闪烁可能不停`);
+    }
+  } else if (isSubset) {
+    log(`部分对齐：${chosen.length}/${allIdx.size} 个节点（配置块与车身一致，安全部分对齐）`);
+  }
+
+  const chosenNodes = [...document.querySelectorAll('.node')]
+    .filter((el) => chosenIdx.has(Number(el.dataset.idx)));
   state.aligning = true;
   const total = chosen.length;
   const failed = [];
   try {
-    const nodes = [...document.querySelectorAll('.node')].filter((el) => chosenIdx.has(Number(el.dataset.idx)));
+    const nodes = chosenNodes;
     let done = 0, fail = 0, idx = 0;
     for (const key of ['plain', 'comfort', 'swap']) {
       const grp = state.modules.busGroups[key].label;
@@ -1520,12 +1580,13 @@ function askInput(item) {
 /**
  * 执行特殊功能命令串（命令模板格式：逗号分隔的 token，每个 `NN<data>`）。
  *
- * token 类型（2026-10-10 全量审计 functions.json 确认）：
+ * token 类型（2026-10-10 全量复查 functions.json 确认）：
  *   · NN=0x01–0x07   单帧 UDS：payload = data[0..NN]
  *   · NN=0x08–0x99   多帧 UDS：payload = data[0..NN]（如 VIN 写 0x14、喷油嘴 0x0C、PROXI 整块 0x99）
  *                    → 直接交 link.request，它内部 #sendMulti 已做 ISO-TP 多帧
  *   · NN=0xFE        脚本步骤/循环计数器（FE0002→FE0003…）：不发送，仅步进
- *   · NN=0xFF        延时（FF00NN = 延时 NN ms）：FF000A=10ms
+ *   · NN=0xFF        延时（FFxxyy = (xx<<8|yy) **秒**，不是毫秒）：FF000A=10 秒
+ *                    ⚠️ 曾误当毫秒（该等 10 秒的只等 10ms，执行器时序全乱），实现已按秒
  *   · NN=0x00        期望响应模板（00 71 03…/00 FF FF…）：不发送，校验用
  *
  * 早期版本误 `if (len > 7) continue` 把多帧 UDS + FE/FF 全静默丢弃（61 个功能条目受影响）——
@@ -1534,14 +1595,21 @@ function askInput(item) {
 async function runCommandString(cmdStr, item) {
   const sent = [];
   const parts = cmdStr.split(',').map((p) => p.trim().replace(/\s/g, '')).filter(Boolean);
-  // 命令间隔（标准执行器语义）：默认 2s；无旗标时 1 条命令=8s、2 条=6s（结果沉降）；
-  // 旗标 NOWAIT=0 / 0.5SEC=0.5s / 1SEC=1s / 20SEC=20s / 50SEC=50s
+  // 命令间隔（标准执行器语义）：默认 2s；无旗标时 1 条命令=8s、2 条=6s（结果沉降）。
+  //
+  // ⚠️ 延时旗标必须与参考实现**全量对齐** —— 库里是 7 个，我们此前只实现了 5 个：
+  //   NOWAIT=0 · 0.5SEC · 1SEC · **10SEC** · 20SEC · **30SEC** · 50SEC
+  //   （10SEC / 30SEC 是 2026-10-16 补的，此前漏了 → 用到这两个的执行器会等错时间）
+  // 另有行为类旗标（语义待深挖，暂不拦截）：EXECANY / NOABORT / WAITY / TD100 /
+  //   IORESULT / RWUSERENTRY / SPEEDLIMIT / bitw
   const flags = String((item && item.resultFormat) || '').toUpperCase();
   let interMs = 2000;
   if (flags.includes('NOWAIT')) interMs = 0;
   else if (flags.includes('0.5SEC')) interMs = 500;
-  else if (flags.includes('1SEC')) interMs = 1000;
+  else if (flags.includes('1SEC') && !flags.includes('10SEC')) interMs = 1000;
+  else if (flags.includes('10SEC')) interMs = 10000;
   else if (flags.includes('20SEC')) interMs = 20000;
+  else if (flags.includes('30SEC')) interMs = 30000;
   else if (flags.includes('50SEC')) interMs = 50000;
   else if (parts.length === 2) interMs = 6000;
   else if (parts.length === 1) interMs = 8000;
@@ -1574,9 +1642,17 @@ async function runCommandString(cmdStr, item) {
     const len = tag;
     if (len < 1 || raw.length < 1 + len) continue;
     const payload = raw.slice(1, 1 + len);
-    await state.link.request(payload);
-    sent.push(Array.from(payload).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ')
-      + (len > 7 ? '（多帧）' : ''));
+    // ⚠️ 必须看响应 —— 此前把结果丢掉，`7F` 负响应也计成功、弹「执行完成」。
+    //    执行器/特殊功能场景下用户根本不知道失败了（2026-10-16 复查 A5）。
+    const resp = await state.link.request(payload);
+    const hex = Array.from(payload).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ')
+      + (len > 7 ? '（多帧）' : '');
+    if (resp && resp[0] === 0x7f) {
+      const nrc = resp[2];
+      sent.push(`${hex} → ✗ NRC 0x${nrc.toString(16).toUpperCase()}（${NRC[nrc] || '未知'}）`);
+      throw new Error(`命令被拒：NRC 0x${nrc.toString(16).toUpperCase()}（${NRC[nrc] || '未知'}）`);
+    }
+    sent.push(hex + ' → ✓');
     // 命令间沉降（FE/FF 节奏由 token 自带，真实命令之间按旗标等效等待）
     if (interMs > 0 && (i < parts.length - 1 || parts.length === 1)) await stageWait(interMs);
   }
@@ -1711,7 +1787,7 @@ function renderFunctions() {
                 stage(`正在执行：${st.step}…`);
                 let cmd = st.cmd;
                 if (st.userValue === 'interval' && picked) {
-                  const raw = Math.round(picked.value / 500);   // 单位 500km/步
+                  const raw = Math.min(255, Math.max(0, Math.round(picked.value / 500)));  // 钳位 0..255，否则 toString(16) 出 3 位把模板切坏   // 单位 500km/步
                   cmd = cmd.slice(0, -2) + raw.toString(16).toUpperCase().padStart(2, '0');
                 }
                 await runCommandString(cmd, item);

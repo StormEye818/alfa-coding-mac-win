@@ -52,7 +52,11 @@ class MockAdapter extends Emitter {
             if (up === 'ATE1') { this.at.echo = true; return 'OK'; }
             if (up === 'ATH1') { this.at.headers = true; return 'OK'; }
             if (up === 'ATH0') { this.at.headers = false; return 'OK'; }
-            if (up === 'ATL0' || up === 'ATS0' || up === 'ATCAF0' || up === 'ATSW00' || up.startsWith('ATST')) return 'OK';
+            // 只接受确实会发出的命令。沙箱对任何命令都回 OK，
+            // 曾把臆造命令「洗」成看似正常 —— 别再往这里加没依据的命令。
+            if (up === 'ATL0' || up === 'ATS0' || up === 'ATCAF0' || up === 'ATCAF1'
+                || up === 'ATAL' || up === 'ATCP18' || up === 'ATAT0' || up === 'ATAT1'
+                || up.startsWith('ATST') || up.startsWith('ATCFC') || up.startsWith('ATFC')) return 'OK';
             if (up.startsWith('ATSP')) { this.at.protocol = parseInt(up.slice(4), 10) || 0; return 'OK'; }
             if (up.startsWith('ATSH')) { this.at.address = up.slice(4); return 'OK'; }
             if (up.startsWith('ATCRA')) return 'OK';

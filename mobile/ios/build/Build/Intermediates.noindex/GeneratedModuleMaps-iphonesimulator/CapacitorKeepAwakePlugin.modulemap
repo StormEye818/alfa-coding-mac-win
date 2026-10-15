@@ -1,4 +1,0 @@
-module CapacitorKeepAwakePlugin {
-header "CapacitorKeepAwakePlugin-Swift.h"
-export *
-}

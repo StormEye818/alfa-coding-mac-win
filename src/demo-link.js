@@ -56,7 +56,11 @@ class DemoLink {
     get autoSwitchesBus() { return false; }   // 演示换适配线提示
 
     async init() {
-        for (const c of ['ATZ', 'ATE0', 'ATL0', 'ATS0', 'ATH1', 'ATCAF0', 'ATSP8', 'ATST32', 'ATSW00']) {
+        // ⚠️ 与 src/elm327.js init() 同口径，别再各写各的：
+        //   ATSP7 = ISO 15765-4 CAN 29 位 500k（误用 ATSP8 = 11 位 250k，实车会 CAN ERROR）
+        //   ATAL / ATCP18 / ATAT0 = 链路参数（此前缺失）
+        for (const c of ['ATZ', 'ATE0', 'ATL0', 'ATS0', 'ATH1', 'ATCAF0',
+                         'ATAL', 'ATCP18', 'ATAT0', 'ATSP7', 'ATST32']) {
             this.log(`演示 · 发送 ${c}`);
         }
         this.log('演示 · 适配器初始化完成（ISO 15765-4 CAN 29 位 500kbit/s）');

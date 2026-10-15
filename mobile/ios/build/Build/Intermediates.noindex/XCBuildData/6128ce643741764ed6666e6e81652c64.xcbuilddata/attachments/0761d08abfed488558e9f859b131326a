@@ -1,4 +1,0 @@
-module TcpSocket {
-header "TcpSocket-Swift.h"
-export *
-}

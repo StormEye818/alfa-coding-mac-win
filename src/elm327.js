@@ -113,6 +113,11 @@ class Elm327 {
         this.altProtocols = [];   // 备选协议（NO DATA 时回退，探测式恢复）
         this.lastRaw = '';
         this.waiters = [];
+        // 请求串行锁：串口是半双工，任何并发 request 都会串帧。
+        // 2026-10-15 预检：readProxiAll 用 Promise.all 并发读 DATA1/2/3，
+        // request() 当时无互斥 → 三路收发交错，读到串帧垃圾后会被 merge 进配置写进 ECU。
+        this.reqChain = Promise.resolve();
+        this._inExclusive = false;   // 可重入标志，见 #exclusive
         port.on('data', (chunk) => this.#onData(chunk));
     }
 
@@ -124,6 +129,44 @@ class Elm327 {
      */
     get autoSwitchesBus() {
         return this.adapter === 'vlinker-ms' || this.adapter === 'cantiecar';
+    }
+
+    /**
+     * 操作级链路模式 —— 对齐参考诊断仪的「**每个操作单独设置**，不是一次性初始化」。
+     *
+     * 参考实现的操作级三元组模板（ATCAF / ATAT / ATST 必须**一起切**）：
+     *   `ATCAF1 ATAT1`           格式化读（用适配器默认超时）
+     *   `ATCAF0 ATAT0 ATST20`    原始读（80ms）
+     *   `ATCAF0 ATAT0 ATST10`    原始读（40ms）
+     *   `ATCAF0 ATAT0 ATST04`    快超时（16ms）
+     *   `ATCAF0 ATAT0 ATST03`    快超时（12ms）—— 多帧连续帧用
+     *   `ATCAF1 ATAT0`           格式化读（关自适应）
+     *
+     * 参考实现的 ATST 全档（xx×4ms）：01 02 03 04 05 07 08 09 10 19 20 21 22 25 26 27 28
+     *   29 30 35 38 41 52 62 72 80 90 94 99 FE F0 FF
+     * 我们当前用到：32(初始化) / 03(多帧连续帧) / 99(等最终响应) / FF(最长)。
+     * **慢 ECU 超时就调这里**，不要回去改 init 里的固定值。
+     *
+     * 三元组必须**一起切**，不要只改其中一个（否则又会踩 ATAT 两处相反值的坑）。
+     * 不传的项保持不动，便于只切超时。
+     *
+     * @param {{caf?: 0|1, at?: 0|1, st?: number}} mode
+     *   caf = ATCAF（0 原始/带 PCI，1 格式化）
+     *   at  = ATAT（0 关自适应定时，1 开）
+     *   st  = ATSTxx 帧间超时（xx×4ms；3=12ms 快、99/FF 长）
+     */
+    async setLinkMode({ caf, at, st } = {}) {
+        // 三元组整体排他：ATCAF/ATAT/ATST 必须连续生效，不能被插断
+        return this.#exclusive(() => this.#setLinkModeBody({ caf, at, st }));
+    }
+
+    async #setLinkModeBody({ caf, at, st } = {}) {
+        if (caf !== undefined) await this.#send('ATCAF' + (caf ? '1' : '0'));
+        if (at !== undefined) await this.#send('ATAT' + (at ? '1' : '0'));
+        if (st !== undefined) {
+            const hx = Number(st).toString(16).toUpperCase().padStart(2, '0');
+            await this.#send('ATST' + hx);
+        }
     }
 
     #onData(chunk) {
@@ -200,12 +243,22 @@ class Elm327 {
      *  ⚠️ 历史坑：曾误用 8（11 位 250k）——沙箱不校验故长期未暴露，实车直接 CAN ERROR。
      */
     async init({ protocol = 7 } = {}) {
+        // AT 序列整体排他（复查 A4）：别让另一条命令插进这段
+        return this.#exclusive(() => this.#initBody({ protocol }));
+    }
+
+    async #initBody({ protocol = 7 } = {}) {
         this.#flush();                 // 清残留应答/错位余量（多次连接后必做）
         await this.#send('ATZ', 8000);
         await this.#send('ATE0');
         await this.#send('ATL0');
         await this.#send('ATS0');
-        await this.#send('ATH1');           // 要 CAN ID，才能做 ISO-TP 重组
+        // ATH1：要 CAN ID 才能做 ISO-TP 重组（按 respId 过滤、剥离 CAN 头）。
+        // ⚠️ **与参考实现不同口径**：参考实现主用 `ATH0` + `ATCRA` 过滤。
+        //    我们走 ATH1 是有意的工程选择（重组需要 CAN ID），不是疏漏 ——
+        //    但这是**另一条路径**，某些适配器/ECU 行为可能不同，真车需重点看。
+        //    若要完全对齐，改这里 + #parseFrames 一起改，别单改一处。
+        await this.#send('ATH1');
         await this.#send('ATCAF0');         // 关自动格式化，拿原始帧
         await this.#send('ATSP' + protocol);
         this.protocol = protocol;
@@ -220,7 +273,7 @@ class Elm327 {
     /**
      * 设定目标 ECU（= 连模块）。
      *
-     * 对齐标准 init 语义（2026-10-15 全链路审计定论）——核心是 **USER 协议 B 通道模型**：
+     * 对齐标准 init 语义（2026-10-15 全链路复核定论）——核心是 **USER 协议 B 通道模型**：
      *   - `VTSET_CAN B,<fmt>,<baud>,<CHAN>` 给 USER 协议 B 槽编程（格式/波特/物理通道）
      *     （vLinker 专有；普通 ELM 用 `AT PP 2C/2D` 编程同一组参数）
      *   - `VTSWGPGT1` 应用通道（vLinker 专有，漏发=配置不生效）
@@ -234,6 +287,11 @@ class Elm327 {
      *   busProfile = CCAN29/BCAN29/BHCAN29（决定波特档：01=500k/0A=250k/04=125k）。
      */
     async setAddress({ tx, rx, baud, busGroup = 'none', busProfile = 'CCAN29' }) {
+        // AT 序列整体排他（复查 A4）：一次 ~15 条 AT，不能被别的命令插进来
+        return this.#exclusive(() => this.#setAddressBody({ tx, rx, baud, busGroup, busProfile }));
+    }
+
+    async #setAddressBody({ tx, rx, baud, busGroup = 'none', busProfile = 'CCAN29' }) {
         const t = typeof tx === 'number' ? tx : parseInt(tx, 16);
         const r = typeof rx === 'number' ? rx : parseInt(rx, 16);
         this.busGroup = busGroup;
@@ -266,7 +324,10 @@ class Elm327 {
         this.reqId = reqId;
         this.respId = 0x18DA0000 | (r << 8) | t;
         // ② 链路状态重申 + 寻址（ATCP18+4 字节 ATSH 与 CP18+3 字节 DA<t><r> 等价）
-        for (const c of ['ATE0', 'ATL0', 'ATS0', 'ATH1', 'ATCAF0', 'ATAL', 'ATCP18', 'ATAT1', 'ATST99']) await this.#send(c);
+        // ⚠️ ATAT 与 init() 必须同口径：此前 init 发 ATAT0、这里发 ATAT1，两处相反值互相覆盖
+        //    （2026-10-15 预检发现）。参考实现主用 ATAT0，
+        //    且 ATCAF/ATAT/ATST 是**一起按操作切**的三元组，见 setLinkMode()。
+        for (const c of ['ATE0', 'ATL0', 'ATS0', 'ATH1', 'ATCAF0', 'ATAL', 'ATCP18', 'ATAT0', 'ATST99']) await this.#send(c);
         await this.#send('ATSH' + reqId.toString(16).toUpperCase().padStart(8, '0'));
         await this.#send('ATCRA' + this.respId.toString(16).toUpperCase().padStart(8, '0'));
         // 流控配方：FC 必须由适配器内建发（手动注入会在收应答窗口触发 STOPPED 中止）。
@@ -312,11 +373,46 @@ class Elm327 {
      *   - 服务 0x22/0x19/0x14 空应答 → 100ms 后重试（最多 3 次）
      *   - 任意服务 NRC 0x21（请求过于频繁）→ 100ms 后重试 1 次
      */
+    /**
+     * 排他执行 —— 串口半双工，任何在飞的收发都不能被另一条命令插进来。
+     * ⚠️ 不只 `request()` 要锁：`setAddress()` 一次发 ~15 条 AT，
+     *    模块扫描用 Promise.race 弃单后立刻跑下一个模块，两条 AT 流会交错配对应答，
+     *    链路参数（ATSH/ATSPB/ATST…）可能设到错的模块头上。
+     *    （2026-10-16 复查 A4）
+     */
+    #exclusive(fn) {
+        // 可重入：setAddress 持锁后内部还会调 request()，不能再排一次，
+        // 否则 reqChain 等自己 → 死锁（2026-10-16 跑测试抓到）。
+        if (this._inExclusive) return fn();
+        // ⚠️ 必须 async/await：`try{ return fn() } finally{...}` 会在 fn **返回 promise**
+        //    时立刻跑 finally，标志提前清掉，可重入保护形同虚设。
+        const run = this.reqChain.then(async () => {
+            this._inExclusive = true;
+            try {
+                return await fn();
+            } finally {
+                this._inExclusive = false;
+            }
+        });
+        // 失败也必须放行下一个
+        this.reqChain = run.then(() => { }, () => { });
+        return run;
+    }
+
     async request(payload, { timeoutMs = ELM_TIMEOUT_MS } = {}) {
+        return this.#exclusive(() => this.#requestLocked(payload, timeoutMs));
+    }
+
+    async #requestLocked(payload, timeoutMs) {
         this.fcSent = false;   // 每次请求独立计流控
         const svc = payload[0];
         const isReadFamily = svc === 0x22 || svc === 0x19 || svc === 0x14;
-        const maxTries = isReadFamily ? 3 : 1;
+        // ⚠️ 任何服务都要给 NRC 0x21 留一次重试机会 ——
+        //    此前写族 maxTries=1，第一次收 0x21 就 `continue` 出循环，
+        //    然后 `throw lastErr` 而 lastErr 是 **null**：
+        //    上层 catch 里 `e.message` 对 null 再抛 TypeError，界面卡死在"写入中"。
+        //    （2026-10-16 复查 A1，已复现）
+        const maxTries = Math.max(isReadFamily ? 3 : 2, 2);
         let lastErr = null;
         for (let attempt = 0; attempt < maxTries; attempt++) {
             if (attempt > 0) await new Promise((r) => setTimeout(r, 100));
@@ -332,7 +428,8 @@ class Elm327 {
                 if (!(e && e.code === 'NO_DATA') || attempt === maxTries - 1) throw e;
             }
         }
-        throw lastErr;
+        // 兜底：绝不 throw null —— 那会让上层 catch 链崩掉
+        throw lastErr || new Elm327Error('请求失败（无具体原因）', 'UNKNOWN');
     }
 
     async #requestOnce(payload, timeoutMs) {
@@ -349,7 +446,13 @@ class Elm327 {
             if (real.length > 0) return real[0];
             const flat = raw.replace(/\s+/g, '');
             const remain = timeoutMs - (Date.now() - t0);
-            const sawResp = this.respId && flat.includes(this.respId.toString(16));
+            // ⚠️ 必须**大小写不敏感**：`respId.toString(16)` 是小写（18daf140），
+            //    ELM 输出的 CAN ID 是大写（18DAF140），`String.includes` 区分大小写
+            //    → sawResp 恒 false → 续传循环立刻 break → 抛 BAD_FRAME 而不是等下一段。
+            //    这个循环正是为「FC 引出的假提示符把多帧应答截断」写的，此前是死的。
+            //    （2026-10-16 复查 A2，已复现）
+            const respHex = this.respId ? this.respId.toString(16) : '';
+            const sawResp = respHex && flat.toUpperCase().includes(respHex.toUpperCase());
             if (!sawResp || remain <= 200) break;
             raw += await this.#nextSeg(Math.min(remain, 3000), '应答续传');
         }
@@ -361,7 +464,8 @@ class Elm327 {
 
     /** 从原始应答提取合法 ISO-TP 帧（容错：空格/响应 ID/回显混杂） */
     #parseFrames(raw) {
-        const respIdRe = new RegExp(this.respId.toString(16), 'gi');
+        // respId 未 setAddress 就 request 时不要炸（现流程不触发，但别留雷）
+        const respIdRe = new RegExp(this.respId ? this.respId.toString(16) : '(?!x)x', 'gi');
         // 真车 ELM 用 \r 分隔帧、以 \r\r> 结尾（无 \n）——必须按 [\r\n]+ 切帧，
         // 否则 cleanLines 删 \r 后所有帧粘成一条（实车日志 dump 全连在一起就是证据）
         return String(raw).split(/[\r\n]+/)
@@ -434,7 +538,8 @@ class Elm327 {
             }
         } finally {
             // 仅中途出错时补恢复；成功路径已由 ATST99 恢复，不再插命令
-            if (!restored) await this.#send('ATST32').catch(() => {});
+            // 与 setAddress 的常驻节奏一致（ATST99），别恢复成 ATST32 —— 否则失败后链路定时口径不一致
+            if (!restored) await this.#send('ATST99').catch(() => {});
         }
         // 最后一帧的应答里可能已带响应，也可能还要再取
         return lastResp;

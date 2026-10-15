@@ -16,6 +16,8 @@ import { bytesToHex, hexToBytes, Elm327Error } from './elm327.js';
 
 const DID = {
     PROXI_DATA1: 0x2023,
+    /** DATA1S —— 参考实现在对齐前言里与 DATA1 一起读（`03 22 20 24`）。语义待深挖，先采集。 */
+    PROXI_DATA1S: 0x2024,
     DATA2: 0x40A1,
     DATA3: 0x40A2,
     VERIFY: 0x102A,
@@ -27,6 +29,15 @@ const DID = {
     SW_NUMBER: 0xF194,
     ECU_SERIAL: 0xF18C,
 };
+
+/**
+ * 22 10 2A 响应里「字节号」的下标基准。
+ * **= 1（1-based）** —— 已由参考实现逐字节确认：解析处是 `block[字节号 - 1]`。
+ * 响应缓冲固定 **13 字节** = 1 字节长度前缀 + 12 载荷（`62 10 2A` + 9 数据），
+ * 三组差异在缓冲 [5,6] / [8,9] / [11,12]，即载荷数据区 [1,2] / [4,5] / [7,8]。
+ * 若实车仍发现整体偏一位，先怀疑载荷切片，再考虑改这里。
+ */
+const PROXI_BYTE_INDEX_BASE = 1;
 
 const NRC = {
     0x10: '通用拒绝',
@@ -105,6 +116,10 @@ class Uds {
         req[0] = 0x2e; req[1] = hi; req[2] = lo; req.set(data, 3);
         // 写入前强制进扩展会话（S3 超时会掉回默认会话，那时写入必被拒 0x31）
         await this.enterExtendedSession();
+        // 标准写入序列：Sleep(200) → 2E 20 23 → 22 10 2A → 22 40 AA
+        // ⚠️ 200ms 必须在 **2E 之前**（ECU 存储沉降）。2026-10-15 前误放在 verifyProxi
+        //    开头，即 2E 之后 —— 修复：挪到这里。
+        await new Promise((r) => setTimeout(r, 200));
         for (let attempt = 0; ; attempt++) {
             try {
                 return assertPositive(await this.link.request(req, { timeoutMs: 8000 }), '写入');
@@ -153,8 +168,12 @@ class Uds {
     /** 读某模块的 PROXI 写入计数器 */
     async readProxiWriteCounter() {
         const d = await this.readDataByIdentifier(DID.PROXI_WRITE_COUNTER);
-        // 数值格式（num）：小端，取低字节即可
-        return d.length ? d[0] : null;
+        if (!d || !d.length) return null;
+        // ⚠️ 取**完整小端值**，别只取低字节 —— 256 回绕会让两个不同计数看起来相等，
+        //    「计数一致 = 已对齐」的辅助判据就会假通过（2026-10-16 复查 A7）。
+        let v = 0;
+        for (let i = d.length - 1; i >= 0; i--) v = (v * 256) + d[i];
+        return v;
     }
 
     async readProxi() {
@@ -162,12 +181,35 @@ class Uds {
     }
 
     async readProxiAll() {
-        const [d1, d2, d3] = await Promise.all([
-            this.readDataByIdentifier(DID.PROXI_DATA1),
-            this.readDataByIdentifier(DID.DATA2),
-            this.readDataByIdentifier(DID.DATA3),
-        ]);
-        return { data1: d1, data2: d2, data3: d3 };
+        // ⚠️ 顺序读，不要 Promise.all —— 串口半双工，并发会串帧（2026-10-15 修复）
+        const data1 = await this.readDataByIdentifier(DID.PROXI_DATA1);
+        const data2 = await this.readDataByIdentifier(DID.DATA2);
+        const data3 = await this.readDataByIdentifier(DID.DATA3);
+        return { data1, data2, data3 };
+    }
+
+    /**
+     * 对齐前言 —— 与参考实现步骤 0 **逐条一致**：
+     *   `03 22 20 23` 读 DATA1
+     *   `03 22 20 24` 读 DATA1S   ← 我们此前没有
+     *   `02 3E 00`    TesterPresent ← 我们此前没有
+     * 之后才进入逐节点的 `Sleep(200) → 2E 20 23 → 22 10 2A → 22 40 AA`。
+     *
+     * DATA1S 语义尚未深挖（名称来自参考实现字符串 `DATA1S:`），先采集进日志，
+     * 不参与判定 —— 拿到实车样本后再定它的用途。
+     */
+    async alignPrelude() {
+        const data1 = await this.readDataByIdentifier(DID.PROXI_DATA1);
+        let data1s = null;
+        try {
+            data1s = await this.readDataByIdentifier(DID.PROXI_DATA1S);
+        } catch (e) {
+            // 部分模块可能不支持 0x2024 —— 不致命，记下继续
+            data1s = null;
+        }
+        // TesterPresent 保持会话（有些 ECU 不回，允许空）
+        await this.testerPresent().catch(() => { });
+        return { data1, data1s };
     }
 
     async writeProxi(data1) {
@@ -180,10 +222,15 @@ class Uds {
      * 差异组 (字节号, 异或掩码) 位于数据 [1,2] / [4,5] / [7,8]。
      * 字节号非 0 且掩码非 0 视为有效差异组，指出该节点存储块与基准块的差异位置——
      * 对齐判定的主依据。`expected` 传基准块：基准值 ⊕ 掩码 = 实际存储值。
+     *
+     * ⚠️ 字节号基准（BYTE_INDEX_BASE）：默认按 **1-based** 解释（`expected[n-1]`），
+     *    即字节号 1 = 块内第 1 字节。此基准来自对方缓冲语义推断，**尚未实车验证**。
+     *    若实车发现差异字节整体偏一位，改这个常量即可，不要改解析槽位。
      */
     async verifyProxi(expected) {
-        // 写入+校验序列：Sleep(200) → 2E 20 23 → 22 10 2A → 22 40 AA（三条命令一体）
-        await new Promise((r) => setTimeout(r, 200));
+        // 标准写入序列：Sleep(200) → 2E 20 23 → 22 10 2A → 22 40 AA
+        //   Sleep(200) 与 2E 20 23 在 writeDataByIdentifier（写之前）
+        //   本函数只负责 22 10 2A + 22 40 AA
         const resp = assertPositive(await this.link.request(new Uint8Array([0x22, 0x10, 0x2A])), '回读校验');
         const d = resp.slice(3);
         const diffs = [];
@@ -192,12 +239,17 @@ class Uds {
             const n = d[idxPos];
             const m = d[maskPos];
             if (n && m) {
-                const want = expected ? expected[n - 1] : null;
+                // 字节号 → 数组下标。基准见上方注释；越界时不静默算错，标记为无效。
+                const idx = n - PROXI_BYTE_INDEX_BASE;
+                const inRange = expected != null && idx >= 0 && idx < expected.length;
+                const want = inRange ? expected[idx] : null;
                 diffs.push({
                     byte: n,
                     xorMask: m,
                     got: want === null ? null : (want ^ m),
                     want,
+                    // 越界 = 字节号基准或块长口径不符，必须上车看原始数据再判
+                    indexOutOfRange: expected != null && !inRange,
                 });
             }
         }

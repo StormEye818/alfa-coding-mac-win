@@ -8,11 +8,11 @@ XPStyle on
 !include "FileFunc.nsh"
 
 Name "AlfaProxi"
-OutFile "AlfaProxi.Setup.0.2.8.exe"
+OutFile "AlfaProxi.Setup.0.2.9.exe"
 InstallDir "$LOCALAPPDATA\Programs\AlfaProxi"
 InstallDirRegKey HKCU "Software\AlfaProxi" "InstallLocation"
 RequestExecutionLevel user
-BrandingText "AlfaProxi 0.2.8"
+BrandingText "AlfaProxi 0.2.9"
 
 ; Install pages
 !insertmacro MUI_PAGE_WELCOME
@@ -42,7 +42,7 @@ Section "Install" SecMain
 
   ; Registry (HKCU uninstall entry, per-user install)
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\AlfaProxi" "DisplayName" "AlfaProxi"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\AlfaProxi" "DisplayVersion" "0.2.8"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\AlfaProxi" "DisplayVersion" "0.2.9"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\AlfaProxi" "Publisher" "bigmiao"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\AlfaProxi" "InstallLocation" "$INSTDIR"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\AlfaProxi" "DisplayIcon" "$INSTDIR\AlfaProxi.exe"

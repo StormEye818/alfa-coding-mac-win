@@ -80,10 +80,14 @@ class Uds {
      * 对齐模块连接标准流程（每次连接发 10 03 并强制校验 50 03）。
      */
     async enterExtendedSession() {
-        const resp = await this.link.request(new Uint8Array([0x10, 0x03]), { timeoutMs: 3000 });
-        if (!resp || resp.length < 2 || resp[0] !== 0x50 || resp[1] !== 0x03) {
+        let resp = await this.link.request(new Uint8Array([0x10, 0x03]), { timeoutMs: 3000 });
+        if (resp && resp[0] === 0x7f && resp[2] === 0x12) {
+            // 子功能不支持：部分模块的扩展会话号是 0x92（与连接校验同口径）
+            resp = await this.link.request(new Uint8Array([0x10, 0x92]), { timeoutMs: 3000 });
+        }
+        if (!resp || resp[0] !== 0x50) {
             const hex = resp ? bytesToHex(resp) : '(空)';
-            throw new UdsError(`扩展会话切换失败：期望 50 03，实得 ${hex}`, resp && resp[0] === 0x7f ? resp[2] : undefined);
+            throw new UdsError(`扩展会话切换失败：期望 50 03/50 92，实得 ${hex}`, resp && resp[0] === 0x7f ? resp[2] : undefined);
         }
         return resp;
     }

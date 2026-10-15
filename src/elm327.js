@@ -218,45 +218,86 @@ class Elm327 {
     }
 
     /**
-     * 设定目标 ECU。
+     * 设定目标 ECU（= 连模块）。
+     *
+     * 对齐标准 init 语义（2026-10-15 全链路审计定论）——核心是 **USER 协议 B 通道模型**：
+     *   - `VTSET_CAN B,<fmt>,<baud>,<CHAN>` 给 USER 协议 B 槽编程（格式/波特/物理通道）
+     *     （vLinker 专有；普通 ELM 用 `AT PP 2C/2D` 编程同一组参数）
+     *   - `VTSWGPGT1` 应用通道（vLinker 专有，漏发=配置不生效）
+     *   - `ATSPB` 激活协议 B——**不选它前面的编程全是白发**（此前用 ATSP7 永远走
+     *     默认 HS 通道，底盘/舒适总线模块 NO DATA 的根因）
+     *   - 连接收尾发 `02 10 03` 并校验 50 03（NRC 0x12 时回退 02 10 92）——ECU 在
+     *     默认会话下可能不应答任何请求（表现为 NO DATA）
+     *
      * @param {{tx:number|string, rx:number|string, baud?:number, busGroup?:string, busProfile?:string}} addr
-     *   tx/rx = 诊断数据里的地址（如 0x40 / 0xF1）；baud = 该总线速率（500/125），
-     *   给了就按速率切 ATSP（500k→7、125k→9，均 29 位），协议变化时才下发。
-     *   busGroup = 物理总线组（none=主 6/14、swap=底盘 12/13、comfort=舒适 3/11）；
-     *   busProfile = 协议档（CCAN29/BCAN29/BHCAN29）——两者决定通道切换命令的参数。
+     *   tx/rx = 诊断地址（0x40/0xF1）；busGroup = none(主6/14)/swap(底盘12/13)/comfort(舒适3/11)；
+     *   busProfile = CCAN29/BCAN29/BHCAN29（决定波特档：01=500k/0A=250k/04=125k）。
      */
     async setAddress({ tx, rx, baud, busGroup = 'none', busProfile = 'CCAN29' }) {
         const t = typeof tx === 'number' ? tx : parseInt(tx, 16);
         const r = typeof rx === 'number' ? rx : parseInt(rx, 16);
         this.busGroup = busGroup;
-        if (baud) {
-            const proto = baud === 125 ? 9 : 7;
-            if (this.protocol !== proto) {
-                await this.#send('ATSP' + proto);
-                this.protocol = proto;
-            }
-            // 备选协议阶梯仅限主总线（swap/comfort 的 NO DATA 是通道没切，
-            // 切协议只会雪上加霜——实车日志教训）
-            this.altProtocols = busGroup === 'none' ? [0] : [];
+        const pp = { CCAN29: '01', BCAN29: '0A', BHCAN29: '04' }[busProfile] || '01';
+        const CHAN = { none: 'HS_CAN', swap: 'CH_CAN', comfort: 'MS_CAN' }[busGroup] || 'HS_CAN';
+        const TOKEN = { none: '6E', swap: 'CD', comfort: '3B' };
+
+        // ① 协议参数 + 物理通道（按适配器能力分流；不支持的命令回 '?' 容忍）
+        if (this.adapter === 'vlinker-ms') {
+            await this.#send('VTSET_CAN B,01,' + pp + ',' + CHAN);
+            await this.#send('VTSWGPGT1');
+            await this.#send('ATSPB');
+        } else if (this.adapter === 'cantiecar') {
+            await this.#send('ATMC' + (TOKEN[busGroup] || '6E'));
+            await this.#send('ATSPB');
+        } else {
+            // 普通 ELM327/OBDLink：PP 编程 USER 协议 B 参数（每次连模块都编，与标准流程一致）
+            await this.#send('AT PP 2C SV 01').catch(() => {});
+            await this.#send('AT PP 2C ON').catch(() => {});
+            await this.#send('AT PP 2D SV ' + pp).catch(() => {});
+            await this.#send('AT PP 2D ON').catch(() => {});
+            await this.#send('ATSPB');
         }
-        // 切物理 CAN 通道（实车 NO DATA 根因）：底盘/舒适总线与主总线是不同的 OBD 引脚对，
-        // 不切通道 ECU 根本收不到帧。命令按适配器能力分流（不支持的回 '?'，容忍）。
-        await this.#setBusChannel(busGroup, busProfile);
+        this.protocol = 'B';
+        // 备选协议回退停用：USER 协议模型下切 ATSP0 会丢掉通道配置（实车教训）
+        this.altProtocols = [];
+
         this.target = t; this.tester = r;
         const reqId = 0x18DA0000 | (t << 8) | r;
         this.reqId = reqId;
         this.respId = 0x18DA0000 | (r << 8) | t;
-        // 每次寻址前重申链路状态（实车踩坑：ATZ/界面探测把适配器重置回默认态——
-        // 空格输出+回显+CAN 格式化——导致"无法解析响应"与 7F 03 11 假服务号）
-        for (const c of ['ATE0', 'ATL0', 'ATS0', 'ATH1', 'ATCAF0', 'ATAL', 'ATCP18', 'ATAT0']) await this.#send(c);
+        // ② 链路状态重申 + 寻址（ATCP18+4 字节 ATSH 与 CP18+3 字节 DA<t><r> 等价）
+        for (const c of ['ATE0', 'ATL0', 'ATS0', 'ATH1', 'ATCAF0', 'ATAL', 'ATCP18', 'ATAT1', 'ATST99']) await this.#send(c);
         await this.#send('ATSH' + reqId.toString(16).toUpperCase().padStart(8, '0'));
         await this.#send('ATCRA' + this.respId.toString(16).toUpperCase().padStart(8, '0'));
-        // 流控配方（2026-10-09 实车定论）：FC 必须由适配器内建发——
-        // 手动注入会在收应答窗口触发 STOPPED 中止。注意 ATFCSD 必须带空格（无空格回 '?'）
+        // 流控配方：FC 必须由适配器内建发（手动注入会在收应答窗口触发 STOPPED 中止）。
+        // ATFCSD 必须带空格（无空格回 '?'）
         await this.#send('ATCFC1');
         await this.#send('ATFCSH' + reqId.toString(16).toUpperCase().padStart(8, '0'));
         await this.#send('ATFCSD 30 00 00 00 00 00 00 00');
         await this.#send('ATFCSM0');
+        // ③ 连接验证：10 03 → 50 03（NRC 0x12 → 10 92；无应答 → ATV0 后重试一次）
+        await this.#connectProbe();
+    }
+
+    /** 连接验证（每次连模块的硬前置）：10 03/10 92 扩展会话 + 校验正响应 */
+    async #connectProbe() {
+        let resp = null;
+        try {
+            resp = await this.request(new Uint8Array([0x10, 0x03]), { timeoutMs: 3000 });
+        } catch {
+            await this.#send('ATV0').catch(() => {});            // 无应答：关 verbose 重试（标准恢复）
+            try {
+                resp = await this.request(new Uint8Array([0x10, 0x03]), { timeoutMs: 3000 });
+            } catch { /* fallthrough */ }
+        }
+        if (resp && resp[0] === 0x7f && resp[2] === 0x12) {
+            // 子功能不支持：换 10 92（部分模块的扩展会话号不同）
+            resp = await this.request(new Uint8Array([0x10, 0x92]), { timeoutMs: 3000 }).catch(() => null);
+        }
+        if (!resp || resp[0] !== 0x50) {
+            const why = resp ? bytesToHex(resp) : '无应答';
+            throw new Elm327Error(`模块会话建立失败：10 03 期望 50 03，实得 ${why}`, 'CONNECT');
+        }
     }
 
     /**
@@ -410,37 +451,8 @@ class Elm327 {
     }
 
     /**
-     * 切物理 CAN 通道（总线组 = OBD 引脚对）。
-     *
-     * 952/949 的三条总线在不同引脚对上：主高速 6/14、底盘高速 12/13、舒适 3/11。
-     * 只发 ATSH/ATCRA 不切通道，底盘/舒适模块的 ECU 根本收不到帧（实车 NO DATA 根因）。
-     *
-     * 通道命令按适配器能力分流（对齐标准流程的 init 语义）：
-     *   - vLinker MS（Vgate）：`VTSET_CAN B/C,xx,pp,<CHAN>` 通道选择
-     *   - CANtieCAR：`ATMC<成对引脚字节>` 引脚路由（6E=6/14、CD=12/13、3B=3/11）
-     *   - ELM327 等：物理换线（上层提示），这里不发专有命令
-     * 不支持的命令回 '?'，一律容忍不报错。
-     */
-    async #setBusChannel(busGroup, busProfile) {
-        const TOKEN = { none: '6E', swap: 'CD', comfort: '3B' };       // 成对引脚字节
-        const CHAN = { none: 'HS_CAN', swap: 'CH_CAN', comfort: 'MS_CAN' };
-        const PP = { CCAN29: '01', BCAN29: '0A', BHCAN29: '04' };      // 协议档参数
-        const token = TOKEN[busGroup] || '6E';
-        const chan = CHAN[busGroup] || 'HS_CAN';
-        const pp = PP[busProfile] || '01';
-        try {
-            if (this.adapter === 'vlinker-ms') {
-                await this.#send('VTSET_CAN B,01,' + pp + ',' + chan);
-                await this.#send('VTSET_CAN C,40,' + pp + ',' + chan);
-            } else if (this.adapter === 'cantiecar') {
-                await this.#send('ATMC' + token);
-            }
-        } catch { /* 专有命令不支持：忽略，回退物理换线提示兜底 */ }
-    }
-
-    /**
-     * CANtieCAR 软件引脚路由（免换线）——setBusChannel 的独立探测入口，
-     * 供换线提示回退逻辑试路由用。PINS = 成对引脚字节（与 init 序列同口径）。
+     * CANtieCAR 软件引脚路由（免换线）——供换线提示回退逻辑试路由用。
+     * PINS = 成对引脚字节（6E=6/14、CD=12/13、3B=3/11）。
      *
      * @param {string} busGroup 'none' | 'comfort' | 'swap'
      * @returns {Promise<boolean>} 路由命令是否被适配器接受

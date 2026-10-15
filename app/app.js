@@ -1360,7 +1360,7 @@ $('btnAlign').addEventListener('click', async () => {
     alert('写前一致性校验失败：' + e.message + '\n对齐已中止。');
     return;
   }
-  // —— 对齐前言（与参考实现步骤 0 逐条一致）：读 DATA1 + DATA1S + TesterPresent ——
+  // —— 对齐前言（与标准流程步骤 0 逐条一致）：读 DATA1 + DATA1S + TesterPresent ——
   try {
     stage('对齐前言：读取 DATA1 / DATA1S + 保活…');
     const pre = await state.uds.alignPrelude();
@@ -1399,7 +1399,7 @@ $('btnAlign').addEventListener('click', async () => {
   // 「单独对齐几个模块」要成立，前提是**写下去的块 == 未勾选节点当前持有的块**。
   // 只要块被改过（DATA3 合并 / 编辑器改过 / 与车身当前块不一致），只对齐子集就会出现
   // **分裂脑**：已对齐节点持新块、未勾选节点持旧块 → 里程表闪烁照样不停。
-  // 参考实现的节点勾选框（CheckBox 列）只用于**选择要对齐谁**，不改变这个前提。
+  // 标准流程的节点勾选框（CheckBox 列）只用于**选择要对齐谁**，不改变这个前提。
   const bytesEq = (a, b) => !!a && !!b && a.length === b.length && a.every((x, i) => x === b[i]);
   const blockDrifted = !bytesEq(state.block.bytes, liveBlock);
   const presentEls = [...document.querySelectorAll('.node')]
@@ -1597,7 +1597,7 @@ async function runCommandString(cmdStr, item) {
   const parts = cmdStr.split(',').map((p) => p.trim().replace(/\s/g, '')).filter(Boolean);
   // 命令间隔（标准执行器语义）：默认 2s；无旗标时 1 条命令=8s、2 条=6s（结果沉降）。
   //
-  // ⚠️ 延时旗标必须与参考实现**全量对齐** —— 库里是 7 个，我们此前只实现了 5 个：
+  // ⚠️ 延时旗标必须与标准流程**全量对齐** —— 库里是 7 个，我们此前只实现了 5 个：
   //   NOWAIT=0 · 0.5SEC · 1SEC · **10SEC** · 20SEC · **30SEC** · 50SEC
   //   （10SEC / 30SEC 是 2026-10-16 补的，此前漏了 → 用到这两个的执行器会等错时间）
   // 另有行为类旗标（语义待深挖，暂不拦截）：EXECANY / NOABORT / WAITY / TD100 /

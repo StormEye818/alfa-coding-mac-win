@@ -134,7 +134,7 @@ class Elm327 {
     /**
      * 操作级链路模式 —— 对齐参考诊断仪的「**每个操作单独设置**，不是一次性初始化」。
      *
-     * 参考实现的操作级三元组模板（ATCAF / ATAT / ATST 必须**一起切**）：
+     * 标准流程的操作级三元组模板（ATCAF / ATAT / ATST 必须**一起切**）：
      *   `ATCAF1 ATAT1`           格式化读（用适配器默认超时）
      *   `ATCAF0 ATAT0 ATST20`    原始读（80ms）
      *   `ATCAF0 ATAT0 ATST10`    原始读（40ms）
@@ -142,7 +142,7 @@ class Elm327 {
      *   `ATCAF0 ATAT0 ATST03`    快超时（12ms）—— 多帧连续帧用
      *   `ATCAF1 ATAT0`           格式化读（关自适应）
      *
-     * 参考实现的 ATST 全档（xx×4ms）：01 02 03 04 05 07 08 09 10 19 20 21 22 25 26 27 28
+     * 标准流程的 ATST 全档（xx×4ms）：01 02 03 04 05 07 08 09 10 19 20 21 22 25 26 27 28
      *   29 30 35 38 41 52 62 72 80 90 94 99 FE F0 FF
      * 我们当前用到：32(初始化) / 03(多帧连续帧) / 99(等最终响应) / FF(最长)。
      * **慢 ECU 超时就调这里**，不要回去改 init 里的固定值。
@@ -254,7 +254,7 @@ class Elm327 {
         await this.#send('ATL0');
         await this.#send('ATS0');
         // ATH1：要 CAN ID 才能做 ISO-TP 重组（按 respId 过滤、剥离 CAN 头）。
-        // ⚠️ **与参考实现不同口径**：参考实现主用 `ATH0` + `ATCRA` 过滤。
+        // ⚠️ **与标准流程不同口径**：标准流程主用 `ATH0` + `ATCRA` 过滤。
         //    我们走 ATH1 是有意的工程选择（重组需要 CAN ID），不是疏漏 ——
         //    但这是**另一条路径**，某些适配器/ECU 行为可能不同，真车需重点看。
         //    若要完全对齐，改这里 + #parseFrames 一起改，别单改一处。
@@ -325,7 +325,7 @@ class Elm327 {
         this.respId = 0x18DA0000 | (r << 8) | t;
         // ② 链路状态重申 + 寻址（ATCP18+4 字节 ATSH 与 CP18+3 字节 DA<t><r> 等价）
         // ⚠️ ATAT 与 init() 必须同口径：此前 init 发 ATAT0、这里发 ATAT1，两处相反值互相覆盖
-        //    （2026-10-15 预检发现）。参考实现主用 ATAT0，
+        //    （2026-10-15 预检发现）。标准流程主用 ATAT0，
         //    且 ATCAF/ATAT/ATST 是**一起按操作切**的三元组，见 setLinkMode()。
         for (const c of ['ATE0', 'ATL0', 'ATS0', 'ATH1', 'ATCAF0', 'ATAL', 'ATCP18', 'ATAT0', 'ATST99']) await this.#send(c);
         await this.#send('ATSH' + reqId.toString(16).toUpperCase().padStart(8, '0'));

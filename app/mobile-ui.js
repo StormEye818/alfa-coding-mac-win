@@ -78,8 +78,10 @@
 
   /* ---------- 3) title tooltip → ⓘ 说明 ----------
    * 只处理非交互元素（卡片标题/统计块等）。按钮/下拉/输入框的 title 绝不拦截——
-   * 否则点按钮弹的是说明而不是执行动作（2026-09-30 真机实测踩过：写入按钮被劫持）。 */
-  const INTERACTIVE = 'button, select, input, textarea, a, label, .opt';   // 注：.help-btn 本身是触发器，不在其列
+   * 否则点按钮弹的是说明而不是执行动作（2026-09-30 真机实测踩过：写入按钮被劫持）。
+   * .hbyte/.bit-cell 也必须算交互元素：它们是可点的 div，被此系统处理后点击会被
+   * 捕获阶段 stopPropagation 劫持成弹说明（2026-10-15 踩过：字节编辑器只能点开一次）。 */
+  const INTERACTIVE = 'button, select, input, textarea, a, label, .opt, .hbyte, .bit-cell';   // 注：.help-btn 本身是触发器，不在其列
   function initTooltips() {
     document.querySelectorAll('[title]').forEach((n) => {
       const text = n.getAttribute('title');

@@ -1331,6 +1331,23 @@ $('btnAlign').addEventListener('click', async () => {
   if (!confirm(warn)) return;
   const chosen = selectedNodes();
   if (!chosen.length) return alert('请先勾选要对齐的节点');
+  // —— 写前双重读一致性（标准流程）：连续两次读车身块必须一致，防读链路抖动把脏数据写下去 ——
+  try {
+    stage('写前一致性校验：连续两次读取车身配置…');
+    const r1 = await state.uds.readProxi();
+    const r2 = await state.uds.readProxi();
+    const eq = (a, b) => !!a && !!b && a.length === b.length && a.every((x, i) => x === b[i]);
+    if (!eq(r1, r2)) {
+      stageFail('写前校验未过：连续两次读取不一致（总线抖动），已中止');
+      alert('写前一致性校验未通过：连续两次读取车身配置结果不一致。\n为避免把脏数据写入节点，对齐已中止，请稍后重试。');
+      return;
+    }
+    log('写前一致性校验通过（两次读取一致）');
+  } catch (e) {
+    stageFail('写前校验失败：' + e.message);
+    alert('写前一致性校验失败：' + e.message + '\n对齐已中止。');
+    return;
+  }
   // —— 对齐前置：merge DATA3 → 重算 CRC ——
   // 映射：PROXIX 家族 DATA1[25..56] = DATA3[32..63]（正序），SGW 在 Byte41 落在该区。
   try {
@@ -1514,29 +1531,44 @@ function askInput(item) {
  * 早期版本误 `if (len > 7) continue` 把多帧 UDS + FE/FF 全静默丢弃（61 个功能条目受影响）——
  * 只对齐了主干写入，漏了功能层的命令模板分支，实测才暴露。
  */
-async function runCommandString(cmdStr) {
+async function runCommandString(cmdStr, item) {
   const sent = [];
-  for (const part of cmdStr.split(',')) {
-    const h = part.trim().replace(/\s/g, '');
-    if (!h) continue;
+  const parts = cmdStr.split(',').map((p) => p.trim().replace(/\s/g, '')).filter(Boolean);
+  // 命令间隔（标准执行器语义）：默认 2s；无旗标时 1 条命令=8s、2 条=6s（结果沉降）；
+  // 旗标 NOWAIT=0 / 0.5SEC=0.5s / 1SEC=1s / 20SEC=20s / 50SEC=50s
+  const flags = String((item && item.resultFormat) || '').toUpperCase();
+  let interMs = 2000;
+  if (flags.includes('NOWAIT')) interMs = 0;
+  else if (flags.includes('0.5SEC')) interMs = 500;
+  else if (flags.includes('1SEC')) interMs = 1000;
+  else if (flags.includes('20SEC')) interMs = 20000;
+  else if (flags.includes('50SEC')) interMs = 50000;
+  else if (parts.length === 2) interMs = 6000;
+  else if (parts.length === 1) interMs = 8000;
+
+  for (let i = 0; i < parts.length; i++) {
+    const h = parts[i];
     const raw = hexToBytes(h);
     if (raw.length < 1) continue;
     const tag = raw[0];
-    // FE：脚本步骤标记。参考语义是 UI 提示步进文本并等待（子命令=raw[1]，索引=raw[2]）
-    // 我们数据侧无步进文本，退化为显示标记并短暂停留
+    // FE：脚本步进。raw[1]=0 显示步进、raw[1]=1 显示并等待操作者确认（标准语义）
     if (tag === 0xFE) {
+      const mode = raw[1] || 0;
       sent.push(`[步进 ${h.slice(2)}]`);
-      await stageWait(400);
+      if (mode === 1) {
+        const go = confirm(`脚本步进（${h.slice(2)}）\n\n请完成当前步骤的现场操作后点「确定」继续。`);
+        if (!go) { sent.push('[步进中止]'); return sent; }
+      }
       continue;
     }
-    // FF：延时。参考语义 num2 = 10*(256*b1+b2) 次 × 100ms → FF00NN = NN 秒
+    // FF：延时。标准语义 (256×b1+b2) 秒
     if (tag === 0xFF) {
       const ms = raw.length >= 3 ? ((raw[1] << 8) | raw[2]) * 1000 : 10;
       sent.push(`[延时 ${Math.round(ms / 1000)}s]`);
-      if (ms > 0) await stageWait(Math.min(ms, 60000));
+      if (ms > 0) await stageWait(Math.min(ms, 120000));
       continue;
     }
-    // 00：期望响应模板（校验用），不发送
+    // 00：期望响应模板（显示/校验用），不发送
     if (tag === 0x00) { sent.push(`[响应模板 ${h.slice(2)}]`); continue; }
     // 真实 UDS：单帧或多帧，payload = raw[1..1+len]，交 link.request（内部处理 ISO-TP）
     const len = tag;
@@ -1545,6 +1577,8 @@ async function runCommandString(cmdStr) {
     await state.link.request(payload);
     sent.push(Array.from(payload).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ')
       + (len > 7 ? '（多帧）' : ''));
+    // 命令间沉降（FE/FF 节奏由 token 自带，真实命令之间按旗标等效等待）
+    if (interMs > 0 && (i < parts.length - 1 || parts.length === 1)) await stageWait(interMs);
   }
   return sent;
 }
@@ -1635,6 +1669,26 @@ function renderFunctions() {
       }
       const mName = modLabel(item.module);
       const bOld = b.textContent;
+      let picked = null;
+      // READNOTES：执行前展示说明（标准语义）
+      const fnFlags = String(item.resultFormat || '').toUpperCase();
+      if (fnFlags.includes('READNOTES') && item.desc) {
+        const okNotes = confirm(`执行说明（${t(item.name)}）\n\n${tdesc(item.desc).slice(0, 600)}\n\n确认已阅读并继续？`);
+        if (!okNotes) return;
+      }
+      // 需 PIN 的项目：先安全访问（标准语义 SECURITY05xx）
+      if (item.security && item.security.level === 'pin') {
+        const pin = prompt('该项目需要安全访问\n\n请输入 5 位 PIN：', '');
+        if (!pin) { stageDone('已取消（未输入 PIN）'); return; }
+        try {
+          stage('正在安全访问…');
+          await state.uds.securityAccess(String(pin).trim());
+        } catch (e) {
+          stageFail('安全访问失败：' + e.message);
+          alert('安全访问失败：' + e.message + (e.nrcText ? '（' + e.nrcText + '）' : ''));
+          return;
+        }
+      }
       try {
         stage(`已连接 ${mName}（地址 0x${(state.cables.modules[item.module] || {}).tx || '??'}）`);
         const sent = await (async () => {
@@ -1646,7 +1700,6 @@ function renderFunctions() {
               const ok = confirm(`执行器测试安全须知\n\n「${t(item.name)}」会驱动真实执行器动作。\n请先按安全规范断开相关执行器并接入模拟电阻。\n\n确认已按规范操作并继续？`);
               if (!ok) return null;
             }
-            let picked = null;
             if (item.needsUserInput || item.input) {
               picked = await askInput(item);
               if (picked === null) return null;
@@ -1661,13 +1714,13 @@ function renderFunctions() {
                   const raw = Math.round(picked.value / 500);   // 单位 500km/步
                   cmd = cmd.slice(0, -2) + raw.toString(16).toUpperCase().padStart(2, '0');
                 }
-                await runCommandString(cmd);
+                await runCommandString(cmd, item);
                 out.push(`${st.step}（${cmd}）`);
                 await stageWait(360);
               }
               return out;
             }
-            return await runCommandString(item.commands);
+            return await runCommandString(item.commands, item);
           } finally {
             b.disabled = false;
             b.textContent = bOld;
@@ -1676,8 +1729,13 @@ function renderFunctions() {
 
         if (!sent) { stageDone('已取消'); return; }
         stageDone(`完成：${t(item.name)}（下发 ${sent.length} 帧）`);
-        const valLine = (typeof picked === 'object' && picked) ? `\n设定值：${picked.label}` : '';
+        const valLine = (picked && typeof picked === 'object') ? `\n设定值：${picked.label}` : '';
         alert(`执行完成\n\n项目：${t(item.name)}\n模块：${m2label(item.module)}${valLine}\n下发帧：\n${sent.join('\n') || '（无）'}`);
+        // DISCONNECTONSUCCESS：成功后自动退出模块（标准语义）
+        if (fnFlags.includes('DISCONNECTONSUCCESS')) {
+          await exitModule({ auto: true });
+          stageDone('已按功能语义自动退出模块');
+        }
       } catch (e) {
         stageFail(`失败：${e.message}`);
         alert('执行失败：' + e.message + (e.nrcText ? '（' + e.nrcText + '）' : ''));
@@ -1942,9 +2000,9 @@ async function enterModule(code) {
   }
 }
 
-async function exitModule() {
+async function exitModule(opts = {}) {
   if (!modSess.code) return;
-  if (!confirm(`确认退出模块 ${modLabel(modSess.code)}（${modSess.code}）？\n退出后才能选择其他模块。`)) return;
+  if (!opts.auto && !confirm(`确认退出模块 ${modLabel(modSess.code)}（${modSess.code}）？\n退出后才能选择其他模块。`)) return;
   stopLiveLoop();
   if (state.session) state.session.disconnectModule();
   const name = modLabel(modSess.code);

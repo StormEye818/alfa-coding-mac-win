@@ -305,21 +305,34 @@ class Elm327 {
      * ≤7 字节走单帧；更长（如写 PROXI 的 2E 20 23 <DATA1>）走 ISO-TP 多帧 + 流控。
      * @param {Uint8Array} payload 例如 0x22 0x20 0x23
      */
+    /**
+     * 发一帧 UDS 请求。
+     *
+     * 重试语义（对齐标准发送原语）：
+     *   - 服务 0x22/0x19/0x14 空应答 → 100ms 后重试（最多 3 次）
+     *   - 任意服务 NRC 0x21（请求过于频繁）→ 100ms 后重试 1 次
+     */
     async request(payload, { timeoutMs = ELM_TIMEOUT_MS } = {}) {
         this.fcSent = false;   // 每次请求独立计流控
-        try {
-            return await this.#requestOnce(payload, timeoutMs);
-        } catch (e) {
-            // 探测式恢复：NO DATA 时按备选协议切一次再试
-            if (e && e.code === 'NO_DATA' && this.altProtocols.length > 0) {
-                const alt = this.altProtocols.shift();
-                this.#log(`>> [协议回退] ATSP${alt}`);
-                await this.#send('ATSP' + alt);
-                this.#flush();
-                return await this.#requestOnce(payload, timeoutMs);
+        const svc = payload[0];
+        const isReadFamily = svc === 0x22 || svc === 0x19 || svc === 0x14;
+        const maxTries = isReadFamily ? 3 : 1;
+        let lastErr = null;
+        for (let attempt = 0; attempt < maxTries; attempt++) {
+            if (attempt > 0) await new Promise((r) => setTimeout(r, 100));
+            try {
+                const resp = await this.#requestOnce(payload, timeoutMs);
+                if (resp && resp[0] === 0x7f && resp[2] === 0x21 && attempt === 0) {
+                    lastErr = null;
+                    continue;                      // NRC 0x21：重试一次
+                }
+                return resp;
+            } catch (e) {
+                lastErr = e;
+                if (!(e && e.code === 'NO_DATA') || attempt === maxTries - 1) throw e;
             }
-            throw e;
         }
+        throw lastErr;
     }
 
     async #requestOnce(payload, timeoutMs) {

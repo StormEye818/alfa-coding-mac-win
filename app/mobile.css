@@ -178,7 +178,8 @@ body.mobile #bitPanel {
   position: fixed;
   left: 8px; right: 8px;
   bottom: calc(72px + env(safe-area-inset-bottom, 0px));
-  z-index: 70;
+  /* 必须盖过浮动写入条(z=80)——否则 hex 输入行被压住无法手动改字节 */
+  z-index: 92;
   max-height: 46vh;
   overflow-y: auto;
   border-radius: 14px;

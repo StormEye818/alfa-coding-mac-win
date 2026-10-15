@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 与 web 端 --bg 一致：安全区/窗口底色，避免深色 UI 外圈白边 -->
+    <color name="app_bg">#0F1419</color>
+</resources>

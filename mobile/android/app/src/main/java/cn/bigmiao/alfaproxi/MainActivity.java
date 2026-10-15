@@ -17,6 +17,8 @@ public class MainActivity extends BridgeActivity {
         // 把系统栏与显示挖孔区转成内容区内边距让出来（iOS 侧由 CSS env(safe-area-inset-*) 处理，
         // 安卓 WebView 的 env() 一直报 0，只能在原生侧做）。
         View content = findViewById(android.R.id.content);
+        // 与 web 端 --bg 一致：让出的内边距区域不能露窗口白底
+        content.setBackgroundColor(0xFF0F1419);
         ViewCompat.setOnApplyWindowInsetsListener(content, (v, insets) -> {
             Insets bars = insets.getInsets(
                     WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());

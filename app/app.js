@@ -2040,15 +2040,17 @@ function applyScale(raw, item) {
   if (!raw || !raw.length) return null;
   const spec = item.spec || {};
   const nb = spec.bytes || 1;
+  const st = spec.start || 0;                       // 参数在应答里的起始偏移（0-based）
   const fmt = spec.format || '';
-  const slice = raw.slice(0, Math.min(raw.length, nb));
+  const slice = raw.slice(st, Math.min(raw.length, st + nb));
+  if (!slice.length) return null;
 
-  // 非数值格式：按参考语义分支
+  // 非数值格式：按格式族分支
   if (fmt === 'str') return slice.map((b) => (b >= 32 && b < 127 ? String.fromCharCode(b) : '')).join('').replace(/\0+$/, '');
   if (fmt === 'hex') return Array.from(slice).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join('');
   if (fmt === 'hex2') return Array.from(slice).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
   if (fmt === 'bits' || fmt === 'bitw' || fmt === 'bitchars') {
-    // 位表未导入（数据侧缺口），退化为十六进制展示，避免报错
+    // 位表未导入（数据侧缺口），退化为二进制展示，避免报错
     return Array.from(slice).map((b) => b.toString(2).padStart(8, '0')).join(' ');
   }
   if (fmt === 'date' || fmt === 'datehalf' || fmt.startsWith('eq3') || fmt.startsWith('nm') || fmt.startsWith('equ')) {
@@ -2056,9 +2058,11 @@ function applyScale(raw, item) {
     return Array.from(slice).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
   }
 
-  // 数值格式：参考语义为 **大端** 装配 + (raw*scale+offset)/10^decimals
+  // 数值格式：大端装配 + nums 族按字节宽两位补码 + (raw*scale+offset)/10^decimals
   let n = 0;
-  for (let i = 0; i < slice.length; i++) n = n * 256 + slice[i];
+  for (const b of slice) n = n * 256 + b;
+  const signed = spec.signed === true || fmt.startsWith('nums');
+  if (signed && n >= Math.pow(2, 8 * slice.length - 1)) n -= Math.pow(2, 8 * slice.length);
   n = n * (spec.scale ?? 1) + (spec.offset ?? 0);
   const dec = spec.decimals ?? 0;
   n = n / Math.pow(10, dec);
@@ -2073,8 +2077,15 @@ function renderLive(items) {
     const el = document.getElementById('liveVal-' + p.idx);
     if (!el) return;
     const v = last ? last.v[i] : null;
-    el.textContent = (v === null || v === undefined) ? '—' : String(v);
-    el.classList.toggle('live-val-hot', v !== null && v !== undefined);
+    if (v === null || v === undefined) {
+      el.textContent = '—';
+      el.classList.remove('live-val-hot');
+      return;
+    }
+    // 数值按参数的小数位显示（如转向角 2 位：-1.06），非数值原样
+    const dec = (p.it && p.it.spec && p.it.spec.decimals) || 0;
+    el.textContent = (typeof v === 'number') ? v.toFixed(dec) : String(v);
+    el.classList.add('live-val-hot');
   });
 }
 
@@ -2157,7 +2168,8 @@ async function syncLiveAuto() {
       $('liveSamples').textContent = live.samples.length;
       $('liveRate').textContent = Math.round(n / Math.max(1, (Date.now() - t0) / 60000));
       renderLive(items);
-      await new Promise((r) => setTimeout(r, 900));
+      // 轮询节奏对齐：滚动连续读（间隔只留总线呼吸口），不整轮大睡
+      await new Promise((r) => setTimeout(r, 120));
     }
     stageDone(`实时数据结束，共 ${live.samples.length} 个采样点`);
   } catch (e) {

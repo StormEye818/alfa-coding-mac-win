@@ -1707,6 +1707,8 @@ async function mergeRwUserEntry(item, picked) {
   return parts[0] + ',' + hex;
 }
 
+let fnAbort = false;   // 执行中取消标志（中止→发最后一条命令恢复，标准语义）
+
 async function runCommandString(cmdStr, item) {
   const sent = [];
   const parts = cmdStr.split(',').map((p) => p.trim().replace(/\s/g, '')).filter(Boolean);
@@ -1729,18 +1731,55 @@ async function runCommandString(cmdStr, item) {
   else if (parts.length === 2) interMs = 6000;
   else if (parts.length === 1) interMs = 8000;
 
+  // 中止/取消语义：下发最后一条真实 UDS 作恢复（回到安全态）
+  let lastReal = null;
+  for (const p of parts) {
+    const r = hexToBytes(p);
+    if (r.length && r[0] > 0 && r[0] < 0xF0) lastReal = r;
+  }
+  const restoreLast = async () => {
+    if (!lastReal) return;
+    try {
+      await state.link.request(lastReal.slice(1, 1 + lastReal[0]));
+      sent.push('[恢复命令已发]');
+    } catch { sent.push('[恢复命令失败]'); }
+  };
+  const waitCancellable = async (ms) => {
+    const t0 = Date.now();
+    while (Date.now() - t0 < ms) {
+      if (fnAbort) return false;
+      await new Promise((r) => setTimeout(r, Math.min(120, Math.max(1, ms - (Date.now() - t0)))));
+    }
+    return true;
+  };
+
   for (let i = 0; i < parts.length; i++) {
+    if (fnAbort) {
+      sent.push('[执行中止→恢复]');
+      await restoreLast();
+      return sent;
+    }
     const h = parts[i];
     const raw = hexToBytes(h);
     if (raw.length < 1) continue;
     const tag = raw[0];
-    // FE：脚本步进。raw[1]=0 显示步进、raw[1]=1 显示并等待操作者确认（标准语义）
+    // FE：脚本步进。raw[1]=0 显示步进文本、raw[1]=1 显示并等待操作者确认
+    // 文本 = 选项表 raw[2] 项去掉 4 位掩码前缀（如 "0000Turn the steering wheel 90° left…"）
     if (tag === 0xFE) {
       const mode = raw[1] || 0;
-      sent.push(`[步进 ${h.slice(2)}]`);
+      const idx = raw[2] || 0;
+      const opts = (item && item.options) || [];
+      const text = (opts[idx] ? opts[idx].slice(4) : '') || `步进 ${idx}`;
+      sent.push(`[步进 ${idx}] ${text}`);
       if (mode === 1) {
-        const go = confirm(`脚本步进（${h.slice(2)}）\n\n请完成当前步骤的现场操作后点「确定」继续。`);
-        if (!go) { sent.push('[步进中止]'); return sent; }
+        const go = confirm(`脚本步骤：\n\n${text}\n\n请完成上述操作后点「确定」继续。`);
+        if (!go) {
+          sent.push('[步进中止→恢复]');
+          await restoreLast();
+          return sent;
+        }
+      } else {
+        stage(`步骤：${text}`);
       }
       continue;
     }
@@ -1748,7 +1787,11 @@ async function runCommandString(cmdStr, item) {
     if (tag === 0xFF) {
       const ms = raw.length >= 3 ? ((raw[1] << 8) | raw[2]) * 1000 : 10;
       sent.push(`[延时 ${Math.round(ms / 1000)}s]`);
-      if (ms > 0) await stageWait(Math.min(ms, 120000));
+      if (ms > 0 && !(await waitCancellable(Math.min(ms, 120000)))) {
+        sent.push('[延时中止→恢复]');
+        await restoreLast();
+        return sent;
+      }
       continue;
     }
     // 00：期望响应模板（显示/校验用），不发送
@@ -1769,7 +1812,13 @@ async function runCommandString(cmdStr, item) {
     }
     sent.push(hex + ' → ✓');
     // 命令间沉降（FE/FF 节奏由 token 自带，真实命令之间按旗标等效等待）
-    if (interMs > 0 && (i < parts.length - 1 || parts.length === 1)) await stageWait(interMs);
+    if (interMs > 0 && (i < parts.length - 1 || parts.length === 1)) {
+      if (!(await waitCancellable(interMs))) {
+        sent.push('[执行中止→恢复]');
+        await restoreLast();
+        return sent;
+      }
+    }
   }
   return sent;
 }
@@ -1880,8 +1929,14 @@ function renderFunctions() {
           return;
         }
       }
+      const cancelBtn = document.createElement('button');
+      cancelBtn.textContent = '取消执行';
+      cancelBtn.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:118px;z-index:98;min-height:44px;padding:10px 22px;border-radius:12px;border:1px solid #b33;background:#2a1215;color:#f88;font-size:15px;';
+      cancelBtn.onclick = () => { fnAbort = true; cancelBtn.textContent = '正在取消…'; };
+      document.body.appendChild(cancelBtn);
       try {
         stage(`已连接 ${mName}（地址 0x${(state.cables.modules[item.module] || {}).tx || '??'}）`);
+        fnAbort = false;
         const sent = await (async () => {
           b.disabled = true;
           b.textContent = '执行中…';
@@ -1942,6 +1997,11 @@ function renderFunctions() {
         })();
 
         if (!sent) { stageDone('已取消'); return; }
+        const aborted = sent.some((s) => String(s).includes('中止'));
+        if (aborted) {
+          stageDone(`已取消：${t(item.name)}（恢复命令已下发）`);
+          return;
+        }
         stageDone(`完成：${t(item.name)}（下发 ${sent.length} 帧）`);
         const valLine = (picked && typeof picked === 'object') ? `\n设定值：${picked.label}` : '';
         alert(`执行完成\n\n项目：${t(item.name)}\n模块：${m2label(item.module)}${valLine}\n下发帧：\n${sent.join('\n') || '（无）'}`);
@@ -1953,6 +2013,9 @@ function renderFunctions() {
       } catch (e) {
         stageFail(`失败：${e.message}`);
         alert('执行失败：' + e.message + (e.nrcText ? '（' + e.nrcText + '）' : ''));
+      } finally {
+        cancelBtn.remove();
+        fnAbort = false;
       }
     });
   });
@@ -2133,8 +2196,38 @@ $('btnReadDtc').addEventListener('click', async () => {
             ${hit && hit.desc ? `<div class="sub">${hit.desc}</div>` : ''}
             <div class="sub">原始码 ${rawHex} · 状态 0x${d.status.toString(16).toUpperCase().padStart(2, '0')}</div>
           </div>
+          <button class="small ghost" data-snap="${rawHex}">冻结帧</button>
         </div>`;
       }).join('');
+      // 冻结帧（19 04）：故障发生瞬间的车速/水温等快照——排障关键数据
+      wrap.onclick = async (e) => {
+        const btn = e.target.closest('[data-snap]');
+        if (!btn) return;
+        const rawHex = btn.dataset.snap;
+        const panelId = 'snap-' + rawHex;
+        const old = document.getElementById(panelId);
+        if (old) { old.remove(); return; }
+        const hi = parseInt(rawHex.substr(0, 2), 16);
+        const lo = parseInt(rawHex.substr(2, 2), 16);
+        try {
+          stage(`正在读取 ${rawHex} 的冻结帧…`);
+          await state.session.runOn(code, async () => {
+            const resp = await state.uds.readDtcSnapshot(hi, lo);
+            const items = (state.snapshots && state.snapshots.modules && state.snapshots.modules[code]) || [];
+            const rows = items.map((s) => {
+              const v = applyScale(resp, { spec: s });
+              return `<div class="mrow"><div class="grow"><div class="name">${tSpan(s.name)}</div></div>`
+                + `<div class="live-val">${v ?? '—'}<span style="color:var(--dim);font-size:12px"> ${s.unit || ''}</span></div></div>`;
+            }).join('');
+            btn.closest('.mrow').insertAdjacentHTML('afterend',
+              `<div id="${panelId}" style="grid-column:1/-1">${rows || '<div class="dim" style="padding:10px">该模块无冻结帧参数表</div>'}</div>`);
+            stageDone(`冻结帧：${items.length} 项`);
+          });
+        } catch (err) {
+          stageFail('冻结帧读取失败：' + err.message);
+          alert('冻结帧读取失败：' + err.message);
+        }
+      };
       stageDone(`读取完成：${list.length} 条故障码`);
     });
   } catch (e) {
@@ -2263,7 +2356,7 @@ function applyScale(raw, item) {
   if (fmt === 'str') return slice.map((b) => (b >= 32 && b < 127 ? String.fromCharCode(b) : '')).join('').replace(/\0+$/, '');
   if (fmt === 'hex') return Array.from(slice).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join('');
   if (fmt === 'hex2') return Array.from(slice).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
-  if (fmt === 'bits' || fmt === 'bitw' || fmt === 'bitchars') {
+  if (fmt === 'bits' || fmt === 'bitw' || fmt === 'bitchars' || /^\d{3,5}$/.test(fmt)) {
     // bit 族语义（2026-10-17 审计）：选项表 = `MMVV标签`（bits 首字节）/
     // `MMVVMMVV标签`（bitw 双字节配对）/ bitchars 逐字节拼字符；末项为兜底。
     const opts = spec.options;
@@ -2293,8 +2386,19 @@ function applyScale(raw, item) {
       if (match1(slice[0], opts[k]) || k === opts.length - 1) return opts[k].slice(4);
     }
   }
-  if (fmt === 'date' || fmt === 'datehalf' || fmt.startsWith('eq3') || fmt.startsWith('nm') || fmt.startsWith('equ')) {
-    // 日期/多项式/位掩码：数据侧未导入换算参数，退化为 hex
+  // nm 族：nm,小数位,系数,偏移,掩码 —— 先按掩码截位再线性换算（如节气门开度 %）
+  if (fmt.startsWith('nm')) {
+    const p = fmt.split(',');
+    const mask = p[4] ? (parseInt(p[4], 16) >>> 0) : 0xff;
+    let n = 0;
+    for (const b of slice) n = n * 256 + b;
+    n &= mask;
+    n = n * (spec.scale ?? (p[2] ? Number(p[2]) : 1)) + (spec.offset ?? (p[3] ? Number(p[3]) : 0));
+    const dec = spec.decimals ?? (p[1] ? Number(p[1]) : 0);
+    return Number((n / Math.pow(10, dec)).toFixed(dec));
+  }
+  if (fmt === 'date' || fmt === 'datehalf' || fmt.startsWith('eq3') || fmt.startsWith('equ')) {
+    // 日期/多项式：数据侧未导入换算参数，退化为 hex
     return Array.from(slice).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
   }
 
@@ -2449,7 +2553,7 @@ $('btnLiveCsv').addEventListener('click', () => {
 
 /* ================= 启动 ================= */
 async function load() {
-  const [f, m, ns, fn, cables, i18n, i18nDesc, ifaceData, dtc, params] = await Promise.all([
+  const [f, m, ns, fn, cables, i18n, i18nDesc, ifaceData, dtc, params, snapshots] = await Promise.all([
     fetch('../src/data/features.json').then((r) => r.json()),
     fetch('../src/data/modules.json').then((r) => r.json()),
     fetch('../src/data/named-settings.json').then((r) => r.json()),
@@ -2460,8 +2564,9 @@ async function load() {
     fetch('../src/data/interfaces.json').then((r) => r.json()),
     fetch('../src/data/dtc.json').then((r) => r.json()),
     fetch('../src/data/params.json').then((r) => r.json()),
+    fetch('../src/data/dtc-snapshots.json').then((r) => r.json()).catch(() => ({ modules: {} })),
   ]);
-  Object.assign(state, { features: f, modules: m, named: ns, funcs: fn, cables, i18n, i18nDesc, ifaces: ifaceData.interfaces, dtc, params });
+  Object.assign(state, { features: f, modules: m, named: ns, funcs: fn, cables, i18n, i18nDesc, ifaces: ifaceData.interfaces, dtc, params, snapshots });
   renderIfaceTypes();
   renderDtcModuleOptions();
   renderNamed();

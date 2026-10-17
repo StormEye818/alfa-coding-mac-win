@@ -1,0 +1,4534 @@
+{
+ "generatedFrom": "params_all.tsv CmdType=9（19 04 冻结帧）",
+ "modules": {
+  "AAML1": [
+   {
+    "name": "Operating time",
+    "start": 10,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   },
+   {
+    "name": "Actuator current",
+    "start": 38,
+    "bytes": 2,
+    "format": "num,1,1,-500",
+    "decimals": 1,
+    "scale": 1.0,
+    "offset": -500.0,
+    "unit": "A"
+   },
+   {
+    "name": "Actuator position",
+    "start": 42,
+    "bytes": 1,
+    "format": "num,0,1,-100",
+    "decimals": 0,
+    "scale": 1.0,
+    "offset": -100.0,
+    "unit": "%"
+   }
+  ],
+  "AAMR1": [
+   {
+    "name": "Operating time",
+    "start": 10,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   },
+   {
+    "name": "Actuator current",
+    "start": 38,
+    "bytes": 2,
+    "format": "num,1,1,-500",
+    "decimals": 1,
+    "scale": 1.0,
+    "offset": -500.0,
+    "unit": "A"
+   },
+   {
+    "name": "Actuator position",
+    "start": 42,
+    "bytes": 1,
+    "format": "num,0,1,-100",
+    "decimals": 0,
+    "scale": 1.0,
+    "offset": -100.0,
+    "unit": "%"
+   }
+  ],
+  "ABG28": [
+   {
+    "name": "Operating time",
+    "start": 10,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   },
+   {
+    "name": "Odometer",
+    "start": 41,
+    "bytes": 3,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "km"
+   },
+   {
+    "name": "Battery voltage",
+    "start": 38,
+    "bytes": 1,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Vehicle speed",
+    "start": 46,
+    "bytes": 1,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "km/h"
+   }
+  ],
+  "ABSMMKC1": [
+   {
+    "name": "Operating time",
+    "start": 3,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   },
+   {
+    "name": "Operating time (since key-ON)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0,15",
+    "decimals": 0,
+    "scale": 15.0,
+    "offset": 0,
+    "unit": "s"
+   },
+   {
+    "name": "Startups counter",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Failure type",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Operational Mode Status",
+    "start": 3,
+    "bytes": 9,
+    "format": "hex"
+   },
+   {
+    "name": "Dynamic control selector",
+    "start": 5,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "F820All weather",
+     "F810Dynamic",
+     "F860Race",
+     "F8F8Not available",
+     "F800Normal"
+    ]
+   },
+   {
+    "name": "Brake pedal pressure",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "bar"
+   },
+   {
+    "name": "Hydraulic circuit pressure",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "bar"
+   },
+   {
+    "name": "Internal failure code",
+    "start": 3,
+    "bytes": 2,
+    "format": "hex"
+   },
+   {
+    "name": "Front left wheel speed",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,0.78125",
+    "decimals": 2,
+    "scale": 0.78125,
+    "offset": 0,
+    "unit": "km/h"
+   },
+   {
+    "name": "Front right wheel speed",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,0.78125",
+    "decimals": 2,
+    "scale": 0.78125,
+    "offset": 0,
+    "unit": "km/h"
+   },
+   {
+    "name": "Rear left wheel speed",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,0.78125",
+    "decimals": 2,
+    "scale": 0.78125,
+    "offset": 0,
+    "unit": "km/h"
+   },
+   {
+    "name": "Rear right wheel speed",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,0.78125",
+    "decimals": 2,
+    "scale": 0.78125,
+    "offset": 0,
+    "unit": "km/h"
+   },
+   {
+    "name": "Steering angle",
+    "start": 3,
+    "bytes": 2,
+    "format": "nums,2,6.25",
+    "decimals": 2,
+    "scale": 6.25,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Yaw",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,8,-16384",
+    "decimals": 2,
+    "scale": 8.0,
+    "offset": -16384.0,
+    "unit": "deg./sec."
+   },
+   {
+    "name": "Lateral acceleration",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,2,-4096",
+    "decimals": 2,
+    "scale": 2.0,
+    "offset": -4096.0,
+    "unit": "m/sec²"
+   },
+   {
+    "name": "Longitudinal acceleration",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,2,-4096",
+    "decimals": 2,
+    "scale": 2.0,
+    "offset": -4096.0,
+    "unit": "m/sec²"
+   },
+   {
+    "name": "Brake pedal switch",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0200OFF",
+     "0202ON"
+    ]
+   },
+   {
+    "name": "Brake contact 2",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0100OFF",
+     "0101ON"
+    ]
+   },
+   {
+    "name": "Parking brake",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0404Activated",
+     "0400Released"
+    ]
+   },
+   {
+    "name": "Reversing status",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0800OFF",
+     "0808ON"
+    ]
+   },
+   {
+    "name": "ASR/ESP Switch",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "1000Released",
+     "1010Pressed"
+    ]
+   },
+   {
+    "name": "Operating mode",
+    "start": 6,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "4000Normal",
+     "4040Fallback"
+    ]
+   },
+   {
+    "name": "Vehicle speed",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3,7.8125",
+    "decimals": 3,
+    "scale": 7.8125,
+    "offset": 0,
+    "unit": "km/h"
+   },
+   {
+    "name": "Battery voltage",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   }
+  ],
+  "ADBLU1": [
+   {
+    "name": "Operating time",
+    "start": 3,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   },
+   {
+    "name": "Engine speed",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0,0.25",
+    "decimals": 0,
+    "scale": 0.25,
+    "offset": 0,
+    "unit": "rpm"
+   },
+   {
+    "name": "Battery voltage",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Vehicle speed",
+    "start": 3,
+    "bytes": 1,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "km/h"
+   },
+   {
+    "name": "Urea/AdBlue level",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,2,39.215686",
+    "decimals": 2,
+    "scale": 39.215686,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Urea/AdBlue pressure",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,4,9.765923",
+    "decimals": 4,
+    "scale": 9.765923,
+    "offset": 0,
+    "unit": "bar"
+   },
+   {
+    "name": "Urea/AdBlue tank temperature",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,1,0.625,-2731.5",
+    "decimals": 1,
+    "scale": 0.625,
+    "offset": -2731.5,
+    "unit": "°C"
+   },
+   {
+    "name": "Urea/AdBlue temperature at injector 1",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,1,0.625,-2731.5",
+    "decimals": 1,
+    "scale": 0.625,
+    "offset": -2731.5,
+    "unit": "°C"
+   },
+   {
+    "name": "Urea/AdBlue tank heater current",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3,0.9765774",
+    "decimals": 3,
+    "scale": 0.9765774,
+    "offset": 0,
+    "unit": "A"
+   },
+   {
+    "name": "Urea/AdBlue pressure line heater current",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3,0.9765774",
+    "decimals": 3,
+    "scale": 0.9765774,
+    "offset": 0,
+    "unit": "A"
+   },
+   {
+    "name": "Urea/AdBlue injector 1 current",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3,0.9765774",
+    "decimals": 3,
+    "scale": 0.9765774,
+    "offset": 0,
+    "unit": "A"
+   },
+   {
+    "name": "Engine temperature",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,0,1,-40",
+    "decimals": 0,
+    "scale": 1.0,
+    "offset": -40.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Particle filter temperature",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,1,0.625,-2731.5",
+    "decimals": 1,
+    "scale": 0.625,
+    "offset": -2731.5,
+    "unit": "°C"
+   },
+   {
+    "name": "Exhaust gas temperature at Urea/AdBlue injector 1",
+    "start": 3,
+    "bytes": 2,
+    "format": "nums,1,0.625",
+    "decimals": 1,
+    "scale": 0.625,
+    "offset": 0,
+    "signed": true,
+    "unit": "°C"
+   },
+   {
+    "name": "Operational Mode Status",
+    "start": 3,
+    "bytes": 9,
+    "format": "hex"
+   }
+  ],
+  "ANC1": [
+   {
+    "name": "Operating time",
+    "start": 10,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   }
+  ],
+  "BODY30": [
+   {
+    "name": "Operating time",
+    "start": 3,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   },
+   {
+    "name": "Operating time (since key-ON)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0,15",
+    "decimals": 0,
+    "scale": 15.0,
+    "offset": 0,
+    "unit": "s"
+   },
+   {
+    "name": "Startups counter",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Failure type",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Battery voltage",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Vehicle speed",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,0",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "km/h"
+   },
+   {
+    "name": "Operational Mode Status",
+    "start": 3,
+    "bytes": 9,
+    "format": "hex"
+   },
+   {
+    "name": "Hazard lights",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "1010ON",
+     "1000OFF"
+    ]
+   }
+  ],
+  "BODY33": [
+   {
+    "name": "Operating time",
+    "start": 3,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   },
+   {
+    "name": "Operating time (since key-ON)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0,15",
+    "decimals": 0,
+    "scale": 15.0,
+    "offset": 0,
+    "unit": "s"
+   },
+   {
+    "name": "Startups counter",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Failure type",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Battery voltage",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Vehicle speed",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,0",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "km/h"
+   },
+   {
+    "name": "Operational Mode Status",
+    "start": 3,
+    "bytes": 9,
+    "format": "hex"
+   },
+   {
+    "name": "Hazard lights",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "1010ON",
+     "1000OFF"
+    ]
+   }
+  ],
+  "CLIMA33": [
+   {
+    "name": "Operating time",
+    "start": 10,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   },
+   {
+    "name": "Battery voltage",
+    "start": 42,
+    "bytes": 1,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "External temperature",
+    "start": 38,
+    "bytes": 2,
+    "format": "num,1,5,-400",
+    "decimals": 1,
+    "scale": 5.0,
+    "offset": -400.0,
+    "unit": "°C"
+   }
+  ],
+  "CSWM2": [
+   {
+    "name": "Operating time",
+    "start": 10,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   },
+   {
+    "name": "Battery voltage",
+    "start": 42,
+    "bytes": 2,
+    "format": "num,3",
+    "decimals": 3,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Vehicle speed",
+    "start": 38,
+    "bytes": 2,
+    "format": "num,2,6.25",
+    "decimals": 2,
+    "scale": 6.25,
+    "offset": 0,
+    "unit": "km/h"
+   }
+  ],
+  "CSWM5": [
+   {
+    "name": "Operating time",
+    "start": 10,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   },
+   {
+    "name": "Battery voltage",
+    "start": 42,
+    "bytes": 2,
+    "format": "num,3",
+    "decimals": 3,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Vehicle speed",
+    "start": 38,
+    "bytes": 2,
+    "format": "num,2,6.25",
+    "decimals": 2,
+    "scale": 6.25,
+    "offset": 0,
+    "unit": "km/h"
+   }
+  ],
+  "DASH29": [
+   {
+    "name": "Operating time",
+    "start": 10,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   },
+   {
+    "name": "Odometer",
+    "start": 38,
+    "bytes": 3,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "km"
+   },
+   {
+    "name": "Battery voltage",
+    "start": 46,
+    "bytes": 1,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Vehicle speed",
+    "start": 43,
+    "bytes": 1,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "km/h"
+   }
+  ],
+  "DASM1": [
+   {
+    "name": "Operating time",
+    "start": 10,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   },
+   {
+    "name": "Battery voltage",
+    "start": 38,
+    "bytes": 1,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Vehicle speed",
+    "start": 41,
+    "bytes": 1,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "km/h"
+   },
+   {
+    "name": "FCW warning mode",
+    "start": 51,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0300OFF",
+     "0301Warning only",
+     "0302Braking only",
+     "0303Full"
+    ]
+   },
+   {
+    "name": "FCW activation mode",
+    "start": 51,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0C00Near",
+     "0C04Medium",
+     "0C08Far",
+     "0C0CError"
+    ]
+   },
+   {
+    "name": "FCW operation status",
+    "start": 51,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "3030Normal",
+     "3000Camera and radar blocked",
+     "2000Camera blocked",
+     "1000Radar blocked"
+    ]
+   }
+  ],
+  "DTCM4": [
+   {
+    "name": "Operating time",
+    "start": 10,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   }
+  ],
+  "EMCM1X": [
+   {
+    "name": "Operating time",
+    "start": 10,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   }
+  ],
+  "EPSZFX1": [
+   {
+    "name": "Operating time",
+    "start": 10,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   },
+   {
+    "name": "Battery voltage",
+    "start": 41,
+    "bytes": 1,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Vehicle speed",
+    "start": 38,
+    "bytes": 1,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "km/h"
+   },
+   {
+    "name": "Steering angle",
+    "start": 44,
+    "bytes": 2,
+    "format": "nums,2,6.25",
+    "decimals": 2,
+    "scale": 6.25,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   }
+  ],
+  "ESM1X": [
+   {
+    "name": "Operating time",
+    "start": 10,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   }
+  ],
+  "HALF1": [
+   {
+    "name": "Operating time",
+    "start": 10,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   }
+  ],
+  "IAW10JAX": [
+   {
+    "name": "Operating time",
+    "start": 3,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   },
+   {
+    "name": "Engine speed",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0,0.25",
+    "decimals": 0,
+    "scale": 0.25,
+    "offset": 0,
+    "unit": "rpm"
+   },
+   {
+    "name": "Fuel level",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,2,39.215686",
+    "decimals": 2,
+    "scale": 39.215686,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Vehicle speed",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,0.78125",
+    "decimals": 2,
+    "scale": 0.78125,
+    "offset": 0,
+    "unit": "km/h"
+   },
+   {
+    "name": "Engine temperature",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,0,1,-40",
+    "decimals": 0,
+    "scale": 1.0,
+    "offset": -40.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Battery voltage",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Operating time (since key-ON)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0,15",
+    "decimals": 0,
+    "scale": 15.0,
+    "offset": 0,
+    "unit": "s"
+   },
+   {
+    "name": "Throttle angle",
+    "start": 3,
+    "bytes": 2,
+    "format": "nums,2,6.25",
+    "decimals": 2,
+    "scale": 6.25,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Spark advance",
+    "start": 3,
+    "bytes": 2,
+    "format": "nums,3,62.5",
+    "decimals": 3,
+    "scale": 62.5,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Air flow rate",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,12.5",
+    "decimals": 2,
+    "scale": 12.5,
+    "offset": 0,
+    "unit": "Kg/h"
+   },
+   {
+    "name": "Engine status",
+    "start": 3,
+    "bytes": 2,
+    "format": "hex"
+   },
+   {
+    "name": "Operational Mode Status",
+    "start": 3,
+    "bytes": 9,
+    "format": "hex"
+   },
+   {
+    "name": "Clutch pedal",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0101Pressed",
+     "0100Released"
+    ]
+   },
+   {
+    "name": "Clutch contact 2",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "8080Pressed",
+     "8000Released"
+    ]
+   },
+   {
+    "name": "Brake pedal",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "2000Pressed",
+     "2020Released"
+    ]
+   },
+   {
+    "name": "Brake contact 2",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "1010Pressed",
+     "1000Released"
+    ]
+   },
+   {
+    "name": "Gas pedal position",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,2,39.215686",
+    "decimals": 2,
+    "scale": 39.215686,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Gear engaged",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "FF00N",
+     "FF011",
+     "FF022",
+     "FF033",
+     "FF044",
+     "FF055",
+     "FF066",
+     "FF077",
+     "FF088",
+     "FF099",
+     "0000R"
+    ]
+   },
+   {
+    "name": "Air temperature",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,0,1,-40",
+    "decimals": 0,
+    "scale": 1.0,
+    "offset": -40.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Intake pressure",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "mbar"
+   },
+   {
+    "name": "Brake booster vacuum switch",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "8080Open",
+     "8000Closed"
+    ]
+   },
+   {
+    "name": "STOP&START temporary deactivation status",
+    "start": 3,
+    "bytes": 2,
+    "format": "bitw",
+    "options": [
+     "FFFF0000Not present",
+     "02000200Clutch pedal not pressed",
+     "04000400Disabled",
+     "08000800Disabled",
+     "10001000Brake booster",
+     "20002000Speed<10km/h",
+     "40004000Gear lever position",
+     "80008000Fuel filter heater",
+     "00010001Engine temperature",
+     "00020002Air temperature",
+     "00040004Oil temperature",
+     "00080008Catalyser temperature",
+     "00100010Regenerat. not completed",
+     "00200020Reverse",
+     "00800080Hill holder",
+     "00000000Incorrect conditions"
+    ]
+   },
+   {
+    "name": "Universal code",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0504Received",
+     "0500Not received",
+     "0501Not enabled"
+    ]
+   },
+   {
+    "name": "Engine startup",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0200Allowed",
+     "0202Not allowed"
+    ]
+   },
+   {
+    "name": "Odometer",
+    "start": 3,
+    "bytes": 3,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "km"
+   },
+   {
+    "name": "Startups counter",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Failure type",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "IBS Battery charge status",
+    "start": 3,
+    "bytes": 1,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Engine status 2",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Cruise control status 1",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Atmospheric pressure",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "mbar"
+   },
+   {
+    "name": "Misfire status",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Boost pressure",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "mbar"
+   },
+   {
+    "name": "Wastegate status",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Dump valve status",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Engine oil temperature",
+    "start": 3,
+    "bytes": 2,
+    "format": "nums",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "signed": true,
+    "unit": "°C"
+   },
+   {
+    "name": "UniAir electrovalve actuation mode",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0101Late opening",
+     "0202Multilift",
+     "0404Early closing",
+     "0808Full-lift",
+     "1010No lift",
+     "4040Multihybrid",
+     "2020Hybrid",
+     "8080Reduced CAM",
+     "0000OFF"
+    ]
+   },
+   {
+    "name": "Fuel pressure (low pressure circuit)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2",
+    "decimals": 2,
+    "scale": 1,
+    "offset": 0,
+    "unit": "mbar"
+   },
+   {
+    "name": "Relative humidity (MAF)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,0.195313",
+    "decimals": 2,
+    "scale": 0.195313,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Air flow rate RAW",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,6.25",
+    "decimals": 2,
+    "scale": 6.25,
+    "offset": 0,
+    "unit": "Kg/h"
+   },
+   {
+    "name": "External temperature",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0,1,-84",
+    "decimals": 0,
+    "scale": 1.0,
+    "offset": -84.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Intake Lambda sensor adaptivity flag",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Engine oil line temperature",
+    "start": 3,
+    "bytes": 2,
+    "format": "nums",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "signed": true,
+    "unit": "°C"
+   },
+   {
+    "name": "Engine relative oil pressure",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3",
+    "decimals": 3,
+    "scale": 1,
+    "offset": 0,
+    "unit": "bar"
+   },
+   {
+    "name": "Engine oil pressure",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,2,4",
+    "decimals": 2,
+    "scale": 4.0,
+    "offset": 0,
+    "unit": "bar"
+   }
+  ],
+  "JTDM23GP": [
+   {
+    "name": "Operating time",
+    "start": 3,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   },
+   {
+    "name": "Engine speed",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0,0.25",
+    "decimals": 0,
+    "scale": 0.25,
+    "offset": 0,
+    "unit": "rpm"
+   },
+   {
+    "name": "Vehicle speed",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,1,0.078125",
+    "decimals": 1,
+    "scale": 0.078125,
+    "offset": 0,
+    "unit": "km/h"
+   },
+   {
+    "name": "Engine temperature",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,2,-4000",
+    "decimals": 2,
+    "scale": 2.0,
+    "offset": -4000.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Operating time (since key-ON)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0,15",
+    "decimals": 0,
+    "scale": 15.0,
+    "offset": 0,
+    "unit": "s"
+   },
+   {
+    "name": "High pressure EGR target position",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,0.305185,-10000",
+    "decimals": 2,
+    "scale": 0.305185,
+    "offset": -10000.0,
+    "unit": "%"
+   },
+   {
+    "name": "High pressure EGR actual position",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,0.305185,-10000",
+    "decimals": 2,
+    "scale": 0.305185,
+    "offset": -10000.0,
+    "unit": "%"
+   },
+   {
+    "name": "EGR valve last offset learnt",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,0.305185,-10000",
+    "decimals": 2,
+    "scale": 0.305185,
+    "offset": -10000.0,
+    "unit": "%"
+   },
+   {
+    "name": "Desired turbo control position",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,0.305185,-10000",
+    "decimals": 2,
+    "scale": 0.305185,
+    "offset": -10000.0,
+    "unit": "%"
+   },
+   {
+    "name": "Actual turbo control position",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,0.305185,-10000",
+    "decimals": 2,
+    "scale": 0.305185,
+    "offset": -10000.0,
+    "unit": "%"
+   },
+   {
+    "name": "Diesel Particulate Filter flow resistance",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,4,2,-65535",
+    "decimals": 4,
+    "scale": 2.0,
+    "offset": -65535.0,
+    "unit": "hPa/m³/h"
+   },
+   {
+    "name": "Air quantity control",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0404Enabled",
+     "0400Disabled"
+    ]
+   },
+   {
+    "name": "Particle filter regeneration",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0101ON",
+     "0100OFF"
+    ]
+   },
+   {
+    "name": "EGR exchanger exclusion valve",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0808ON",
+     "0800OFF"
+    ]
+   },
+   {
+    "name": "Brake pedal status",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0101Pressed",
+     "0100Released"
+    ]
+   },
+   {
+    "name": "Brake contact 2",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0202ON",
+     "0200OFF"
+    ]
+   },
+   {
+    "name": "Clutch pedal",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0404Pressed",
+     "0400Released"
+    ]
+   },
+   {
+    "name": "Fan 1st speed",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0808ON",
+     "0800OFF"
+    ]
+   },
+   {
+    "name": "Fan 2nd speed",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "1010ON",
+     "1000OFF"
+    ]
+   },
+   {
+    "name": "Fan 3rd speed",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "2020ON",
+     "2000OFF"
+    ]
+   },
+   {
+    "name": "A/C request",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "4040ON",
+     "4000OFF"
+    ]
+   },
+   {
+    "name": "CAN status",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Injection fuel quantity (post)",
+    "start": 3,
+    "bytes": 2,
+    "format": "nums,3,3",
+    "decimals": 3,
+    "scale": 3.0,
+    "offset": 0,
+    "signed": true,
+    "unit": "mm³/i"
+   },
+   {
+    "name": "Desired fuel quantity",
+    "start": 3,
+    "bytes": 2,
+    "format": "nums,3,3",
+    "decimals": 3,
+    "scale": 3.0,
+    "offset": 0,
+    "signed": true,
+    "unit": "mm³/i"
+   },
+   {
+    "name": "Total fuel quantity",
+    "start": 3,
+    "bytes": 2,
+    "format": "nums,3,3",
+    "decimals": 3,
+    "scale": 3.0,
+    "offset": 0,
+    "signed": true,
+    "unit": "mm³/i"
+   },
+   {
+    "name": "Injection present/not present status",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Particle filter temperature",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,2,-4000",
+    "decimals": 2,
+    "scale": 2.0,
+    "offset": -4000.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Differential pressure sensor",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0,1,-32767",
+    "decimals": 0,
+    "scale": 1.0,
+    "offset": -32767.0,
+    "unit": "mbar"
+   },
+   {
+    "name": "Particulate filter clogging",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,1.525902",
+    "decimals": 2,
+    "scale": 1.525902,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Lambda oxygen concentration",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3,1.525902",
+    "decimals": 3,
+    "scale": 1.525902,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Fuel temperature",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,2,-4000",
+    "decimals": 2,
+    "scale": 2.0,
+    "offset": -4000.0,
+    "unit": "°C"
+   },
+   {
+    "name": "MPROP valve current",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "mA"
+   },
+   {
+    "name": "Pressure regulator opening (MPROP)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,0.1525902",
+    "decimals": 2,
+    "scale": 0.1525902,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Glow plugs control",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,0.1525902",
+    "decimals": 2,
+    "scale": 0.1525902,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Flow shutter valve",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3,1.525902",
+    "decimals": 3,
+    "scale": 1.525902,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Power latch time",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3",
+    "decimals": 3,
+    "scale": 1,
+    "offset": 0,
+    "unit": "s"
+   },
+   {
+    "name": "Engine status",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Vehicle status",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Operational Mode Status",
+    "start": 3,
+    "bytes": 9,
+    "format": "hex"
+   },
+   {
+    "name": "Gas pedal position",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,0.1525902",
+    "decimals": 2,
+    "scale": 0.1525902,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Gas pedal position signal (Track 1)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,4",
+    "decimals": 4,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Gas pedal position signal (Track 2)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,4",
+    "decimals": 4,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Gear engaged",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "FF00N",
+     "FF011",
+     "FF022",
+     "FF033",
+     "FF044",
+     "FF055",
+     "FF066",
+     "FF077",
+     "FF088",
+     "FF099",
+     "FF0AR"
+    ]
+   },
+   {
+    "name": "A/C pressure",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2",
+    "decimals": 2,
+    "scale": 1,
+    "offset": 0,
+    "unit": "bar"
+   },
+   {
+    "name": "Air temperature (Boost/Manifold)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,2,-4000",
+    "decimals": 2,
+    "scale": 2.0,
+    "offset": -4000.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Boost control/solenoid",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,0.305185",
+    "decimals": 2,
+    "scale": 0.305185,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Intake air quantity",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,1,5,-2000",
+    "decimals": 1,
+    "scale": 5.0,
+    "offset": -2000.0,
+    "unit": "mg/i"
+   },
+   {
+    "name": "Desired intake air quantity",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,1,5,-2000",
+    "decimals": 1,
+    "scale": 5.0,
+    "offset": -2000.0,
+    "unit": "mg/i"
+   },
+   {
+    "name": "Air temperature (MAF)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,2,-4000",
+    "decimals": 2,
+    "scale": 2.0,
+    "offset": -4000.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Fuel pump relay",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0101ON",
+     "0100OFF"
+    ]
+   },
+   {
+    "name": "Desired fuel pressure",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,5",
+    "decimals": 2,
+    "scale": 5.0,
+    "offset": 0,
+    "unit": "bar"
+   },
+   {
+    "name": "Fuel pressure",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,5",
+    "decimals": 2,
+    "scale": 5.0,
+    "offset": 0,
+    "unit": "bar"
+   },
+   {
+    "name": "Engine oil pressure",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "1F02Normal",
+     "1F00Not significant",
+     "1F06Low",
+     "1F08Faulty sensor",
+     "1F00OFF"
+    ]
+   },
+   {
+    "name": "Battery voltage",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3,0.5",
+    "decimals": 3,
+    "scale": 0.5,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Atmospheric pressure",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0,1,-32767",
+    "decimals": 0,
+    "scale": 1.0,
+    "offset": -32767.0,
+    "unit": "mbar"
+   },
+   {
+    "name": "Desired boost pressure",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0,1,-32767",
+    "decimals": 0,
+    "scale": 1.0,
+    "offset": -32767.0,
+    "unit": "mbar"
+   },
+   {
+    "name": "Boost pressure",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0,1,-32767",
+    "decimals": 0,
+    "scale": 1.0,
+    "offset": -32767.0,
+    "unit": "mbar"
+   },
+   {
+    "name": "Throttle position",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,0.152590219",
+    "decimals": 2,
+    "scale": 0.152590219,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Universal code",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0504Received",
+     "0500Not received",
+     "0501Not enabled"
+    ]
+   },
+   {
+    "name": "Engine ECU",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0100Programmed",
+     "0101Virgin"
+    ]
+   },
+   {
+    "name": "Engine startup",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0202Allowed",
+     "0200Not allowed"
+    ]
+   },
+   {
+    "name": "Startups counter",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Distance from last DPF regeneration",
+    "start": 3,
+    "bytes": 3,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "km"
+   },
+   {
+    "name": "NOx mass field",
+    "start": 3,
+    "bytes": 4,
+    "format": "num,5",
+    "decimals": 5,
+    "scale": 1,
+    "offset": 0,
+    "unit": "g"
+   },
+   {
+    "name": "Total number of NOx storage catalyst regenerations",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "NOx sensor after NOx storage catalyst",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3",
+    "decimals": 3,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "NOx sensor before NOx storage catalyst",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3",
+    "decimals": 3,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Reset ID history 0",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Reset ID history 1",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Reset ID history 2",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Reset ID history 3",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Reset ID history 4",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Reset ID history 5",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Reset ID history 6",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Reset ID history 7",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Temperature after the particle filter",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,2,-4000",
+    "decimals": 2,
+    "scale": 2.0,
+    "offset": -4000.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Failure type",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Odometer",
+    "start": 3,
+    "bytes": 3,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "km"
+   },
+   {
+    "name": "Reset Information 2",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Reset Information 1",
+    "start": 3,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Pre-catalyser temperature",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,2,-4000",
+    "decimals": 2,
+    "scale": 2.0,
+    "offset": -4000.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Reset Information 3",
+    "start": 3,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Turbo input temperature",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,2,-4000",
+    "decimals": 2,
+    "scale": 2.0,
+    "offset": -4000.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Reset Information 4",
+    "start": 3,
+    "bytes": 1,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Cruise control switch",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0101ON",
+     "0100OFF"
+    ]
+   },
+   {
+    "name": "Cruise control request",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "FE02Resume",
+     "FE08-10",
+     "FE40+10",
+     "FE10-",
+     "FE20+",
+     "FE04No request"
+    ]
+   },
+   {
+    "name": "Cruise control status",
+    "start": 3,
+    "bytes": 2,
+    "format": "hex"
+   },
+   {
+    "name": "Low pressure EGR target position",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2",
+    "decimals": 2,
+    "scale": 1,
+    "offset": 0,
+    "unit": "mm"
+   },
+   {
+    "name": "Low pressure EGR actual position",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2",
+    "decimals": 2,
+    "scale": 1,
+    "offset": 0,
+    "unit": "mm"
+   },
+   {
+    "name": "EGR valve last offset learnt",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2",
+    "decimals": 2,
+    "scale": 1,
+    "offset": 0,
+    "unit": "mm"
+   },
+   {
+    "name": "Fuel level",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,1,3.9215686",
+    "decimals": 1,
+    "scale": 3.9215686,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Air flow rate sensor drift value",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,4",
+    "decimals": 4,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Air temperature after WCAC",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,2,-4000",
+    "decimals": 2,
+    "scale": 2.0,
+    "offset": -4000.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Engine oil pressure",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3",
+    "decimals": 3,
+    "scale": 1,
+    "offset": 0,
+    "unit": "bar"
+   },
+   {
+    "name": "Fuel pump control",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,1,3.92157",
+    "decimals": 1,
+    "scale": 3.92157,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Throttle position (target)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,0.152590219",
+    "decimals": 2,
+    "scale": 0.152590219,
+    "offset": 0,
+    "unit": "%"
+   }
+  ],
+  "LRBSS1": [
+   {
+    "name": "Operating time",
+    "start": 10,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   }
+  ],
+  "MED17.3.5": [
+   {
+    "name": "Operating time",
+    "start": 3,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   },
+   {
+    "name": "Engine speed",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0,0.25",
+    "decimals": 0,
+    "scale": 0.25,
+    "offset": 0,
+    "unit": "rpm"
+   },
+   {
+    "name": "Vehicle speed",
+    "start": 3,
+    "bytes": 1,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "km/h"
+   },
+   {
+    "name": "Engine temperature",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,0,1,-40",
+    "decimals": 0,
+    "scale": 1.0,
+    "offset": -40.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Battery voltage",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Operating time (since key-ON)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0,15",
+    "decimals": 0,
+    "scale": 15.0,
+    "offset": 0,
+    "unit": "s"
+   },
+   {
+    "name": "Throttle angle",
+    "start": 3,
+    "bytes": 2,
+    "format": "nums,2,6.25",
+    "decimals": 2,
+    "scale": 6.25,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Spark advance",
+    "start": 3,
+    "bytes": 1,
+    "format": "nums,2,75",
+    "decimals": 2,
+    "scale": 75.0,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Engine status",
+    "start": 3,
+    "bytes": 2,
+    "format": "hex"
+   },
+   {
+    "name": "Gas pedal position",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,1,3.9215686",
+    "decimals": 1,
+    "scale": 3.9215686,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Cruise control switch",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0100OFF",
+     "0101ON"
+    ]
+   },
+   {
+    "name": "Cruise control request",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0E00No request",
+     "0202Restore (button RCL/RES)",
+     "0404Deceleration (button -)",
+     "0808Acceleration (button +)"
+    ]
+   },
+   {
+    "name": "Gear engaged",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "FF00N",
+     "FF011",
+     "FF022",
+     "FF033",
+     "FF044",
+     "FF055",
+     "FF066",
+     "FF077",
+     "FF088",
+     "FF099",
+     "0000R"
+    ]
+   },
+   {
+    "name": "Atmospheric pressure",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,0,10",
+    "decimals": 0,
+    "scale": 10.0,
+    "offset": 0,
+    "unit": "mbar"
+   },
+   {
+    "name": "Universal code",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0504Received",
+     "0500Not received",
+     "0501Not enabled"
+    ]
+   },
+   {
+    "name": "Engine startup",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0202Allowed",
+     "0200Not allowed"
+    ]
+   },
+   {
+    "name": "Odometer",
+    "start": 3,
+    "bytes": 3,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "km"
+   },
+   {
+    "name": "Startups counter",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Failure type",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "External temperature",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,0,1,-40",
+    "decimals": 0,
+    "scale": 1.0,
+    "offset": -40.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Engine load",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,2.34375",
+    "decimals": 2,
+    "scale": 2.34375,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Component status",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Fuel level",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,2,39.215686",
+    "decimals": 2,
+    "scale": 39.215686,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Lambda oxygen concentration",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,4,2.4414435034",
+    "decimals": 4,
+    "scale": 2.4414435034,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Intake phase variator position",
+    "start": 3,
+    "bytes": 2,
+    "format": "nums,3,7.8125",
+    "decimals": 3,
+    "scale": 7.8125,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Vehicle status",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Turbo actuator command",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,0.15259",
+    "decimals": 2,
+    "scale": 0.15259,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Fuel pump relay",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0101Active",
+     "0100Not active"
+    ]
+   },
+   {
+    "name": "Air flow rate",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,3.6",
+    "decimals": 2,
+    "scale": 3.6,
+    "offset": 0,
+    "unit": "Kg/h"
+   },
+   {
+    "name": "Injection end angle",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,0,6",
+    "decimals": 0,
+    "scale": 6.0,
+    "offset": 0,
+    "unit": "deg."
+   },
+   {
+    "name": "Boost control status",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Spark advance reduction (Cyl. 1)",
+    "start": 3,
+    "bytes": 1,
+    "format": "nums,2,75",
+    "decimals": 2,
+    "scale": 75.0,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Spark advance reduction (Cyl. 2)",
+    "start": 3,
+    "bytes": 1,
+    "format": "nums,2,75",
+    "decimals": 2,
+    "scale": 75.0,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Spark advance reduction (Cyl. 3)",
+    "start": 3,
+    "bytes": 1,
+    "format": "nums,2,75",
+    "decimals": 2,
+    "scale": 75.0,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Spark advance reduction (Cyl. 4)",
+    "start": 3,
+    "bytes": 1,
+    "format": "nums,2,75",
+    "decimals": 2,
+    "scale": 75.0,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Adaptation bank 1 (mul) (FRA Factor - Current Load)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,5,3.0517578125",
+    "decimals": 5,
+    "scale": 3.0517578125,
+    "offset": 0
+   },
+   {
+    "name": "Gas pedal position signal (Track 1)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3",
+    "decimals": 3,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Gas pedal position signal (Track 2)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3",
+    "decimals": 3,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Desired intake phase variator position",
+    "start": 3,
+    "bytes": 2,
+    "format": "nums,3,7.8125",
+    "decimals": 3,
+    "scale": 7.8125,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Fuel pressure (Calculated)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3,5.99",
+    "decimals": 3,
+    "scale": 5.99,
+    "offset": 0,
+    "unit": "Bar"
+   },
+   {
+    "name": "Fuel pressure (Measured)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3,5.99",
+    "decimals": 3,
+    "scale": 5.99,
+    "offset": 0,
+    "unit": "Bar"
+   },
+   {
+    "name": "Pre-catalyser temperature",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,0,5,-50",
+    "decimals": 0,
+    "scale": 5.0,
+    "offset": -50.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Adaptation bank 1 (add) (DTV Factor 1)",
+    "start": 3,
+    "bytes": 2,
+    "format": "nums,2,4.68",
+    "decimals": 2,
+    "scale": 4.68,
+    "offset": 0,
+    "signed": true,
+    "unit": "%"
+   },
+   {
+    "name": "Exhaust gas temperature",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,0,5,-50",
+    "decimals": 0,
+    "scale": 5.0,
+    "offset": -50.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Misfires (cyl. 1)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Misfires (cyl. 2)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Misfires (cyl. 3)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Misfires (cyl. 4)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Air pressure (calculated)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "mbar"
+   },
+   {
+    "name": "Cruise control status 1",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Knock sensor signal (Cyl. 1)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,1,48.828125",
+    "decimals": 1,
+    "scale": 48.828125,
+    "offset": 0,
+    "unit": "mV"
+   },
+   {
+    "name": "Knock sensor signal (Cyl. 2)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,1,48.828125",
+    "decimals": 1,
+    "scale": 48.828125,
+    "offset": 0,
+    "unit": "mV"
+   },
+   {
+    "name": "Knock sensor signal (Cyl. 3)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,1,48.828125",
+    "decimals": 1,
+    "scale": 48.828125,
+    "offset": 0,
+    "unit": "mV"
+   },
+   {
+    "name": "Knock sensor signal (Cyl. 4)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,1,48.828125",
+    "decimals": 1,
+    "scale": 48.828125,
+    "offset": 0,
+    "unit": "mV"
+   },
+   {
+    "name": "Lambda 1 status (Pre-Cat.)",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0404Closed loop",
+     "0400Open loop"
+    ]
+   },
+   {
+    "name": "Lambda 1 status (After-Cat.)",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0808Closed loop",
+     "0800Open loop"
+    ]
+   },
+   {
+    "name": "A/C pressure",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2",
+    "decimals": 2,
+    "scale": 1,
+    "offset": 0,
+    "unit": "bar"
+   },
+   {
+    "name": "Delivery duration of fuel supply control valve",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "deg."
+   },
+   {
+    "name": "Lambda 1 signal (After-Cat.)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3",
+    "decimals": 3,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Reference torque for misfire detection",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,2,39.0625",
+    "decimals": 2,
+    "scale": 39.0625,
+    "offset": 0,
+    "unit": "deg."
+   },
+   {
+    "name": "Air temperature",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,0,1,-40",
+    "decimals": 0,
+    "scale": 1.0,
+    "offset": -40.0,
+    "unit": "°C"
+   },
+   {
+    "name": "GDI injection",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Lambda probe upstream dinamical value",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,4,2.4414140625",
+    "decimals": 4,
+    "scale": 2.4414140625,
+    "offset": 0
+   },
+   {
+    "name": "Intake pressure",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,0,10",
+    "decimals": 0,
+    "scale": 10.0,
+    "offset": 0,
+    "unit": "mbar"
+   },
+   {
+    "name": "Bank fault counter for catalyst damaging misfires",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Effective injection time - 1st injection",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3",
+    "decimals": 3,
+    "scale": 1,
+    "offset": 0,
+    "unit": "ms"
+   },
+   {
+    "name": "Offset downstream lambda probe",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,4,2.4414140625",
+    "decimals": 4,
+    "scale": 2.4414140625,
+    "offset": 0
+   },
+   {
+    "name": "Intake air temperature upstream throttle",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,2.3438,-27315",
+    "decimals": 2,
+    "scale": 2.3438,
+    "offset": -27315.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Effective injection time - 2nd injection",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3",
+    "decimals": 3,
+    "scale": 1,
+    "offset": 0,
+    "unit": "ms"
+   },
+   {
+    "name": "I-part of lambda controller (continuous) downstream of catalytic converter",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,5,3.0517578125",
+    "decimals": 5,
+    "scale": 3.0517578125,
+    "offset": 0
+   },
+   {
+    "name": "Engine oil pressure",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0100Normal",
+     "0202Faulty sensor",
+     "0101Low"
+    ]
+   },
+   {
+    "name": "Exhaust phase variator position",
+    "start": 3,
+    "bytes": 2,
+    "format": "nums,3,7.8125",
+    "decimals": 3,
+    "scale": 7.8125,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Effective injection time - 3rd injection",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3",
+    "decimals": 3,
+    "scale": 1,
+    "offset": 0,
+    "unit": "ms"
+   },
+   {
+    "name": "Counter of long term misfires cylinder 1",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Desired boost pressure",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "mbar"
+   },
+   {
+    "name": "Oxygen storage capacity of the front catalyst",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,4,2.4414140625",
+    "decimals": 4,
+    "scale": 2.4414140625,
+    "offset": 0
+   },
+   {
+    "name": "Counter of long term misfires cylinder 2",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Delta ignition angle during permanent knocking",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,1,7.5",
+    "decimals": 1,
+    "scale": 7.5,
+    "offset": 0
+   },
+   {
+    "name": "Fuel temperature in high pressure system",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,1,7.5,-480",
+    "decimals": 1,
+    "scale": 7.5,
+    "offset": -480.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Volume air flow downstream of compressor",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Counter of long term misfires cylinder 3",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Effective retard ignition",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,1,7.5",
+    "decimals": 1,
+    "scale": 7.5,
+    "offset": 0
+   },
+   {
+    "name": "Counter of long term misfires cylinder 4",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Compression ratio (Pressure downstream/upstream)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "mbar"
+   },
+   {
+    "name": "Ratio total charge to charge in cylinder",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,2.34375",
+    "decimals": 2,
+    "scale": 2.34375,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Desired exhaust phase variator position",
+    "start": 3,
+    "bytes": 2,
+    "format": "nums,3,7.8125",
+    "decimals": 3,
+    "scale": 7.8125,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Lambda sensor 1 integrator",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3,46.875",
+    "decimals": 3,
+    "scale": 46.875,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Operational Mode Status",
+    "start": 3,
+    "bytes": 9,
+    "format": "hex"
+   },
+   {
+    "name": "Throttle position (Track 1)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3",
+    "decimals": 3,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Throttle position (Track 2)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3",
+    "decimals": 3,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Misfires (cyl. 5)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Misfires (cyl. 6)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Spark advance reduction (Cyl. 5)",
+    "start": 3,
+    "bytes": 1,
+    "format": "nums,2,75",
+    "decimals": 2,
+    "scale": 75.0,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Spark advance reduction (Cyl. 6)",
+    "start": 3,
+    "bytes": 1,
+    "format": "nums,2,75",
+    "decimals": 2,
+    "scale": 75.0,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Knock sensor signal (Cyl. 5)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,1,48.828125",
+    "decimals": 1,
+    "scale": 48.828125,
+    "offset": 0,
+    "unit": "mV"
+   },
+   {
+    "name": "Knock sensor signal (Cyl. 6)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,1,48.828125",
+    "decimals": 1,
+    "scale": 48.828125,
+    "offset": 0,
+    "unit": "mV"
+   }
+  ],
+  "MED17.3.5S": [
+   {
+    "name": "Operating time",
+    "start": 3,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   },
+   {
+    "name": "Engine speed",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0,0.25",
+    "decimals": 0,
+    "scale": 0.25,
+    "offset": 0,
+    "unit": "rpm"
+   },
+   {
+    "name": "Fuel level",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,2,39.215686",
+    "decimals": 2,
+    "scale": 39.215686,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Vehicle speed",
+    "start": 3,
+    "bytes": 1,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "km/h"
+   },
+   {
+    "name": "Engine temperature",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,0,1,-40",
+    "decimals": 0,
+    "scale": 1.0,
+    "offset": -40.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Battery voltage",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "External temperature",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,0,1,-40",
+    "decimals": 0,
+    "scale": 1.0,
+    "offset": -40.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Operating time (since key-ON)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0,15",
+    "decimals": 0,
+    "scale": 15.0,
+    "offset": 0,
+    "unit": "s"
+   },
+   {
+    "name": "Component status",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Throttle angle",
+    "start": 3,
+    "bytes": 2,
+    "format": "nums,2,6.25",
+    "decimals": 2,
+    "scale": 6.25,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Spark advance",
+    "start": 3,
+    "bytes": 1,
+    "format": "nums,2,75",
+    "decimals": 2,
+    "scale": 75.0,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Turbo actuator command",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,0.15259",
+    "decimals": 2,
+    "scale": 0.15259,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Boost control status",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Desired intake phase variator position",
+    "start": 3,
+    "bytes": 2,
+    "format": "nums,3,7.8125",
+    "decimals": 3,
+    "scale": 7.8125,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Intake phase variator position",
+    "start": 3,
+    "bytes": 2,
+    "format": "nums,3,7.8125",
+    "decimals": 3,
+    "scale": 7.8125,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Engine load",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,2.34375",
+    "decimals": 2,
+    "scale": 2.34375,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Air pressure (calculated)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "mbar"
+   },
+   {
+    "name": "Fuel pump relay",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0101Active",
+     "0100Not active"
+    ]
+   },
+   {
+    "name": "Lambda oxygen concentration",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,4,2.4414435034",
+    "decimals": 4,
+    "scale": 2.4414435034,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Air flow rate",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,3.6",
+    "decimals": 2,
+    "scale": 3.6,
+    "offset": 0,
+    "unit": "Kg/h"
+   },
+   {
+    "name": "Lambda sensor 1 integrator",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3,46.875",
+    "decimals": 3,
+    "scale": 46.875,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Pre-catalyser temperature",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,0,5,-50",
+    "decimals": 0,
+    "scale": 5.0,
+    "offset": -50.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Injection end angle",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,0,6",
+    "decimals": 0,
+    "scale": 6.0,
+    "offset": 0,
+    "unit": "deg."
+   },
+   {
+    "name": "Spark advance reduction (Cyl. 1)",
+    "start": 3,
+    "bytes": 1,
+    "format": "nums,2,75",
+    "decimals": 2,
+    "scale": 75.0,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Spark advance reduction (Cyl. 2)",
+    "start": 3,
+    "bytes": 1,
+    "format": "nums,2,75",
+    "decimals": 2,
+    "scale": 75.0,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Spark advance reduction (Cyl. 3)",
+    "start": 3,
+    "bytes": 1,
+    "format": "nums,2,75",
+    "decimals": 2,
+    "scale": 75.0,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Spark advance reduction (Cyl. 4)",
+    "start": 3,
+    "bytes": 1,
+    "format": "nums,2,75",
+    "decimals": 2,
+    "scale": 75.0,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Knock sensor signal (Cyl. 1)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,1,48.828125",
+    "decimals": 1,
+    "scale": 48.828125,
+    "offset": 0,
+    "unit": "mV"
+   },
+   {
+    "name": "Knock sensor signal (Cyl. 2)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,1,48.828125",
+    "decimals": 1,
+    "scale": 48.828125,
+    "offset": 0,
+    "unit": "mV"
+   },
+   {
+    "name": "Knock sensor signal (Cyl. 3)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,1,48.828125",
+    "decimals": 1,
+    "scale": 48.828125,
+    "offset": 0,
+    "unit": "mV"
+   },
+   {
+    "name": "Knock sensor signal (Cyl. 4)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,1,48.828125",
+    "decimals": 1,
+    "scale": 48.828125,
+    "offset": 0,
+    "unit": "mV"
+   },
+   {
+    "name": "Delta ignition angle during permanent knocking",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,1,7.5",
+    "decimals": 1,
+    "scale": 7.5,
+    "offset": 0
+   },
+   {
+    "name": "Effective retard ignition",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,1,7.5",
+    "decimals": 1,
+    "scale": 7.5,
+    "offset": 0
+   },
+   {
+    "name": "Exhaust gas temperature",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,0,5,-50",
+    "decimals": 0,
+    "scale": 5.0,
+    "offset": -50.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Engine status",
+    "start": 3,
+    "bytes": 2,
+    "format": "hex"
+   },
+   {
+    "name": "Vehicle status",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Operational Mode Status",
+    "start": 3,
+    "bytes": 9,
+    "format": "hex"
+   },
+   {
+    "name": "Gas pedal position",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,1,3.9215686",
+    "decimals": 1,
+    "scale": 3.9215686,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Gas pedal position signal (Track 1)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3",
+    "decimals": 3,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Gas pedal position signal (Track 2)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3",
+    "decimals": 3,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Cruise control switch",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0100OFF",
+     "0101ON"
+    ]
+   },
+   {
+    "name": "Cruise control request",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0E00No request",
+     "0202Restore (button RCL/RES)",
+     "0404Deceleration (button -)",
+     "0808Acceleration (button +)"
+    ]
+   },
+   {
+    "name": "Cruise control status 1",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Gear engaged",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "FF00N",
+     "FF011",
+     "FF022",
+     "FF033",
+     "FF044",
+     "FF055",
+     "FF066",
+     "FF077",
+     "FF088",
+     "FF099",
+     "0000R"
+    ]
+   },
+   {
+    "name": "A/C pressure",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2",
+    "decimals": 2,
+    "scale": 1,
+    "offset": 0,
+    "unit": "bar"
+   },
+   {
+    "name": "Air temperature",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,0,1,-40",
+    "decimals": 0,
+    "scale": 1.0,
+    "offset": -40.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Intake pressure",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,0,10",
+    "decimals": 0,
+    "scale": 10.0,
+    "offset": 0,
+    "unit": "mbar"
+   },
+   {
+    "name": "Fuel pressure (Measured)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3,5.99",
+    "decimals": 3,
+    "scale": 5.99,
+    "offset": 0,
+    "unit": "Bar"
+   },
+   {
+    "name": "Fuel pressure (Calculated)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3,5.99",
+    "decimals": 3,
+    "scale": 5.99,
+    "offset": 0,
+    "unit": "Bar"
+   },
+   {
+    "name": "Engine oil pressure",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0100Normal",
+     "0202Faulty sensor",
+     "0101Low"
+    ]
+   },
+   {
+    "name": "Atmospheric pressure",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,0,10",
+    "decimals": 0,
+    "scale": 10.0,
+    "offset": 0,
+    "unit": "mbar"
+   },
+   {
+    "name": "Desired boost pressure",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "mbar"
+   },
+   {
+    "name": "Adaptation bank 1 (mul) (FRA Factor - Current Load)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,5,3.0517578125",
+    "decimals": 5,
+    "scale": 3.0517578125,
+    "offset": 0
+   },
+   {
+    "name": "Adaptation bank 1 (add) (DTV Factor 1)",
+    "start": 3,
+    "bytes": 2,
+    "format": "nums,2,4.68",
+    "decimals": 2,
+    "scale": 4.68,
+    "offset": 0,
+    "signed": true,
+    "unit": "%"
+   },
+   {
+    "name": "Lambda 1 status (Pre-Cat.)",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0404Closed loop",
+     "0400Open loop"
+    ]
+   },
+   {
+    "name": "Lambda 1 status (After-Cat.)",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0808Closed loop",
+     "0800Open loop"
+    ]
+   },
+   {
+    "name": "Lambda 1 signal (After-Cat.)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3",
+    "decimals": 3,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Volume air flow downstream of compressor",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Throttle position (Track 1)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3",
+    "decimals": 3,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Throttle position (Track 2)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3",
+    "decimals": 3,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Universal code",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0504Received",
+     "0500Not received",
+     "0501Not enabled"
+    ]
+   },
+   {
+    "name": "Engine startup",
+    "start": 3,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0202Allowed",
+     "0200Not allowed"
+    ]
+   },
+   {
+    "name": "Odometer",
+    "start": 3,
+    "bytes": 3,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "km"
+   },
+   {
+    "name": "Startups counter",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Compression ratio (Pressure downstream/upstream)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "mbar"
+   },
+   {
+    "name": "Reference torque for misfire detection",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,2,39.0625",
+    "decimals": 2,
+    "scale": 39.0625,
+    "offset": 0,
+    "unit": "deg."
+   },
+   {
+    "name": "Lambda probe upstream dinamical value",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,4,2.4414140625",
+    "decimals": 4,
+    "scale": 2.4414140625,
+    "offset": 0
+   },
+   {
+    "name": "Offset downstream lambda probe",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,4,2.4414140625",
+    "decimals": 4,
+    "scale": 2.4414140625,
+    "offset": 0
+   },
+   {
+    "name": "I-part of lambda controller (continuous) downstream of catalytic converter",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,5,3.0517578125",
+    "decimals": 5,
+    "scale": 3.0517578125,
+    "offset": 0
+   },
+   {
+    "name": "Oxygen storage capacity of the front catalyst",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,4,2.4414140625",
+    "decimals": 4,
+    "scale": 2.4414140625,
+    "offset": 0
+   },
+   {
+    "name": "Counter of long term misfires cylinder 1",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Counter of long term misfires cylinder 2",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Counter of long term misfires cylinder 3",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Counter of long term misfires cylinder 4",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Misfires (cyl. 1)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Misfires (cyl. 2)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Misfires (cyl. 3)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Misfires (cyl. 4)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Bank fault counter for catalyst damaging misfires",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Intake air temperature upstream throttle",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,2.3438,-27315",
+    "decimals": 2,
+    "scale": 2.3438,
+    "offset": -27315.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Desired exhaust phase variator position",
+    "start": 3,
+    "bytes": 2,
+    "format": "nums,3,7.8125",
+    "decimals": 3,
+    "scale": 7.8125,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Exhaust phase variator position",
+    "start": 3,
+    "bytes": 2,
+    "format": "nums,3,7.8125",
+    "decimals": 3,
+    "scale": 7.8125,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Ratio total charge to charge in cylinder",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,2,2.34375",
+    "decimals": 2,
+    "scale": 2.34375,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Delivery duration of fuel supply control valve",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "deg."
+   },
+   {
+    "name": "GDI injection",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Effective injection time - 1st injection",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3",
+    "decimals": 3,
+    "scale": 1,
+    "offset": 0,
+    "unit": "ms"
+   },
+   {
+    "name": "Effective injection time - 2nd injection",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3",
+    "decimals": 3,
+    "scale": 1,
+    "offset": 0,
+    "unit": "ms"
+   },
+   {
+    "name": "Effective injection time - 3rd injection",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,3",
+    "decimals": 3,
+    "scale": 1,
+    "offset": 0,
+    "unit": "ms"
+   },
+   {
+    "name": "Fuel temperature in high pressure system",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,1,7.5,-480",
+    "decimals": 1,
+    "scale": 7.5,
+    "offset": -480.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Failure type",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Knock sensor signal (Cyl. 5)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,1,48.828125",
+    "decimals": 1,
+    "scale": 48.828125,
+    "offset": 0,
+    "unit": "mV"
+   },
+   {
+    "name": "Knock sensor signal (Cyl. 6)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,1,48.828125",
+    "decimals": 1,
+    "scale": 48.828125,
+    "offset": 0,
+    "unit": "mV"
+   },
+   {
+    "name": "Spark advance reduction (Cyl. 5)",
+    "start": 3,
+    "bytes": 1,
+    "format": "nums,2,75",
+    "decimals": 2,
+    "scale": 75.0,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Spark advance reduction (Cyl. 6)",
+    "start": 3,
+    "bytes": 1,
+    "format": "nums,2,75",
+    "decimals": 2,
+    "scale": 75.0,
+    "offset": 0,
+    "signed": true,
+    "unit": "deg."
+   },
+   {
+    "name": "Misfires (cyl. 5)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Misfires (cyl. 6)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   }
+  ],
+  "PARKSEN14": [
+   {
+    "name": "Operating time",
+    "start": 10,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   },
+   {
+    "name": "Battery voltage",
+    "start": 38,
+    "bytes": 1,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Vehicle speed",
+    "start": 44,
+    "bytes": 2,
+    "format": "num,2,0.78125",
+    "decimals": 2,
+    "scale": 0.78125,
+    "offset": 0,
+    "unit": "km/h"
+   },
+   {
+    "name": "Reversing status",
+    "start": 41,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0202ON",
+     "0200OFF"
+    ]
+   },
+   {
+    "name": "Trailer tow status",
+    "start": 41,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0101ON",
+     "0100OFF"
+    ]
+   }
+  ],
+  "PARKSEN8": [
+   {
+    "name": "Operating time",
+    "start": 10,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   },
+   {
+    "name": "Battery voltage",
+    "start": 38,
+    "bytes": 1,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Vehicle speed",
+    "start": 45,
+    "bytes": 2,
+    "format": "num,2,0.78125",
+    "decimals": 2,
+    "scale": 0.78125,
+    "offset": 0,
+    "unit": "km/h"
+   },
+   {
+    "name": "Reversing status",
+    "start": 42,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0202ON",
+     "0200OFF"
+    ]
+   },
+   {
+    "name": "Trailer tow status",
+    "start": 42,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "0101ON",
+     "0100OFF"
+    ]
+   }
+  ],
+  "PLGM1": [
+   {
+    "name": "Operating time",
+    "start": 10,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   }
+  ],
+  "RFH30": [
+   {
+    "name": "Operating time",
+    "start": 3,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   },
+   {
+    "name": "Operating time (since key-ON)",
+    "start": 3,
+    "bytes": 2,
+    "format": "num,0,15",
+    "decimals": 0,
+    "scale": 15.0,
+    "offset": 0,
+    "unit": "s"
+   },
+   {
+    "name": "Startups counter",
+    "start": 3,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Failure type",
+    "start": 3,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Battery voltage",
+    "start": 3,
+    "bytes": 1,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Operational Mode Status",
+    "start": 3,
+    "bytes": 9,
+    "format": "hex"
+   }
+  ],
+  "SLCK2": [
+   {
+    "name": "Operating time",
+    "start": 10,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   },
+   {
+    "name": "Vehicle speed",
+    "start": 41,
+    "bytes": 1,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "km/h"
+   },
+   {
+    "name": "Battery voltage",
+    "start": 38,
+    "bytes": 1,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   }
+  ],
+  "TVM1": [
+   {
+    "name": "Operating time",
+    "start": 10,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   },
+   {
+    "name": "Odometer",
+    "start": 38,
+    "bytes": 3,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "km"
+   },
+   {
+    "name": "Vehicle speed",
+    "start": 47,
+    "bytes": 1,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "km/h"
+   },
+   {
+    "name": "Engine speed",
+    "start": 43,
+    "bytes": 2,
+    "format": "num,0,0.25",
+    "decimals": 0,
+    "scale": 0.25,
+    "offset": 0,
+    "unit": "rpm"
+   },
+   {
+    "name": "System status",
+    "start": 50,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "FF00Init",
+     "FF01Normal",
+     "FF02Error",
+     "FF03Protection",
+     "FF04Adaptation/Shutdown",
+     "FF05Unknown"
+    ]
+   },
+   {
+    "name": "Torque vectoring availability",
+    "start": 53,
+    "bytes": 1,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "Actual coupling torque",
+    "start": 60,
+    "bytes": 2,
+    "format": "num,0,-2500",
+    "decimals": 0,
+    "scale": -2500.0,
+    "offset": 0,
+    "unit": "Nm"
+   },
+   {
+    "name": "Requested coupling torque",
+    "start": 56,
+    "bytes": 2,
+    "format": "num,0,-2500",
+    "decimals": 0,
+    "scale": -2500.0,
+    "offset": 0,
+    "unit": "Nm"
+   }
+  ],
+  "ZF8HP50": [
+   {
+    "name": "Operating time",
+    "start": 10,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   }
+  ]
+ }
+}

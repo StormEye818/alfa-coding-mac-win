@@ -23,6 +23,16 @@ def parse_format(fmt: str, nbytes: int):
     parts = (fmt or '').strip().split(',')
     family = parts[0] if parts else ''
     out = {'format': (fmt or '').strip()}
+    if family == 'nm':
+        # nm,decimals,scale,offset,maskHex —— 先按掩码截位再线性换算
+        def num(i, default):
+            try:
+                return float(parts[i]) if i < len(parts) else default
+            except ValueError:
+                return default
+        out.update({'decimals': int(num(1, 0)), 'scale': num(2, 1), 'offset': num(3, 0)})
+        if len(parts) > 4:
+            out['mask'] = parts[4].strip()
     if family in NUM_FAMILIES:
         def num(i, default):
             try:
@@ -77,6 +87,73 @@ def main():
             it['spec'] = spec
     json.dump(params, open(OUT, 'w'), ensure_ascii=False, indent=1)
     print(f'重建 spec：命中 {hit}，源缺失 {miss}（保留原样）')
+
+    # ===== 冻结帧（CmdType=9，19 04 服务）→ dtc-snapshots.json =====
+    snap = {}
+    with open(TSV, newline='', encoding='utf-8') as f:
+        for r in csv.DictReader(f, delimiter='\t'):
+            if r['CmdType'] != '9':
+                continue
+            code = r['ModuleID']
+            if code not in params['modules']:      # 只取本工具覆盖的模块
+                continue
+            nbytes = int(r['NumOfBytes'] or 1)
+            sb = int(r['StartByte'] or 1)
+            spec = {
+                'name': r['ParamName'],
+                # 值 = 完整 59 应答[StartByte+2]（与实时参数同一 +3/长度前缀口径）
+                'start': sb + 2,
+                'bytes': nbytes,
+                **parse_format(r['ResultFormat'], nbytes),
+            }
+            if (r['Units'] or '').strip():
+                spec['unit'] = r['Units'].strip()
+            bits = (r.get('BitResults') or '').strip()
+            if bits:
+                spec['options'] = [e for e in bits.split('|') if e]
+            snap.setdefault(code, []).append(spec)
+    snap_out = OUT.parent / 'dtc-snapshots.json'
+    json.dump({'generatedFrom': 'params_all.tsv CmdType=9（19 04 冻结帧）', 'modules': snap},
+              open(snap_out, 'w'), ensure_ascii=False, indent=1)
+    print(f'冻结帧：{sum(len(v) for v in snap.values())} 项 / {len(snap)} 模块')
+
+    # ===== 特殊功能选项表（BitResults：结果标签 + FE 步进文本）→ functions.json =====
+    fpath = OUT.parent / 'functions.json'
+    funcs = json.load(open(fpath))
+    frows = {}
+    with open(TSV, newline='', encoding='utf-8') as f:
+        for r in csv.DictReader(f, delimiter='\t'):
+            bits = (r.get('BitResults') or '').strip()
+            if bits:
+                frows[(r['ModuleID'], r['ParamName'], r['Commands'])] = [e for e in bits.split('|') if e]
+
+    def patch_fn(o):
+        if isinstance(o, dict):
+            if o.get('commands') and 'options' not in o:
+                key = (o.get('module', ''), o.get('name', ''), o['commands'])
+                opts = frows.get(key)
+                if opts:
+                    o['options'] = opts
+            for v in o.values():
+                patch_fn(v)
+        elif isinstance(o, list):
+            for v in o:
+                patch_fn(v)
+    patch_fn(funcs)
+    json.dump(funcs, open(fpath, 'w'), ensure_ascii=False, indent=1)
+    n_fn = [0]
+
+    def count_fn(o):
+        if isinstance(o, dict):
+            if o.get('options'):
+                n_fn[0] += 1
+            for v in o.values():
+                count_fn(v)
+        elif isinstance(o, list):
+            for v in o:
+                count_fn(v)
+    count_fn(funcs)
+    print(f'功能选项表：{n_fn[0]} 条带表')
 
 
 if __name__ == '__main__':

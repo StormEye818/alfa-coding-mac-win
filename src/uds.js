@@ -148,6 +148,16 @@ class Uds {
         return parseDtcList(resp);
     }
 
+    /**
+     * 读故障冻结帧快照（19 04 reportDTCSnapshotRecordByDTCNumber）。
+     * 应答 = 59 04 <DTC3> <记录号> <数据…>；参数位置由 dtc-snapshots.json 的偏移给出。
+     */
+    async readDtcSnapshot(dtcHi, dtcLo) {
+        return assertPositive(
+            await this.link.request(new Uint8Array([0x19, 0x04, dtcHi, dtcLo, 0x00, 0x00]), { timeoutMs: 5000 }),
+            '读冻结帧');
+    }
+
     async clearDtc() {
         return assertPositive(await this.link.request(new Uint8Array([0x14, 0xff, 0xff, 0xff])), '清故障码');
     }

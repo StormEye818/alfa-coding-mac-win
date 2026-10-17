@@ -26,10 +26,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     console.log('\nELM327 + 模拟车：读写 PROXI');
     const port = new MockAdapter({ dtc: [{ raw: [0x90, 0x00], status: 0x08 }] });
     const link = new Elm327(port, { adapter: 'sim', log: () => {} });
-    await link.init({ protocol: 8 });
-    check('初始化发出 ATZ/ATE0/ATH1/ATSP8',
+    await link.init({ protocol: 7 });
+    check('初始化发出 ATZ/ATE0/ATH1/ATSP7',
         port.txLog.includes('ATZ') && port.txLog.includes('ATE0') &&
-        port.txLog.includes('ATH1') && port.txLog.includes('ATSP8'));
+        port.txLog.includes('ATH1') && port.txLog.includes('ATSP7'));
 
     await link.setAddress({ tx: 0x40, rx: 0xF1 });
     check('请求 ID 设为 18DA40F1', port.txLog.some((c) => c === 'ATSH18DA40F1'),

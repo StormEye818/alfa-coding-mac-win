@@ -669,7 +669,7 @@ function renderFeatures() {
       ? `<div class="cur-state ${cur ? 'yes' : 'no'}">当前：${cur ? '已启用' : '未启用'}</div>`
       : '';
     card.innerHTML = `
-      <h3>${tSpan(f.name)}${stateTag(stt)} <span class="tag ${f.status}">${(state.i18n.statusLegend && state.i18n.statusLegend[f.status]) || f.status}</span></h3>
+      <h3>${tSpan(f.name)}${stateTag(stt)} <span class="tag ${f.status}">${((state.features && state.features.statusLegend) && (state.features && state.features.statusLegend)[f.status]) || f.status}</span></h3>
       <p>${f.desc || ''}</p>
       ${curHtml}
       <div class="bits">${featurePatchText(f)}</div>
@@ -1084,7 +1084,11 @@ function presenceInfo(node) {
  * 这些节点的判定一律以「在场位基线」为准，并在界面上明确标注。
  */
 function presenceOverlapsCrc(node) {
-  return node.startByte >= 6 && node.startByte <= 10;
+  // ⚠️ 字节号是 **1-based 社区口径**，CRC 区是 **0-based [6..10] = 社区 Byte7..11**。
+  //    三方互证（2026-10-16 审计 ★1）：proxi.js `#toIdx(no)=no-1`、
+  //    白名单「写 DATA1[6..10]」、实车照片头部 `406200232331OUTPUT-SIT %` 逐段咬合。
+  //    此前判 6..10 差一位：startByte=6 假阳性、startByte=11 的 AMP/CDM/RLCM/SRM/SCRM/VPAM 漏标。
+  return node.startByte >= 7 && node.startByte <= 11;
 }
 
 /** 在场位基线：首次读取时判定并记住（localStorage 跨会话保持） */
@@ -1429,7 +1433,45 @@ $('btnAlign').addEventListener('click', async () => {
       log(`⚠ 用户选择在块已变化时只对齐 ${chosen.length} 个节点 —— 未选节点将持有旧块，闪烁可能不停`);
     }
   } else if (isSubset) {
-    log(`部分对齐：${chosen.length}/${allIdx.size} 个节点（配置块与车身一致，安全部分对齐）`);
+    log(`部分对齐：${chosen.length}/${allIdx.size} 个节点（配置块与车身一致）`);
+  }
+
+  // ===== 第二道闸：漏选的「未对齐/失败」节点 =====
+  // 上面只防了「块变了」的分裂脑。还有一个场景：checkAlign 查出 3 个未对齐，
+  // 用户只勾了 2 个 → 对齐完第 3 个仍跑偏 → **里程表照样闪**。
+  // 对齐完成后不会有任何提示说「还有没对齐的」——必须在开跑前问清楚。
+  {
+    const leftover = [...document.querySelectorAll('.node')]
+      .filter((el) => {
+        const st = el.dataset.st;
+        return (st === 'misaligned' || st === 'fail') && !chosenIdx.has(Number(el.dataset.idx));
+      });
+    if (leftover.length) {
+      const names = leftover.slice(0, 8).map((el) => {
+        const nm = el.querySelector('.nm');
+        return nm ? nm.textContent.trim() : '?';
+      });
+      const more = leftover.length > 8 ? `…等 ${leftover.length} 个` : '';
+      const goOn = confirm(
+        `⚠ 还有 ${leftover.length} 个节点**未对齐但没被选中**：\n\n${names.join('\n')}${more}\n\n`
+        + '对齐只写入选中的节点 —— 这些仍然跑偏，**里程表会继续闪**。\n\n'
+        + '点「确定」= 一并勾选它们（推荐）\n'
+        + '点「取消」= 只对齐选中节点（里程表仍会闪）');
+      if (goOn) {
+        for (const el of leftover) {
+          const cb = el.querySelector('.pick');
+          if (cb) cb.checked = true;
+        }
+        chosenIdx.clear();
+        for (const i of allIdx) {
+          const el = [...document.querySelectorAll('.node')].find((x) => Number(x.dataset.idx) === i);
+          if (el && el.querySelector('.pick')?.checked) chosenIdx.add(i);
+        }
+        log(`已补选 ${leftover.length} 个未对齐节点`);
+      } else {
+        log(`⚠ 用户选择跳过 ${leftover.length} 个未对齐节点 —— 对齐后里程表仍会闪`);
+      }
+    }
   }
 
   const chosenNodes = [...document.querySelectorAll('.node')]
@@ -1538,8 +1580,16 @@ function askInput(item) {
     }
 
     if (spec.kind === 'enum') {
-      ctrl.innerHTML = `<select id="imValue">${spec.options.map((o, i) =>
-        `<option value="${i}">${t(o.label) || o.label}</option>`).join('')}</select>`;
+      const multiPos = spec.bytes > 4 && spec.options.length > 8;
+      if (multiPos) {
+        // 多位输入（RWUSERENTRY 29 族，如 VIN 逐位）：每位一个下拉，选项表是字符/字节盘
+        ctrl.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:6px">${Array.from({ length: spec.bytes }, (_, i) =>
+          `<select class="imPos" data-i="${i}" style="min-width:62px">${spec.options.map((o, j) =>
+            `<option value="${j}">${t(o.label) || o.label}</option>`).join('')}</select>`).join('')}</div>`;
+      } else {
+        ctrl.innerHTML = `<select id="imValue">${spec.options.map((o, i) =>
+          `<option value="${i}">${t(o.label) || o.label}</option>`).join('')}</select>`;
+      }
     } else if (spec.kind === 'number') {
       ctrl.innerHTML = `<input id="imValue" type="number" inputmode="decimal"
         ${spec.min !== undefined ? `min="${spec.min}"` : ''} ${spec.max !== undefined ? `max="${spec.max}"` : ''}
@@ -1556,6 +1606,12 @@ function askInput(item) {
       resolve(v);
     };
     $('imOk').onclick = () => {
+      const posEls = [...document.querySelectorAll('.imPos')];
+      if (spec.kind === 'enum' && posEls.length) {
+        // 多位输入：收集每位的选择
+        const positions = posEls.map((el) => spec.options[Number(el.value)]);
+        return done({ multi: true, positions, label: positions.map((p) => (p && p.label) || '').join('') });
+      }
       const el = $('imValue');
       if (spec.kind === 'enum') return done(spec.options[Number(el.value)]);
       const raw = el.value.trim();
@@ -1592,6 +1648,65 @@ function askInput(item) {
  * 早期版本误 `if (len > 7) continue` 把多帧 UDS + FE/FF 全静默丢弃（61 个功能条目受影响）——
  * 只对齐了主干写入，漏了功能层的命令模板分支，实测才暴露。
  */
+/** 读改写字段合并（RWUSERENTRY 族语义）：基线=读回值，选择值按掩码并入字段 */
+function mergeWriteField(field, base, picked, item) {
+  const out = Uint8Array.from(field);
+  const spec = item.input || {};
+  const take = (i) => (base && i < base.length ? base[i] : out[i]);
+  if (picked.multi && picked.positions) {
+    for (let i = 0; i < out.length; i++) {
+      const p = picked.positions[i];
+      if (!p) continue;
+      const m = (p.mask ?? 0xff) & 0xff;
+      out[i] = (take(i) & ~m) | ((Number(p.value) & m) & 0xff);
+    }
+    return out;
+  }
+  if (spec.kind === 'hex') {
+    const hex = String(picked.value ?? picked).replace(/[^0-9a-fA-F]/g, '');
+    for (let i = 0; i < out.length; i++) out[i] = parseInt(hex.substr(i * 2, 2) || '00', 16);
+    return out;
+  }
+  if (picked && typeof picked === 'object' && typeof picked.value === 'number') {
+    // 单选/数值：value+mask 按字段宽度大端展开（29W/H 族）；数值按 scale 换算成档位
+    const w = out.length;
+    let val = picked.value;
+    if (spec.kind === 'number' && spec.scale && spec.scale !== 1) val = Math.round(val / spec.scale);
+    const maskAll = (w === 1 ? 0xff : w === 2 ? 0xffff : (Math.pow(2, 8 * w) - 1));
+    const mask = Number(picked.mask ?? maskAll);
+    for (let i = 0; i < w; i++) {
+      const sh = 8 * (w - 1 - i);
+      const m = (mask >>> sh) & 0xff;
+      const v = (val >>> sh) & 0xff;
+      out[i] = (take(i) & ~m) | (v & m);
+    }
+  }
+  return out;
+}
+
+/** 对「读+写」模板型条目做读改写：返回替换好数据区的新命令串（无法处理时返回 null 走原路径） */
+async function mergeRwUserEntry(item, picked) {
+  const parts = String(item.commands).split(',').map((s) => s.trim().replace(/\s/g, '')).filter(Boolean);
+  if (parts.length !== 2) return null;
+  const rraw = hexToBytes(parts[0]);
+  const wraw = hexToBytes(parts[1]);
+  if (rraw.length < 4 || rraw[0] !== 3 || rraw[1] !== 0x22) return null;   // 首条=单帧读
+  if (wraw.length < 4) return null;
+  const wlen = wraw[0];
+  const wpay = wraw.slice(1, 1 + wlen);
+  if (wpay[0] !== 0x2e || wpay.length < 4) return null;                    // 次条=写模板
+  const did = (wpay[1] << 8) | wpay[2];
+  let base = null;
+  try { base = await state.uds.readDataByIdentifier(did); } catch { /* 读不回就以模板为基线 */ }
+  const merged = mergeWriteField(wpay.slice(3), base, picked, item);
+  const np = new Uint8Array(4 + merged.length);
+  np[0] = 3 + merged.length;
+  np[1] = 0x2e; np[2] = wpay[1]; np[3] = wpay[2];
+  np.set(merged, 4);
+  const hex = Array.from(np).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join('');
+  return parts[0] + ',' + hex;
+}
+
 async function runCommandString(cmdStr, item) {
   const sent = [];
   const parts = cmdStr.split(',').map((p) => p.trim().replace(/\s/g, '')).filter(Boolean);
@@ -1780,6 +1895,16 @@ function renderFunctions() {
               picked = await askInput(item);
               if (picked === null) return null;
             }
+            // 读改写合并（RWUSERENTRY 族）：选择值按掩码并进写模板——此前选择值从不落盘、
+            // 模板零值直发（2026-10-17 审计：98 条读改写条目全中招）
+            let cmdToSend = item.commands;
+            if (picked && item.input && !item.workflow) {
+              const merged = await mergeRwUserEntry(item, picked);
+              if (merged) {
+                cmdToSend = merged;
+                log(`读改写：按选择值合并字段后写入`);
+              }
+            }
             // 分步工作流：逐步下发并汇报（如「恢复保养提醒」）
             if (item.workflow) {
               const out = [];
@@ -1796,7 +1921,20 @@ function renderFunctions() {
               }
               return out;
             }
-            return await runCommandString(item.commands, item);
+            // ⛔ PROXI 对齐类目的一键执行已禁用（2026-10-16 审计 ★4）。
+            // 原因：commands 里的 `992E2023` + 全零模板，`input.options` 的 mask/value
+            // **从不套用到块上**（askInput 结果只用于显示）→ 会把 PROXI 配置区写成全零。
+            // 正确路径是 named-settings：{startByte, mask, value} → applyPatch → writeProxi(真实 289 字节块)。
+            // 而且 functions.json 里这 45 项与 named-settings 的 44 项是同名副本（named-settings 有 startByte）。
+            if (item.category === 'PROXI 对齐' || /,992E2023/.test(item.commands || '')) {
+              alert('「' + t(item.name) + '」已改走「隐藏功能 / 命名设置」路径。\n\n'
+                + '原因：这条一键命令会下发**全零配置块**（输入项的掩码/值从未套用到块上），'
+                + '有写坏 PROXI 配置区的风险。\n\n'
+                + '请到「隐藏功能」页找同名设置项修改 —— 那条路径走的是'
+                + '读块 → 按 startByte/mask/value 改位 → 写回真实块 → 回读校验。');
+              return null;
+            }
+            return await runCommandString(cmdToSend, item);
           } finally {
             b.disabled = false;
             b.textContent = bOld;
@@ -1934,7 +2072,7 @@ function renderPending() {
       <div class="code">${(f.patches || []).map((p) => `B${p.addr}`).join(' ')}</div>
       <div class="grow">
         <div class="name">${f.name} <span class="tag ${f.status}">${
-          (state.i18n.statusLegend && state.i18n.statusLegend[f.status]) || f.status
+          ((state.features && state.features.statusLegend) && (state.features && state.features.statusLegend)[f.status]) || f.status
         }</span></div>
         <div class="sub">${featurePatchText(f)}</div>
         <div class="pend-note">${f.heldBecause || '来源待确认'}</div>
@@ -2126,8 +2264,34 @@ function applyScale(raw, item) {
   if (fmt === 'hex') return Array.from(slice).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join('');
   if (fmt === 'hex2') return Array.from(slice).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
   if (fmt === 'bits' || fmt === 'bitw' || fmt === 'bitchars') {
-    // 位表未导入（数据侧缺口），退化为二进制展示，避免报错
-    return Array.from(slice).map((b) => b.toString(2).padStart(8, '0')).join(' ');
+    // bit 族语义（2026-10-17 审计）：选项表 = `MMVV标签`（bits 首字节）/
+    // `MMVVMMVV标签`（bitw 双字节配对）/ bitchars 逐字节拼字符；末项为兜底。
+    const opts = spec.options;
+    const hx = (s, i) => parseInt(s.substr(i, 2), 16);
+    if (!opts || !opts.length) {
+      return Array.from(slice).map((b) => b.toString(2).padStart(8, '0')).join(' ');
+    }
+    const match1 = (b, e) => (b & hx(e, 0)) === hx(e, 2);
+    if (fmt === 'bitw' && slice.length >= 2) {
+      for (let k = 0; k < opts.length; k++) {
+        const e = opts[k];
+        if (((slice[0] & hx(e, 0)) === hx(e, 2) && (slice[1] & hx(e, 4)) === hx(e, 6)) || k === opts.length - 1) {
+          return e.slice(8);
+        }
+      }
+    }
+    if (fmt === 'bitchars') {
+      let out = '';
+      for (const b of slice) {
+        for (let k = 0; k < opts.length; k++) {
+          if (match1(b, opts[k]) || k === opts.length - 1) { out += opts[k].slice(4); break; }
+        }
+      }
+      return out;
+    }
+    for (let k = 0; k < opts.length; k++) {
+      if (match1(slice[0], opts[k]) || k === opts.length - 1) return opts[k].slice(4);
+    }
   }
   if (fmt === 'date' || fmt === 'datehalf' || fmt.startsWith('eq3') || fmt.startsWith('nm') || fmt.startsWith('equ')) {
     // 日期/多项式/位掩码：数据侧未导入换算参数，退化为 hex

@@ -70,6 +70,10 @@ def main():
             unit = (r['Units'] or '').strip()
             if unit:
                 spec['unit'] = unit
+            # bit 族选项表（BitResults 列：`MMVV标签` / bitw `MMVVMMVV标签` / bitchars 逐字节，'|' 分隔）
+            bits = (r.get('BitResults') or '').strip()
+            if bits:
+                spec['options'] = [e for e in bits.split('|') if e]
             it['spec'] = spec
     json.dump(params, open(OUT, 'w'), ensure_ascii=False, indent=1)
     print(f'重建 spec：命中 {hit}，源缺失 {miss}（保留原样）')

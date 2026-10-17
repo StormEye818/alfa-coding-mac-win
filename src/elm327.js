@@ -262,7 +262,10 @@ class Elm327 {
         await this.#send('ATCAF0');         // 关自动格式化，拿原始帧
         await this.#send('ATSP' + protocol);
         this.protocol = protocol;
-        await this.#send('ATST32');         // 帧间超时
+        // ⚠️ ATST32 不在参考实现命令表里（2026-10-16 审计 ★2）。
+        //    表内 29 档：01 02 03 04 05 07 08 09 10 19 20 21 22 25 26 27 28 29 30 35 41 62 72 80 90 99 F0 FE FF
+        //    改用 ATST20（80ms）—— 主力初始化模板用的就是这档。
+        await this.#send('ATST20');
         await this.#send('ATCFC1');         // 自动流控 ON（适配器内建发 FC）
         // 链路参数：ATAL 允许长消息、ATCP18 29 位优先级域、ATAT0 关自适应
         await this.#send('ATAL');

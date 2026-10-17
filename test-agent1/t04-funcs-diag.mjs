@@ -16,8 +16,10 @@ await t.readConfig();
 // ---------- §六 特殊功能 ----------
 console.log('--- §六 特殊功能 ---');
 // 1) 普通离线功能执行
-await t.runFunction('Rear fog lights');   // PROXIX1 上的同名项
-check('离线功能执行（后雾灯）', '执行成功', 'ok', true);
+// ⚠️ 断言必须取真实返回值 —— 此前 expected/actual 硬编码 + ok=true，永远通过（审计 ★3）
+let fogRet = null, fogErr = null;
+try { fogRet = await t.runFunction('Rear fog lights'); } catch (e) { fogErr = e.message; }
+check('离线功能执行（后雾灯）', String(fogRet ?? ('失败: ' + fogErr)), 'true', fogRet === true);
 
 // 2) 需服务器密钥的功能应被拒绝
 let srvReject = false, srvMsg = '';

@@ -568,7 +568,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -899,7 +905,25 @@
     "spec": {
      "bytes": 1,
      "start": 3,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0F000",
+      "0F011",
+      "0F022",
+      "0F033",
+      "0F044",
+      "0F055",
+      "0F066",
+      "0F077",
+      "0F088",
+      "0F099",
+      "0F0A10",
+      "0F0B11",
+      "0F0C12",
+      "0F0D13",
+      "0F0E14",
+      "0F0F15"
+     ]
     }
    },
    {
@@ -909,7 +933,25 @@
     "spec": {
      "bytes": 1,
      "start": 3,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "F0000",
+      "F0101",
+      "F0202",
+      "F0303",
+      "F0404",
+      "F0505",
+      "F0606",
+      "F0707",
+      "F0808",
+      "F0909",
+      "F0A010",
+      "F0B011",
+      "F0C012",
+      "F0D013",
+      "F0E014",
+      "F0F015"
+     ]
     }
    },
    {
@@ -919,7 +961,14 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0700Fastened",
+      "0701Not fastened",
+      "0702Faulty",
+      "0703Not configured",
+      "0704Not valid"
+     ]
     }
    },
    {
@@ -929,7 +978,14 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0700Fastened",
+      "0701Not fastened",
+      "0702Faulty",
+      "0703Not configured",
+      "0704Not valid"
+     ]
     }
    },
    {
@@ -939,7 +995,14 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0700Fastened",
+      "0701Not fastened",
+      "0702Faulty",
+      "0703Not configured",
+      "0704Not valid"
+     ]
     }
    },
    {
@@ -949,7 +1012,14 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0700Fastened",
+      "0701Not fastened",
+      "0702Faulty",
+      "0703Not configured",
+      "0704Not valid"
+     ]
     }
    },
    {
@@ -959,7 +1029,13 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0300OFF",
+      "0301Flashing",
+      "0302ON",
+      "0303Faulty"
+     ]
     }
    },
    {
@@ -969,7 +1045,11 @@
     "spec": {
      "bytes": 1,
      "start": 2,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0200OFF",
+      "0202ON"
+     ]
     }
    },
    {
@@ -979,7 +1059,13 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "C000OFF",
+      "C040Flashing",
+      "C080ON",
+      "C0C0Faulty"
+     ]
     }
    },
    {
@@ -989,7 +1075,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0400OK",
+      "0404Faulty"
+     ]
     }
    },
    {
@@ -999,7 +1089,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0200OK",
+      "0202Faulty"
+     ]
     }
    },
    {
@@ -1009,7 +1103,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Present",
+      "0100Not present"
+     ]
     }
    },
    {
@@ -1019,7 +1117,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0808Present",
+      "0800Not present"
+     ]
     }
    },
    {
@@ -1029,7 +1131,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202Present",
+      "0200Not present"
+     ]
     }
    },
    {
@@ -1039,7 +1145,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "1010Present",
+      "1000Not present"
+     ]
     }
    },
    {
@@ -1049,7 +1159,11 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0404Present",
+      "0400Not present"
+     ]
     }
    },
    {
@@ -1059,7 +1173,11 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "1010Present",
+      "1000Not present"
+     ]
     }
    },
    {
@@ -1069,7 +1187,11 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "2020Present",
+      "2000Not present"
+     ]
     }
    },
    {
@@ -1079,7 +1201,11 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Present",
+      "0100Not present"
+     ]
     }
    },
    {
@@ -1089,7 +1215,11 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202Present",
+      "0200Not present"
+     ]
     }
    },
    {
@@ -1099,7 +1229,11 @@
     "spec": {
      "bytes": 1,
      "start": 5,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0404Present",
+      "0400Not present"
+     ]
     }
    },
    {
@@ -1109,7 +1243,11 @@
     "spec": {
      "bytes": 1,
      "start": 5,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0808Present",
+      "0800Not present"
+     ]
     }
    },
    {
@@ -1119,7 +1257,11 @@
     "spec": {
      "bytes": 1,
      "start": 3,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Present",
+      "0100Not present"
+     ]
     }
    },
    {
@@ -1129,7 +1271,11 @@
     "spec": {
      "bytes": 1,
      "start": 3,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0404Present",
+      "0400Not present"
+     ]
     }
    },
    {
@@ -1139,7 +1285,11 @@
     "spec": {
      "bytes": 1,
      "start": 6,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0808Present",
+      "0800Not present"
+     ]
     }
    }
   ],
@@ -1282,7 +1432,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -1503,7 +1659,12 @@
     "spec": {
      "bytes": 1,
      "start": 3,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0303ON",
+      "0300OFF",
+      "0000Error"
+     ]
     }
    },
    {
@@ -1513,7 +1674,12 @@
     "spec": {
      "bytes": 1,
      "start": 3,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0C0CON",
+      "0C00OFF",
+      "0000Error"
+     ]
     }
    },
    {
@@ -1523,7 +1689,12 @@
     "spec": {
      "bytes": 1,
      "start": 3,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "3030ON",
+      "3000OFF",
+      "0000Error"
+     ]
     }
    },
    {
@@ -1533,7 +1704,12 @@
     "spec": {
      "bytes": 1,
      "start": 3,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "C0C0ON",
+      "C000OFF",
+      "0000Error"
+     ]
     }
    },
    {
@@ -1543,7 +1719,12 @@
     "spec": {
      "bytes": 1,
      "start": 2,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0303ON",
+      "0300OFF",
+      "0000Error"
+     ]
     }
    },
    {
@@ -1553,7 +1734,12 @@
     "spec": {
      "bytes": 1,
      "start": 2,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0C0CON",
+      "0C00OFF",
+      "0000Error"
+     ]
     }
    },
    {
@@ -1563,7 +1749,12 @@
     "spec": {
      "bytes": 1,
      "start": 2,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "3030ON",
+      "3000OFF",
+      "0000Error"
+     ]
     }
    },
    {
@@ -1573,7 +1764,12 @@
     "spec": {
      "bytes": 1,
      "start": 2,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "C0C0ON",
+      "C000OFF",
+      "0000Error"
+     ]
     }
    },
    {
@@ -1583,7 +1779,12 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0303ON",
+      "0300OFF",
+      "0000Error"
+     ]
     }
    },
    {
@@ -1593,7 +1794,12 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0C0CON",
+      "0C00OFF",
+      "0000Error"
+     ]
     }
    },
    {
@@ -1603,7 +1809,12 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "3030ON",
+      "3000OFF",
+      "0000Error"
+     ]
     }
    },
    {
@@ -1613,7 +1824,12 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "C0C0ON",
+      "C000OFF",
+      "0000Error"
+     ]
     }
    },
    {
@@ -1623,7 +1839,12 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0303ON",
+      "0300OFF",
+      "0000Error"
+     ]
     }
    },
    {
@@ -1633,7 +1854,12 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0C0CON",
+      "0C00OFF",
+      "0000Error"
+     ]
     }
    },
    {
@@ -1643,7 +1869,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0200OFF",
+      "0202ON"
+     ]
     }
    },
    {
@@ -1653,7 +1883,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0100OFF",
+      "0101ON"
+     ]
     }
    },
    {
@@ -1663,7 +1897,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0404Activated",
+      "0400Released"
+     ]
     }
    },
    {
@@ -1673,7 +1911,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0800OFF",
+      "0808ON"
+     ]
     }
    },
    {
@@ -1683,7 +1925,11 @@
     "spec": {
      "bytes": 1,
      "start": 3,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "4000Normal",
+      "4040Fallback"
+     ]
     }
    },
    {
@@ -1693,7 +1939,14 @@
     "spec": {
      "bytes": 1,
      "start": 2,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "F820All weather",
+      "F810Dynamic",
+      "F860Race",
+      "F8F8Not available",
+      "F800Normal"
+     ]
     }
    },
    {
@@ -1703,7 +1956,12 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "C080Activate",
+      "C040Deactivate",
+      "C000Neutral"
+     ]
     }
    },
    {
@@ -1713,7 +1971,11 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0100Activated",
+      "0101Deactivated"
+     ]
     }
    },
    {
@@ -1737,7 +1999,11 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0200Enabled",
+      "0202Disabled"
+     ]
     }
    },
    {
@@ -1747,7 +2013,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0100Not active",
+      "0101Active"
+     ]
     }
    },
    {
@@ -1757,7 +2027,19 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0F00Activated",
+      "0F01In progress",
+      "0F02Activated",
+      "0F03Released",
+      "0F04In progress",
+      "0F06Initialization",
+      "0F07Released",
+      "0F08In progress",
+      "0F09Service mode",
+      "0F05Unknown"
+     ]
     }
    },
    {
@@ -1781,7 +2063,19 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0F00Activated",
+      "0F01In progress",
+      "0F02Activated",
+      "0F03Released",
+      "0F04In progress",
+      "0F06Initialization",
+      "0F07Released",
+      "0F08In progress",
+      "0F09Service mode",
+      "0F05Unknown"
+     ]
     }
    },
    {
@@ -1949,7 +2243,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not active",
+      "FFFFActive"
+     ]
     }
    }
   ],
@@ -2102,7 +2400,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -2396,7 +2700,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Active",
+      "0100Not active"
+     ]
     }
    },
    {
@@ -2406,7 +2714,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Active",
+      "0100Not active"
+     ]
     }
    },
    {
@@ -2416,7 +2728,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Active",
+      "0100Not active"
+     ]
     }
    },
    {
@@ -2454,7 +2770,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Yes",
+      "0100No"
+     ]
     }
    },
    {
@@ -2464,7 +2784,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Active",
+      "0100Not active"
+     ]
     }
    },
    {
@@ -2474,7 +2798,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Completed",
+      "0100Not performed"
+     ]
     }
    },
    {
@@ -2611,7 +2939,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Active",
+      "0100Not active"
+     ]
     }
    },
    {
@@ -2621,7 +2953,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Completed",
+      "0100Not performed"
+     ]
     }
    },
    {
@@ -2631,7 +2967,11 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Completed",
+      "0100Not performed"
+     ]
     }
    },
    {
@@ -2641,7 +2981,11 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "C0C0Completed",
+      "C000Not performed"
+     ]
     }
    }
   ],
@@ -2794,7 +3138,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -2817,7 +3167,13 @@
     "spec": {
      "bytes": 1,
      "start": 3,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FFA3High Level HiFi",
+      "FFA4Middle Level HiFi",
+      "FF0DMiddle Level HiFi",
+      "0000Unknown"
+     ]
     }
    },
    {
@@ -2998,7 +3354,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -3048,7 +3410,18 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not defined",
+      "FF012.2 Diesel 150CV",
+      "FF022.2 Diesel 180HP",
+      "FF032.2 Diesel 210HP",
+      "FF042.0 Gasoline 200HP",
+      "FF052.0 Gasoline 280HP",
+      "FF062.0 Gasoline 350HP",
+      "FF072.9 V6 Gasoline 500HP",
+      "FF08Unknown"
+     ]
     }
    }
   ],
@@ -3191,7 +3564,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -3214,7 +3593,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF01Low power (logistic)",
+      "FF00Normal power"
+     ]
     }
    },
    {
@@ -3336,7 +3719,11 @@
     "spec": {
      "bytes": 1,
      "start": 3,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0100Open",
+      "0101Closed"
+     ]
     }
    },
    {
@@ -3346,7 +3733,11 @@
     "spec": {
      "bytes": 1,
      "start": 3,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0400Open",
+      "0404Closed"
+     ]
     }
    },
    {
@@ -3356,7 +3747,11 @@
     "spec": {
      "bytes": 1,
      "start": 5,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0100Open",
+      "0101Closed"
+     ]
     }
    },
    {
@@ -3366,7 +3761,11 @@
     "spec": {
      "bytes": 1,
      "start": 3,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "4000Open",
+      "4040Closed"
+     ]
     }
    },
    {
@@ -3376,7 +3775,11 @@
     "spec": {
      "bytes": 1,
      "start": 3,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "1000Open",
+      "1010Closed"
+     ]
     }
    },
    {
@@ -3386,7 +3789,11 @@
     "spec": {
      "bytes": 1,
      "start": 5,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "4000Open",
+      "4040Closed"
+     ]
     }
    },
    {
@@ -3396,7 +3803,14 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "3808Auto",
+      "3810ON",
+      "3818Auto",
+      "2020Error on switch",
+      "3800OFF"
+     ]
     }
    },
    {
@@ -3406,7 +3820,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0301ON",
+      "0302Flash",
+      "0303Not valid",
+      "0300OFF"
+     ]
     }
    },
    {
@@ -3416,7 +3836,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "1010ON",
+      "1000OFF"
+     ]
     }
    },
    {
@@ -3426,7 +3850,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "2020ON",
+      "2000OFF"
+     ]
     }
    },
    {
@@ -3436,7 +3864,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202ON",
+      "0200OFF"
+     ]
     }
    },
    {
@@ -3446,7 +3878,13 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0704ON",
+      "0703Flash",
+      "0705Error on switch",
+      "0700OFF"
+     ]
     }
    },
    {
@@ -3456,7 +3894,13 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0701ON",
+      "0702Flash",
+      "0705Error on switch",
+      "0700OFF"
+     ]
     }
    },
    {
@@ -3466,7 +3910,16 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "1C14Error on switch",
+      "1C001",
+      "1C042",
+      "1C083",
+      "1C0C4",
+      "1C10",
+      "1C00OFF"
+     ]
     }
    },
    {
@@ -3476,7 +3929,16 @@
     "spec": {
      "bytes": 2,
      "start": 0,
-     "format": "bitw"
+     "format": "bitw",
+     "options": [
+      "00020002ON",
+      "00010001Resume",
+      "20002000-",
+      "40004000--",
+      "04000400+",
+      "08000800++",
+      "00000000OFF"
+     ]
     }
    },
    {
@@ -3486,7 +3948,13 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0606Eco",
+      "0602Dynamic",
+      "0604Normal",
+      "0600Race"
+     ]
     }
    },
    {
@@ -3496,7 +3964,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Normal",
+      "FFCCStop"
+     ]
     }
    },
    {
@@ -3506,7 +3978,12 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "1800Normal",
+      "1808Low",
+      "1810Error on switch"
+     ]
     }
    },
    {
@@ -3516,7 +3993,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101ON",
+      "0100OFF"
+     ]
     }
    },
    {
@@ -3526,7 +4007,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0404ON",
+      "0400OFF"
+     ]
     }
    },
    {
@@ -3536,7 +4021,11 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0808B-CAN",
+      "0800C-CAN"
+     ]
     }
    },
    {
@@ -3546,7 +4035,12 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Virgin",
+      "FF01Factory",
+      "FF02Spare parts"
+     ]
     }
    },
    {
@@ -3556,7 +4050,12 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0703Virgin",
+      "0705Programmed",
+      "0707Faulty"
+     ]
     }
    }
   ],
@@ -3699,7 +4198,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -3722,7 +4227,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF01Low power (logistic)",
+      "FF00Normal power"
+     ]
     }
    },
    {
@@ -3844,7 +4353,12 @@
     "spec": {
      "bytes": 1,
      "start": 2,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0301Open",
+      "0300Closed",
+      "0302Error on switch"
+     ]
     }
    },
    {
@@ -3854,7 +4368,12 @@
     "spec": {
      "bytes": 1,
      "start": 2,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0C04Open",
+      "0C00Closed",
+      "0C08Error on switch"
+     ]
     }
    },
    {
@@ -3864,7 +4383,12 @@
     "spec": {
      "bytes": 1,
      "start": 4,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0301Open",
+      "0300Closed",
+      "0302Error on switch"
+     ]
     }
    },
    {
@@ -3874,7 +4398,12 @@
     "spec": {
      "bytes": 1,
      "start": 2,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "C040Open",
+      "C000Closed",
+      "C080Error on switch"
+     ]
     }
    },
    {
@@ -3884,7 +4413,12 @@
     "spec": {
      "bytes": 1,
      "start": 2,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "3010Open",
+      "3000Closed",
+      "3020Error on switch"
+     ]
     }
    },
    {
@@ -3894,7 +4428,11 @@
     "spec": {
      "bytes": 1,
      "start": 4,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "4040Open",
+      "4000Closed"
+     ]
     }
    },
    {
@@ -3904,7 +4442,14 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "3810Auto",
+      "3818ON",
+      "3808Parking",
+      "2020Error on switch",
+      "3800OFF"
+     ]
     }
    },
    {
@@ -3914,7 +4459,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0301ON",
+      "0302Flash",
+      "0303Not valid",
+      "0300OFF"
+     ]
     }
    },
    {
@@ -3924,7 +4475,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "1010ON",
+      "1000OFF"
+     ]
     }
    },
    {
@@ -3934,7 +4489,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "2020ON",
+      "2000OFF"
+     ]
     }
    },
    {
@@ -3944,7 +4503,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202ON",
+      "0200OFF"
+     ]
     }
    },
    {
@@ -3954,7 +4517,13 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0704ON",
+      "0703Flash",
+      "0705Error on switch",
+      "0700OFF"
+     ]
     }
    },
    {
@@ -3964,7 +4533,13 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0701ON",
+      "0702Flash",
+      "0705Error on switch",
+      "0700OFF"
+     ]
     }
    },
    {
@@ -3974,7 +4549,16 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "1C14Error on switch",
+      "1C001",
+      "1C042",
+      "1C083",
+      "1C0C4",
+      "1C10",
+      "1C00OFF"
+     ]
     }
    },
    {
@@ -3984,7 +4568,16 @@
     "spec": {
      "bytes": 2,
      "start": 0,
-     "format": "bitw"
+     "format": "bitw",
+     "options": [
+      "00020002ON",
+      "00010001Resume",
+      "20002000-",
+      "40004000--",
+      "04000400+",
+      "08000800++",
+      "00000000OFF"
+     ]
     }
    },
    {
@@ -3994,7 +4587,13 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0600All weather",
+      "0604Dynamic",
+      "0602Normal",
+      "0606Race"
+     ]
     }
    },
    {
@@ -4004,7 +4603,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Normal",
+      "FFCCStop"
+     ]
     }
    },
    {
@@ -4014,7 +4617,12 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "1800Normal",
+      "1808Low",
+      "1810Error on switch"
+     ]
     }
    },
    {
@@ -4024,7 +4632,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101ON",
+      "0100OFF"
+     ]
     }
    },
    {
@@ -4034,7 +4646,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0404ON",
+      "0400OFF"
+     ]
     }
    },
    {
@@ -4044,7 +4660,11 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0808B-CAN",
+      "0800C-CAN"
+     ]
     }
    },
    {
@@ -4054,7 +4674,12 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Virgin",
+      "FF01Factory",
+      "FF02Spare parts"
+     ]
     }
    },
    {
@@ -4064,7 +4689,12 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0703Virgin",
+      "0705Programmed",
+      "0707Faulty"
+     ]
     }
    }
   ],
@@ -4207,7 +4837,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -4650,7 +5286,13 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0300OFF",
+      "03011",
+      "03022",
+      "03031+2"
+     ]
     }
    },
    {
@@ -4688,7 +5330,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "2020Pressed",
+      "2000Released"
+     ]
     }
    },
    {
@@ -4698,7 +5344,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "4040Pressed",
+      "4000Released"
+     ]
     }
    },
    {
@@ -4708,7 +5358,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0404Pressed",
+      "0400Released"
+     ]
     }
    },
    {
@@ -4718,7 +5372,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "8080Pressed",
+      "8000Released"
+     ]
     }
    },
    {
@@ -4728,7 +5386,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202ON",
+      "0200OFF"
+     ]
     }
    },
    {
@@ -4738,7 +5400,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0404ON",
+      "0400OFF"
+     ]
     }
    },
    {
@@ -4748,7 +5414,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "8080ON",
+      "8000OFF"
+     ]
     }
    },
    {
@@ -4957,7 +5627,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -4980,7 +5656,19 @@
     "spec": {
      "bytes": 2,
      "start": 0,
-     "format": "bitw"
+     "format": "bitw",
+     "options": [
+      "01000100Vol+",
+      "02000200Vol-",
+      "08000800>>",
+      "10001000<<",
+      "20002000SRC",
+      "40004000Voice",
+      "00010001Phone",
+      "04000400MUTE",
+      "00080008Preset",
+      "00000000No request"
+     ]
     }
    },
    {
@@ -5046,7 +5734,12 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not active",
+      "FF01Active",
+      "FFFFNot performed"
+     ]
     }
    }
   ],
@@ -5179,7 +5872,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -5384,7 +6083,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -5544,7 +6249,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -5677,7 +6388,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0100Disabled",
+      "0101Enabled"
+     ]
     }
    },
    {
@@ -5687,7 +6402,23 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00P",
+      "FF01Recovery",
+      "FF02R",
+      "FF03N",
+      "FF111",
+      "FF122",
+      "FF133",
+      "FF144",
+      "FF155",
+      "FF166",
+      "FF177",
+      "FF188",
+      "FF199",
+      "FF00D"
+     ]
     }
    }
   ],
@@ -5840,7 +6571,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -5975,7 +6712,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0300OFF",
+      "0301Warning only",
+      "0302Braking only",
+      "0303Full"
+     ]
     }
    },
    {
@@ -5985,7 +6728,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0C00Near",
+      "0C04Medium",
+      "0C08Far",
+      "0C0CError"
+     ]
     }
    },
    {
@@ -5995,7 +6744,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "3030Normal",
+      "3000Camera and radar blocked",
+      "2000Camera blocked",
+      "1000Radar blocked"
+     ]
     }
    },
    {
@@ -6005,7 +6760,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Active",
+      "FFFFDeactivated"
+     ]
     }
    },
    {
@@ -6119,7 +6878,123 @@
      "bytes": 2,
      "start": 0,
      "format": "bitw",
-     "unit": "turns"
+     "unit": "turns",
+     "options": [
+      "00FF00000.00",
+      "FFFF0201+0.25",
+      "FFFF0202+0.50",
+      "FFFF0203+0.75",
+      "FFFF0204+1.00",
+      "FFFF0205+1.25",
+      "FFFF0206+1.50",
+      "FFFF0207+1.75",
+      "FFFF0208+2.00",
+      "FFFF0209+2.25",
+      "FFFF020A+2.50",
+      "FFFF020B+2.75",
+      "FFFF020C+3.00",
+      "FFFF020D+3.25",
+      "FFFF020E+3.50",
+      "FFFF020F+3.75",
+      "FFFF0210+4.00",
+      "FFFF0211+4.25",
+      "FFFF0212+4.50",
+      "FFFF0213+4.75",
+      "FFFF0214+5.00",
+      "FFFF0215+5.25",
+      "FFFF0216+5.50",
+      "FFFF0217+5.75",
+      "FFFF0218+6.00",
+      "FFFF0219+6.25",
+      "FFFF021A+6.50",
+      "FFFF021B+6.75",
+      "FFFF021C+7.00",
+      "FFFF021D+7.25",
+      "FFFF021E+7.50",
+      "FFFF021F+7.75",
+      "FFFF0220+8.00",
+      "FFFF0221+8.25",
+      "FFFF0222+8.50",
+      "FFFF0223+8.75",
+      "FFFF0224+9.00",
+      "FFFF0225+9.25",
+      "FFFF0226+9.50",
+      "FFFF0227+9.75",
+      "FFFF0228+10.00",
+      "FFFF0229+10.25",
+      "FFFF022A+10.50",
+      "FFFF022B+10.75",
+      "FFFF022C+11.00",
+      "FFFF022D+11.25",
+      "FFFF022E+11.50",
+      "FFFF022F+11.75",
+      "FFFF0230+12.00",
+      "FFFF0231+12.25",
+      "FFFF0232+12.50",
+      "FFFF0233+12.75",
+      "FFFF0234+13.00",
+      "FFFF0235+13.25",
+      "FFFF0236+13.50",
+      "FFFF0237+13.75",
+      "FFFF0238+14.00",
+      "FFFF0101-0.25",
+      "FFFF0102-0.50",
+      "FFFF0103-0.75",
+      "FFFF0104-1.00",
+      "FFFF0105-1.25",
+      "FFFF0106-1.50",
+      "FFFF0107-1.75",
+      "FFFF0108-2.00",
+      "FFFF0109-2.25",
+      "FFFF010A-2.50",
+      "FFFF010B-2.75",
+      "FFFF010C-3.00",
+      "FFFF010D-3.25",
+      "FFFF010E-3.50",
+      "FFFF010F-3.75",
+      "FFFF0110-4.00",
+      "FFFF0111-4.25",
+      "FFFF0112-4.50",
+      "FFFF0113-4.75",
+      "FFFF0114-5.00",
+      "FFFF0115-5.25",
+      "FFFF0116-5.50",
+      "FFFF0117-5.75",
+      "FFFF0118-6.00",
+      "FFFF0119-6.25",
+      "FFFF011A-6.50",
+      "FFFF011B-6.75",
+      "FFFF011C-7.00",
+      "FFFF011D-7.25",
+      "FFFF011E-7.50",
+      "FFFF011F-7.75",
+      "FFFF0120-8.00",
+      "FFFF0121-8.25",
+      "FFFF0122-8.50",
+      "FFFF0123-8.75",
+      "FFFF0124-9.00",
+      "FFFF0125-9.25",
+      "FFFF0126-9.50",
+      "FFFF0127-9.75",
+      "FFFF0128-10.00",
+      "FFFF0129-10.25",
+      "FFFF012A-10.50",
+      "FFFF012B-10.75",
+      "FFFF012C-11.00",
+      "FFFF012D-11.25",
+      "FFFF012E-11.50",
+      "FFFF012F-11.75",
+      "FFFF0130-12.00",
+      "FFFF0131-12.25",
+      "FFFF0132-12.50",
+      "FFFF0133-12.75",
+      "FFFF0134-13.00",
+      "FFFF0135-13.25",
+      "FFFF0136-13.50",
+      "FFFF0137-13.75",
+      "FFFF0138-14.00",
+      "00000000Not valid"
+     ]
     }
    },
    {
@@ -6130,7 +7005,123 @@
      "bytes": 2,
      "start": 2,
      "format": "bitw",
-     "unit": "turns"
+     "unit": "turns",
+     "options": [
+      "00FF00000.00",
+      "FFFF0201+0.25",
+      "FFFF0202+0.50",
+      "FFFF0203+0.75",
+      "FFFF0204+1.00",
+      "FFFF0205+1.25",
+      "FFFF0206+1.50",
+      "FFFF0207+1.75",
+      "FFFF0208+2.00",
+      "FFFF0209+2.25",
+      "FFFF020A+2.50",
+      "FFFF020B+2.75",
+      "FFFF020C+3.00",
+      "FFFF020D+3.25",
+      "FFFF020E+3.50",
+      "FFFF020F+3.75",
+      "FFFF0210+4.00",
+      "FFFF0211+4.25",
+      "FFFF0212+4.50",
+      "FFFF0213+4.75",
+      "FFFF0214+5.00",
+      "FFFF0215+5.25",
+      "FFFF0216+5.50",
+      "FFFF0217+5.75",
+      "FFFF0218+6.00",
+      "FFFF0219+6.25",
+      "FFFF021A+6.50",
+      "FFFF021B+6.75",
+      "FFFF021C+7.00",
+      "FFFF021D+7.25",
+      "FFFF021E+7.50",
+      "FFFF021F+7.75",
+      "FFFF0220+8.00",
+      "FFFF0221+8.25",
+      "FFFF0222+8.50",
+      "FFFF0223+8.75",
+      "FFFF0224+9.00",
+      "FFFF0225+9.25",
+      "FFFF0226+9.50",
+      "FFFF0227+9.75",
+      "FFFF0228+10.00",
+      "FFFF0229+10.25",
+      "FFFF022A+10.50",
+      "FFFF022B+10.75",
+      "FFFF022C+11.00",
+      "FFFF022D+11.25",
+      "FFFF022E+11.50",
+      "FFFF022F+11.75",
+      "FFFF0230+12.00",
+      "FFFF0231+12.25",
+      "FFFF0232+12.50",
+      "FFFF0233+12.75",
+      "FFFF0234+13.00",
+      "FFFF0235+13.25",
+      "FFFF0236+13.50",
+      "FFFF0237+13.75",
+      "FFFF0238+14.00",
+      "FFFF0101-0.25",
+      "FFFF0102-0.50",
+      "FFFF0103-0.75",
+      "FFFF0104-1.00",
+      "FFFF0105-1.25",
+      "FFFF0106-1.50",
+      "FFFF0107-1.75",
+      "FFFF0108-2.00",
+      "FFFF0109-2.25",
+      "FFFF010A-2.50",
+      "FFFF010B-2.75",
+      "FFFF010C-3.00",
+      "FFFF010D-3.25",
+      "FFFF010E-3.50",
+      "FFFF010F-3.75",
+      "FFFF0110-4.00",
+      "FFFF0111-4.25",
+      "FFFF0112-4.50",
+      "FFFF0113-4.75",
+      "FFFF0114-5.00",
+      "FFFF0115-5.25",
+      "FFFF0116-5.50",
+      "FFFF0117-5.75",
+      "FFFF0118-6.00",
+      "FFFF0119-6.25",
+      "FFFF011A-6.50",
+      "FFFF011B-6.75",
+      "FFFF011C-7.00",
+      "FFFF011D-7.25",
+      "FFFF011E-7.50",
+      "FFFF011F-7.75",
+      "FFFF0120-8.00",
+      "FFFF0121-8.25",
+      "FFFF0122-8.50",
+      "FFFF0123-8.75",
+      "FFFF0124-9.00",
+      "FFFF0125-9.25",
+      "FFFF0126-9.50",
+      "FFFF0127-9.75",
+      "FFFF0128-10.00",
+      "FFFF0129-10.25",
+      "FFFF012A-10.50",
+      "FFFF012B-10.75",
+      "FFFF012C-11.00",
+      "FFFF012D-11.25",
+      "FFFF012E-11.50",
+      "FFFF012F-11.75",
+      "FFFF0130-12.00",
+      "FFFF0131-12.25",
+      "FFFF0132-12.50",
+      "FFFF0133-12.75",
+      "FFFF0134-13.00",
+      "FFFF0135-13.25",
+      "FFFF0136-13.50",
+      "FFFF0137-13.75",
+      "FFFF0138-14.00",
+      "00000000Not valid"
+     ]
     }
    }
   ],
@@ -6273,7 +7264,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -6366,7 +7363,16 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Deactivated",
+      "FF01Initialization",
+      "FF02Calibration",
+      "FF03Normal",
+      "FF04Temporarily failed",
+      "FF05Failed",
+      "FF06Unknown"
+     ]
     }
    },
    {
@@ -6404,7 +7410,12 @@
     "spec": {
      "bytes": 1,
      "start": 2,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0404Efficiency",
+      "0202ABS",
+      "0101Normal"
+     ]
     }
    },
    {
@@ -6414,7 +7425,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF01OK",
+      "FF00Not OK"
+     ]
     }
    },
    {
@@ -6609,7 +7624,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -6632,7 +7653,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101OK",
+      "0100Not configured"
+     ]
     }
    },
    {
@@ -6642,7 +7667,11 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Active",
+      "0100Not active"
+     ]
     }
    }
   ],
@@ -6795,7 +7824,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -6947,7 +7982,22 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0F01City",
+      "0F02Sport",
+      "0F03Winter/Sport",
+      "0F04Eco",
+      "0F05Trac+",
+      "0F06Trekking",
+      "0F07Auto",
+      "0F08Snow",
+      "0F09Sand",
+      "0F0AMud",
+      "0F0BRock",
+      "0F0CRace",
+      "0F00Normal"
+     ]
     }
    },
    {
@@ -6957,7 +8007,11 @@
     "spec": {
      "bytes": 1,
      "start": 2,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0404Valid",
+      "0400Not valid"
+     ]
     }
    },
    {
@@ -6967,7 +8021,11 @@
     "spec": {
      "bytes": 1,
      "start": 2,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202Performed",
+      "0200Not performed"
+     ]
     }
    },
    {
@@ -6977,7 +8035,14 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0300Left not learned",
+      "0C00Right not learned",
+      "0301Left pre-learn",
+      "0C04Right pre-learn",
+      "0F05OK"
+     ]
     }
    }
   ],
@@ -7120,7 +8185,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -7199,7 +8270,17 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "7F01Down 2x",
+      "7F02Down",
+      "7F04Center",
+      "7F08Up",
+      "7F10Up 2x",
+      "7F20Automatic",
+      "7F40Manual",
+      "7F00Unknown"
+     ]
     }
    },
    {
@@ -7209,7 +8290,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0300No request",
+      "0301Park",
+      "0302Release",
+      "0303Both"
+     ]
     }
    }
   ],
@@ -7362,7 +8449,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -7426,7 +8519,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Active",
+      "FF02Passive without stored values",
+      "FF03Passive with stored values",
+      "FF04Error"
+     ]
     }
    },
    {
@@ -7506,7 +8605,14 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not OK",
+      "FF01EOL OK",
+      "FF02Garage OK",
+      "FF03Manual calibration",
+      "FF04Unknown"
+     ]
     }
    },
    {
@@ -7516,7 +8622,21 @@
     "spec": {
      "bytes": 1,
      "start": 15,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00No error",
+      "FF01Calibration not started",
+      "FF02Illumination too bright",
+      "FF03Illumination too inhomogeneous",
+      "FF04Illumination too dark",
+      "FF05Contrast too low",
+      "FF07Visual contact disturbed",
+      "FF08Incorrect position of the calibration target",
+      "FF09System not in rest",
+      "FF0BIncorrect installation position",
+      "FF0ECalibration not finished",
+      "FF0FUnknown"
+     ]
     }
    },
    {
@@ -7819,7 +8939,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -8076,7 +9202,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "4000OK",
+      "4040Not performed"
+     ]
     }
    }
   ],
@@ -8229,7 +9359,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -8559,7 +9695,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Not synchronized",
+      "0808Synchronized",
+      "0202Pre-synchronized",
+      "0404Waiting for synchronization"
+     ]
     }
    },
    {
@@ -8953,7 +10095,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Open",
+      "0100Closed"
+     ]
     }
    },
    {
@@ -9106,7 +10252,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Not requested",
+      "0202Requested"
+     ]
     }
    },
    {
@@ -9116,7 +10266,23 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF0CLearned",
+      "FF00Not learned",
+      "FF01In progress (1)",
+      "FF02In progress (2)",
+      "FF03In progress (3)",
+      "FF04In progress (4)",
+      "FF05In progress (5)",
+      "FF06In progress (6)",
+      "FF07In progress (7)",
+      "FF08In progress (8)",
+      "FF09In progress (9)",
+      "FF0AIn progress (10)",
+      "FF0BIn progress (11)",
+      "0000In progress"
+     ]
     }
    },
    {
@@ -9126,7 +10292,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF02Active",
+      "FF01Not active"
+     ]
     }
    },
    {
@@ -9136,7 +10306,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Closed loop",
+      "0100Open loop"
+     ]
     }
    },
    {
@@ -9228,7 +10402,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Closed loop",
+      "0100Open loop"
+     ]
     }
    },
    {
@@ -9238,7 +10416,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202Open loop",
+      "0404Closed loop"
+     ]
     }
    },
    {
@@ -9248,7 +10430,14 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202Lean",
+      "0404Rich",
+      "2020Transition to rich",
+      "4040Transition to lean",
+      "0000Not active"
+     ]
     }
    },
    {
@@ -9258,7 +10447,16 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202Lean",
+      "0808Rich",
+      "0404Transition to rich",
+      "1010Transition to lean",
+      "2020Lean fail",
+      "4040Rich fail",
+      "0000Not active"
+     ]
     }
    },
    {
@@ -9324,7 +10522,11 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "4040ON",
+      "4000OFF"
+     ]
     }
    },
    {
@@ -9334,7 +10536,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Active",
+      "0100Not active"
+     ]
     }
    },
    {
@@ -9344,7 +10550,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202Active",
+      "0200Not active"
+     ]
     }
    },
    {
@@ -9354,7 +10564,12 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "2020Low",
+      "4040Faulty sensor",
+      "1010Normal"
+     ]
     }
    },
    {
@@ -9406,7 +10621,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0404High pressure",
+      "0400Low pressure"
+     ]
     }
    },
    {
@@ -9430,7 +10649,14 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202Engine OFF",
+      "0404In progress",
+      "1010Failed",
+      "0808Performed",
+      "0101Not learned"
+     ]
     }
    },
    {
@@ -9440,7 +10666,18 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Late opening",
+      "0202Multilift",
+      "0404Early closing",
+      "0808Full-lift",
+      "1010No lift",
+      "4040Multihybrid",
+      "2020Hybrid",
+      "8080Reduced CAM",
+      "0000OFF"
+     ]
     }
    },
    {
@@ -9664,7 +10901,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Pressed",
+      "0100Released"
+     ]
     }
    },
    {
@@ -9674,7 +10915,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "8080Pressed",
+      "8000Released"
+     ]
     }
    },
    {
@@ -9684,7 +10929,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "2000Pressed",
+      "2020Released"
+     ]
     }
    },
    {
@@ -9694,7 +10943,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "1010Pressed",
+      "1000Released"
+     ]
     }
    },
    {
@@ -9704,7 +10957,12 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00OFF",
+      "FF01ON",
+      "FF02Not allowed"
+     ]
     }
    },
    {
@@ -9714,7 +10972,25 @@
     "spec": {
      "bytes": 2,
      "start": 0,
-     "format": "bitw"
+     "format": "bitw",
+     "options": [
+      "FFFF0000Not present",
+      "02000200Clutch pedal not pressed",
+      "04000400Disabled",
+      "08000800Disabled",
+      "10001000Brake booster",
+      "20002000Speed<10km/h",
+      "40004000Gear lever position",
+      "80008000Fuel filter heater",
+      "00010001Engine temperature",
+      "00020002Air temperature",
+      "00040004Oil temperature",
+      "00080008Catalyser temperature",
+      "00100010Regenerat. not completed",
+      "00200020Reverse",
+      "00800080Hill holder",
+      "00000000Incorrect conditions"
+     ]
     }
    },
    {
@@ -9724,7 +11000,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "8080Open",
+      "8000Closed"
+     ]
     }
    },
    {
@@ -9734,7 +11014,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0100OFF",
+      "0101ON"
+     ]
     }
    },
    {
@@ -9744,7 +11028,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0E00No request",
+      "0202Restore (button RCL/RES)",
+      "0404Deceleration (button -)",
+      "0808Acceleration (button +)"
+     ]
     }
    },
    {
@@ -9754,7 +11044,20 @@
     "spec": {
      "bytes": 2,
      "start": 0,
-     "format": "bitw"
+     "format": "bitw",
+     "options": [
+      "FFFF0000No Error",
+      "FFFF0001Cruise excessive deceleration",
+      "FFFF0002Pressure on pipe",
+      "FFFF0004Turbo pressure",
+      "FFFF0008Vehicle speed",
+      "FFFF0010RPM sensor",
+      "FFFF0020Clutch switch",
+      "FFFF0040Accelerator pedal",
+      "FFFF0080Brake pedal switch",
+      "FFFF0100Error on switch",
+      "00000000Generic error"
+     ]
     }
    },
    {
@@ -9778,7 +11081,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "1010ON",
+      "1000OFF"
+     ]
     }
    },
    {
@@ -9788,7 +11095,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "2020ON",
+      "2000OFF"
+     ]
     }
    },
    {
@@ -9812,7 +11123,14 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "08081",
+      "10102",
+      "20203",
+      "40404",
+      "FFFFNot active"
+     ]
     }
    },
    {
@@ -9864,7 +11182,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0404Active",
+      "0400Not active"
+     ]
     }
    },
    {
@@ -9888,7 +11210,12 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0504Received",
+      "0500Not received",
+      "0501Not enabled"
+     ]
     }
    },
    {
@@ -9898,7 +11225,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0200Allowed",
+      "0202Not allowed"
+     ]
     }
    },
    {
@@ -9908,7 +11239,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0400Stop",
+      "0404MAR"
+     ]
     }
    },
    {
@@ -9918,7 +11253,21 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0F01City",
+      "0F02Sport",
+      "0F03Winter/Sport",
+      "0F04Eco",
+      "0F05Trac+",
+      "0F06Trekking",
+      "0F07Auto",
+      "0F08Snow",
+      "0F09Sand",
+      "0F0AMud",
+      "0F0BRock",
+      "0F00Normal"
+     ]
     }
    },
    {
@@ -9928,7 +11277,20 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00N",
+      "FF011",
+      "FF022",
+      "FF033",
+      "FF044",
+      "FF055",
+      "FF066",
+      "FF077",
+      "FF088",
+      "FF099",
+      "0000R"
+     ]
     }
    },
    {
@@ -9938,7 +11300,16 @@
     "spec": {
      "bytes": 2,
      "start": 0,
-     "format": "bitw"
+     "format": "bitw",
+     "options": [
+      "04000400ON",
+      "00040004Flashing (flywheel self learn)",
+      "10001000Flashing (misfire)",
+      "00400040Flashing (neutral learn)",
+      "01000100Flashing (power limitation)",
+      "00800080ON (safety)",
+      "00000000OFF"
+     ]
     }
    },
    {
@@ -10146,7 +11517,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -10835,7 +12212,12 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202Faulty",
+      "0101Open (low water temp)",
+      "0100Closed (high water temp)"
+     ]
     }
    },
    {
@@ -10845,7 +12227,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0808Active",
+      "0800Not active"
+     ]
     }
    },
    {
@@ -10894,7 +12280,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "4040Enabled",
+      "4000Disabled"
+     ]
     }
    },
    {
@@ -10904,7 +12294,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202Enabled",
+      "0200Disabled"
+     ]
     }
    },
    {
@@ -10914,7 +12308,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0404MAF sensor fault",
+      "0202Error",
+      "0101Active",
+      "0100Not active"
+     ]
     }
    },
    {
@@ -10924,7 +12324,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Enabled",
+      "0100Disabled"
+     ]
     }
    },
    {
@@ -10989,7 +12393,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "4040Enabled",
+      "4000Disabled"
+     ]
     }
    },
    {
@@ -10999,7 +12407,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202Enabled",
+      "0200Disabled"
+     ]
     }
    },
    {
@@ -11009,7 +12421,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Enabled",
+      "0100Disabled"
+     ]
     }
    },
    {
@@ -11033,7 +12449,12 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0404Relay error",
+      "0202Active",
+      "0200Not active"
+     ]
     }
    },
    {
@@ -11043,7 +12464,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0808Active",
+      "0800Not active"
+     ]
     }
    },
    {
@@ -11120,7 +12545,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101ON",
+      "0100OFF"
+     ]
     }
    },
    {
@@ -11242,7 +12671,12 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202Faulty sensor",
+      "0100No",
+      "0101Yes"
+     ]
     }
    },
    {
@@ -11252,7 +12686,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0100OFF",
+      "0101ON"
+     ]
     }
    },
    {
@@ -11277,7 +12715,14 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "1F02Normal",
+      "1F00Not significant",
+      "1F06Low",
+      "1F08Faulty sensor",
+      "1F00OFF"
+     ]
     }
    },
    {
@@ -11316,7 +12761,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Active",
+      "0100Not active"
+     ]
     }
    },
    {
@@ -11326,7 +12775,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202Active",
+      "0200Not active"
+     ]
     }
    },
    {
@@ -11336,7 +12789,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0404High pressure",
+      "0400Low pressure"
+     ]
     }
    },
    {
@@ -11416,7 +12873,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202Track 1",
+      "0200Track 2"
+     ]
     }
    },
    {
@@ -11426,7 +12887,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "1010Pressed",
+      "1000Released"
+     ]
     }
    },
    {
@@ -11436,7 +12901,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "2020ON",
+      "2000OFF"
+     ]
     }
    },
    {
@@ -11446,7 +12915,19 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF01In progress",
+      "FF02Learned",
+      "FF03Clutch not fully released",
+      "FF04Clutch not released for enough time",
+      "FF05Clutch not fully pressed",
+      "FF06Clutch not pressed for enough time",
+      "FF07Clutch electrical fault",
+      "FF08Clutch unstable during procedure",
+      "FF09Incorrect conditions",
+      "FF00Not active"
+     ]
     }
    },
    {
@@ -11470,7 +12951,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Pressed",
+      "0100Released"
+     ]
     }
    },
    {
@@ -11480,7 +12965,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "8080Pressed",
+      "8000Released"
+     ]
     }
    },
    {
@@ -11490,7 +12979,14 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "08081",
+      "10102",
+      "20203",
+      "40404",
+      "FFFFNot active"
+     ]
     }
    },
    {
@@ -11500,7 +12996,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "4040OK",
+      "4000Not OK"
+     ]
     }
    },
    {
@@ -11524,7 +13024,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101ON",
+      "0100OFF"
+     ]
     }
    },
    {
@@ -11534,7 +13038,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101ON",
+      "0100OFF"
+     ]
     }
    },
    {
@@ -11558,7 +13066,12 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101OFF",
+      "0202ON",
+      "0404Flashing"
+     ]
     }
    },
    {
@@ -11568,7 +13081,12 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0504Received",
+      "0500Not received",
+      "0501Not enabled"
+     ]
     }
    },
    {
@@ -11578,7 +13096,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0100Programmed",
+      "0101Virgin"
+     ]
     }
    },
    {
@@ -11588,7 +13110,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202Allowed",
+      "0200Not allowed"
+     ]
     }
    },
    {
@@ -11598,7 +13124,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0701with Lambda sensor",
+      "0702with DPF and separate precatalyser",
+      "0704with DPF and integrated precatalyser",
+      "0707with DPF and Lambda sensor"
+     ]
     }
    },
    {
@@ -11608,7 +13140,20 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00N",
+      "FF011",
+      "FF022",
+      "FF033",
+      "FF044",
+      "FF055",
+      "FF066",
+      "FF077",
+      "FF088",
+      "FF099",
+      "FF0AR"
+     ]
     }
    },
    {
@@ -11618,7 +13163,42 @@
     "spec": {
      "bytes": 9,
      "start": 0,
-     "format": "bitchars"
+     "format": "bitchars",
+     "options": [
+      "FF00A",
+      "FF01B",
+      "FF02C",
+      "FF03D",
+      "FF04E",
+      "FF05F",
+      "FF06G",
+      "FF07H",
+      "FF08I",
+      "FF09K",
+      "FF0AL",
+      "FF0BM",
+      "FF0CN",
+      "FF0DO",
+      "FF0EP",
+      "FF0FR",
+      "FF10S",
+      "FF11T",
+      "FF12U",
+      "FF13V",
+      "FF14W",
+      "FF15X",
+      "FF16Y",
+      "FF17Z",
+      "FF181",
+      "FF192",
+      "FF1A3",
+      "FF1B4",
+      "FF1C5",
+      "FF1D6",
+      "FF1E7",
+      "FF1F8",
+      "FFFF?"
+     ]
     }
    },
    {
@@ -11628,7 +13208,42 @@
     "spec": {
      "bytes": 9,
      "start": 0,
-     "format": "bitchars"
+     "format": "bitchars",
+     "options": [
+      "FF00A",
+      "FF01B",
+      "FF02C",
+      "FF03D",
+      "FF04E",
+      "FF05F",
+      "FF06G",
+      "FF07H",
+      "FF08I",
+      "FF09K",
+      "FF0AL",
+      "FF0BM",
+      "FF0CN",
+      "FF0DO",
+      "FF0EP",
+      "FF0FR",
+      "FF10S",
+      "FF11T",
+      "FF12U",
+      "FF13V",
+      "FF14W",
+      "FF15X",
+      "FF16Y",
+      "FF17Z",
+      "FF181",
+      "FF192",
+      "FF1A3",
+      "FF1B4",
+      "FF1C5",
+      "FF1D6",
+      "FF1E7",
+      "FF1F8",
+      "FFFF?"
+     ]
     }
    },
    {
@@ -11638,7 +13253,42 @@
     "spec": {
      "bytes": 9,
      "start": 0,
-     "format": "bitchars"
+     "format": "bitchars",
+     "options": [
+      "FF00A",
+      "FF01B",
+      "FF02C",
+      "FF03D",
+      "FF04E",
+      "FF05F",
+      "FF06G",
+      "FF07H",
+      "FF08I",
+      "FF09K",
+      "FF0AL",
+      "FF0BM",
+      "FF0CN",
+      "FF0DO",
+      "FF0EP",
+      "FF0FR",
+      "FF10S",
+      "FF11T",
+      "FF12U",
+      "FF13V",
+      "FF14W",
+      "FF15X",
+      "FF16Y",
+      "FF17Z",
+      "FF181",
+      "FF192",
+      "FF1A3",
+      "FF1B4",
+      "FF1C5",
+      "FF1D6",
+      "FF1E7",
+      "FF1F8",
+      "FFFF?"
+     ]
     }
    },
    {
@@ -11648,7 +13298,42 @@
     "spec": {
      "bytes": 9,
      "start": 0,
-     "format": "bitchars"
+     "format": "bitchars",
+     "options": [
+      "FF00A",
+      "FF01B",
+      "FF02C",
+      "FF03D",
+      "FF04E",
+      "FF05F",
+      "FF06G",
+      "FF07H",
+      "FF08I",
+      "FF09K",
+      "FF0AL",
+      "FF0BM",
+      "FF0CN",
+      "FF0DO",
+      "FF0EP",
+      "FF0FR",
+      "FF10S",
+      "FF11T",
+      "FF12U",
+      "FF13V",
+      "FF14W",
+      "FF15X",
+      "FF16Y",
+      "FF17Z",
+      "FF181",
+      "FF192",
+      "FF1A3",
+      "FF1B4",
+      "FF1C5",
+      "FF1D6",
+      "FF1E7",
+      "FF1F8",
+      "FFFF?"
+     ]
     }
    },
    {
@@ -11658,7 +13343,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101ON",
+      "0100OFF"
+     ]
     }
    },
    {
@@ -11668,7 +13357,15 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FE02Resume",
+      "FE08-10",
+      "FE40+10",
+      "FE10-",
+      "FE20+",
+      "FE04No request"
+     ]
     }
    },
    {
@@ -11832,7 +13529,17 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Broken filter",
+      "0202Not clogged",
+      "0404Normal clogging",
+      "0808Filter clogged",
+      "1010Overload",
+      "2020To be regenerated",
+      "4040Regenerat. interrupted",
+      "8080Regenerat. not completed"
+     ]
     }
    },
    {
@@ -11870,7 +13577,14 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101In progress",
+      "0202OK",
+      "0404Filter clogged",
+      "0808Part. filter temp. low",
+      "1010Generic error"
+     ]
     }
    },
    {
@@ -12335,7 +14049,12 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00OFF",
+      "FF01ON",
+      "FF02Not allowed"
+     ]
     }
    },
    {
@@ -12345,7 +14064,12 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0100OFF",
+      "0200OFF",
+      "0101ON"
+     ]
     }
    },
    {
@@ -12355,7 +14079,23 @@
     "spec": {
      "bytes": 2,
      "start": 0,
-     "format": "bitw"
+     "format": "bitw",
+     "options": [
+      "FFFF0000Not present",
+      "02000200Clutch pedal not pressed",
+      "04000400Disabled",
+      "08000800Disabled",
+      "10001000Brake booster",
+      "20002000Speed<10km/h",
+      "40004000Gear lever position",
+      "00010001Engine temperature",
+      "00020002Air system",
+      "00040004Oil temperature",
+      "00100010Regenerat. not completed",
+      "00200020Reverse",
+      "00800080Hill holder",
+      "00000000Incorrect conditions"
+     ]
     }
    },
    {
@@ -12365,7 +14105,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "8000Open",
+      "8080Closed"
+     ]
     }
    },
    {
@@ -12532,7 +14276,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -12583,7 +14333,19 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0F00No request",
+      "0F01P",
+      "0F02R",
+      "0F03N",
+      "0F04D",
+      "0F05L",
+      "0F06Tip",
+      "0F07+",
+      "0F08-",
+      "0F09Error"
+     ]
     }
    },
    {
@@ -12593,7 +14355,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Active",
+      "0100Not active"
+     ]
     }
    },
    {
@@ -12603,7 +14369,12 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0602Active",
+      "0604Active",
+      "0600Not active"
+     ]
     }
    },
    {
@@ -12613,7 +14384,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "8080Active",
+      "8000Not active"
+     ]
     }
    },
    {
@@ -12623,7 +14398,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "4040Active",
+      "4000Not active"
+     ]
     }
    },
    {
@@ -12633,7 +14412,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not present",
+      "FF01Present",
+      "FF02Not defined",
+      "FF03Error"
+     ]
     }
    }
   ],
@@ -12786,7 +14571,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -13172,7 +14963,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101ON",
+      "0100OFF"
+     ]
     }
    },
    {
@@ -13361,7 +15156,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Open",
+      "0100Closed"
+     ]
     }
    },
    {
@@ -13484,7 +15283,23 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF0CLearned",
+      "FF0BLearned",
+      "FF00Not learned",
+      "FF01In progress (1)",
+      "FF02In progress (2)",
+      "FF03In progress (3)",
+      "FF04In progress (4)",
+      "FF05In progress (5)",
+      "FF06In progress (6)",
+      "FF07In progress (7)",
+      "FF08In progress (8)",
+      "FF09In progress (9)",
+      "FF0AIn progress (10)",
+      "0000In progress"
+     ]
     }
    },
    {
@@ -13494,7 +15309,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202Active",
+      "0101Not active"
+     ]
     }
    },
    {
@@ -13530,7 +15349,12 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202Lean",
+      "0404Rich",
+      "0000Not active"
+     ]
     }
    },
    {
@@ -13540,7 +15364,14 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF01Closed loop",
+      "FF02Semi-Closed Loop",
+      "FF03Lean Semi-Closed Loop",
+      "FF04Cold",
+      "FF00Open loop"
+     ]
     }
    },
    {
@@ -13608,7 +15439,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0808Idle",
+      "0000Out of idle"
+     ]
     }
    },
    {
@@ -13618,7 +15453,11 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "4040ON",
+      "4000OFF"
+     ]
     }
    },
    {
@@ -13628,7 +15467,12 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0100Normal",
+      "0202Faulty sensor",
+      "0101Low"
+     ]
     }
    },
    {
@@ -13666,7 +15510,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101ON",
+      "0100OFF"
+     ]
     }
    },
    {
@@ -13807,7 +15655,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF01In progress",
+      "FF02Learned",
+      "FF03Failed",
+      "FF00Not active"
+     ]
     }
    },
    {
@@ -13831,7 +15685,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Pressed",
+      "0100Released"
+     ]
     }
    },
    {
@@ -13841,7 +15699,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "8080Pressed",
+      "8000Released"
+     ]
     }
    },
    {
@@ -13851,7 +15713,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "2020Pressed",
+      "2000Released"
+     ]
     }
    },
    {
@@ -13861,7 +15727,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "1010Pressed",
+      "1000Released"
+     ]
     }
    },
    {
@@ -13871,7 +15741,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0100OFF",
+      "0101ON"
+     ]
     }
    },
    {
@@ -13881,7 +15755,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0E00No request",
+      "0202Restore (button RCL/RES)",
+      "0404Deceleration (button -)",
+      "0808Acceleration (button +)"
+     ]
     }
    },
    {
@@ -13891,7 +15771,19 @@
     "spec": {
      "bytes": 2,
      "start": 0,
-     "format": "bitw"
+     "format": "bitw",
+     "options": [
+      "FFFF0000No Error",
+      "FFFF0001Cruise excessive deceleration",
+      "FFFF0002Pressure on pipe",
+      "FFFF0004Turbo pressure",
+      "FFFF0008Vehicle speed",
+      "FFFF0010RPM sensor",
+      "FFFF0020Clutch switch",
+      "FFFF0040Accelerator pedal",
+      "FFFF0080Brake pedal switch",
+      "00000000Generic error"
+     ]
     }
    },
    {
@@ -13915,7 +15807,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101ON",
+      "0100OFF"
+     ]
     }
    },
    {
@@ -13925,7 +15821,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "2020ON",
+      "2000OFF"
+     ]
     }
    },
    {
@@ -13935,7 +15835,13 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101PWM",
+      "0202Low speed",
+      "0404High speed",
+      "0000OFF"
+     ]
     }
    },
    {
@@ -13987,7 +15893,12 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202Relay error",
+      "0101Active",
+      "0100Not active"
+     ]
     }
    },
    {
@@ -13997,7 +15908,12 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0504Received",
+      "0500Not received",
+      "0501Not enabled"
+     ]
     }
    },
    {
@@ -14007,7 +15923,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202Allowed",
+      "0200Not allowed"
+     ]
     }
    },
    {
@@ -14017,7 +15937,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0100Stop",
+      "0101MAR"
+     ]
     }
    },
    {
@@ -14027,7 +15951,14 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202Manual",
+      "0404Selespeed",
+      "0808DDCT",
+      "1010Automatic",
+      "0000Not learned"
+     ]
     }
    },
    {
@@ -14037,7 +15968,21 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00N",
+      "FF011",
+      "FF022",
+      "FF033",
+      "FF044",
+      "FF055",
+      "FF066",
+      "FF077",
+      "FF088",
+      "FF099",
+      "FF0BRL",
+      "0000R"
+     ]
     }
    },
    {
@@ -14047,7 +15992,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Active",
+      "0100Not active"
+     ]
     }
    },
    {
@@ -14057,7 +16006,16 @@
     "spec": {
      "bytes": 2,
      "start": 0,
-     "format": "bitw"
+     "format": "bitw",
+     "options": [
+      "04000400ON",
+      "00040004Flashing",
+      "10001000Flashing (misfire)",
+      "00400040Flashing (neutral learn)",
+      "01000100Flashing (power limitation)",
+      "00800080ON (safety)",
+      "00000000OFF"
+     ]
     }
    },
    {
@@ -14595,7 +16553,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101ON",
+      "0100OFF"
+     ]
     }
    },
    {
@@ -14784,7 +16746,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Open",
+      "0100Closed"
+     ]
     }
    },
    {
@@ -14893,7 +16859,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202Active",
+      "0101Not active"
+     ]
     }
    },
    {
@@ -14929,7 +16899,14 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF01Closed loop",
+      "FF02Semi-Closed Loop",
+      "FF03Lean Semi-Closed Loop",
+      "FF04Cold",
+      "FF00Open loop"
+     ]
     }
    },
    {
@@ -14997,7 +16974,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0808Idle",
+      "0000Out of idle"
+     ]
     }
    },
    {
@@ -15007,7 +16988,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "4040ON",
+      "4000OFF"
+     ]
     }
    },
    {
@@ -15017,7 +17002,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101ON",
+      "0100OFF"
+     ]
     }
    },
    {
@@ -15158,7 +17147,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Pressed",
+      "0100Released"
+     ]
     }
    },
    {
@@ -15168,7 +17161,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "8080Pressed",
+      "8000Released"
+     ]
     }
    },
    {
@@ -15178,7 +17175,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "2020Pressed",
+      "2000Released"
+     ]
     }
    },
    {
@@ -15188,7 +17189,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "1010Pressed",
+      "1000Released"
+     ]
     }
    },
    {
@@ -15198,7 +17203,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0100OFF",
+      "0101ON"
+     ]
     }
    },
    {
@@ -15208,7 +17217,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0E00No request",
+      "0202Restore (button RCL/RES)",
+      "0404Deceleration (button -)",
+      "0808Acceleration (button +)"
+     ]
     }
    },
    {
@@ -15232,7 +17247,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101ON",
+      "0100OFF"
+     ]
     }
    },
    {
@@ -15242,7 +17261,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "2020ON",
+      "2000OFF"
+     ]
     }
    },
    {
@@ -15294,7 +17317,12 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0504Received",
+      "0500Not received",
+      "0501Not enabled"
+     ]
     }
    },
    {
@@ -15304,7 +17332,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202Allowed",
+      "0200Not allowed"
+     ]
     }
    },
    {
@@ -15314,7 +17346,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0100Stop",
+      "0101MAR"
+     ]
     }
    },
    {
@@ -15324,7 +17360,14 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202Manual",
+      "0404Selespeed",
+      "0808DDCT",
+      "1010Automatic",
+      "0000Not learned"
+     ]
     }
    },
    {
@@ -15334,7 +17377,21 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00N",
+      "FF011",
+      "FF022",
+      "FF033",
+      "FF044",
+      "FF055",
+      "FF066",
+      "FF077",
+      "FF088",
+      "FF099",
+      "FF0BRL",
+      "0000R"
+     ]
     }
    },
    {
@@ -15344,7 +17401,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Active",
+      "0100Not active"
+     ]
     }
    },
    {
@@ -15354,7 +17415,16 @@
     "spec": {
      "bytes": 2,
      "start": 0,
-     "format": "bitw"
+     "format": "bitw",
+     "options": [
+      "04000400ON",
+      "00040004Flashing",
+      "10001000Flashing (misfire)",
+      "00400040Flashing (neutral learn)",
+      "01000100Flashing (power limitation)",
+      "00800080ON (safety)",
+      "00000000OFF"
+     ]
     }
    }
   ],
@@ -15497,7 +17567,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -15548,7 +17624,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Present",
+      "0100Not present"
+     ]
     }
    },
    {
@@ -15558,7 +17638,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202ON",
+      "0200OFF"
+     ]
     }
    },
    {
@@ -15568,7 +17652,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101ON",
+      "0100OFF"
+     ]
     }
    }
   ],
@@ -15711,7 +17799,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -15762,7 +17856,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Present",
+      "0100Not present"
+     ]
     }
    },
    {
@@ -15772,7 +17870,11 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202ON",
+      "0200OFF"
+     ]
     }
    },
    {
@@ -15782,7 +17884,11 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101ON",
+      "0100OFF"
+     ]
     }
    }
   ],
@@ -15915,7 +18021,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -15984,7 +18096,11 @@
     "spec": {
      "bytes": 1,
      "start": 15,
-     "format": "40500"
+     "format": "40500",
+     "options": [
+      "0101Present",
+      "0100Not present"
+     ]
     }
    },
    {
@@ -15994,7 +18110,11 @@
     "spec": {
      "bytes": 1,
      "start": 15,
-     "format": "10500"
+     "format": "10500",
+     "options": [
+      "0202Present",
+      "0200Not present"
+     ]
     }
    },
    {
@@ -16004,7 +18124,11 @@
     "spec": {
      "bytes": 1,
      "start": 15,
-     "format": "60500"
+     "format": "60500",
+     "options": [
+      "0808Present",
+      "0800Not present"
+     ]
     }
    },
    {
@@ -16014,7 +18138,11 @@
     "spec": {
      "bytes": 1,
      "start": 15,
-     "format": "00125"
+     "format": "00125",
+     "options": [
+      "1010Present",
+      "1000Not present"
+     ]
     }
    },
    {
@@ -16024,7 +18152,11 @@
     "spec": {
      "bytes": 1,
      "start": 15,
-     "format": "00125"
+     "format": "00125",
+     "options": [
+      "8080Present",
+      "8000Not present"
+     ]
     }
    },
    {
@@ -16034,7 +18166,11 @@
     "spec": {
      "bytes": 1,
      "start": 14,
-     "format": "00125"
+     "format": "00125",
+     "options": [
+      "0202Present",
+      "0200Not present"
+     ]
     }
    },
    {
@@ -16044,7 +18180,11 @@
     "spec": {
      "bytes": 1,
      "start": 14,
-     "format": "18500"
+     "format": "18500",
+     "options": [
+      "0808Present",
+      "0800Not present"
+     ]
     }
    },
    {
@@ -16054,7 +18194,11 @@
     "spec": {
      "bytes": 1,
      "start": 14,
-     "format": "00125"
+     "format": "00125",
+     "options": [
+      "1010Present",
+      "1000Not present"
+     ]
     }
    },
    {
@@ -16064,7 +18208,11 @@
     "spec": {
      "bytes": 1,
      "start": 14,
-     "format": "00125"
+     "format": "00125",
+     "options": [
+      "4040Present",
+      "4000Not present"
+     ]
     }
    },
    {
@@ -16074,7 +18222,11 @@
     "spec": {
      "bytes": 1,
      "start": 14,
-     "format": "00125"
+     "format": "00125",
+     "options": [
+      "8080Present",
+      "8000Not present"
+     ]
     }
    },
    {
@@ -16084,7 +18236,11 @@
     "spec": {
      "bytes": 1,
      "start": 13,
-     "format": "00125"
+     "format": "00125",
+     "options": [
+      "0101Present",
+      "0100Not present"
+     ]
     }
    },
    {
@@ -16094,7 +18250,11 @@
     "spec": {
      "bytes": 1,
      "start": 13,
-     "format": "00125"
+     "format": "00125",
+     "options": [
+      "0808Present",
+      "0800Not present"
+     ]
     }
    },
    {
@@ -16104,7 +18264,11 @@
     "spec": {
      "bytes": 1,
      "start": 13,
-     "format": "1F500"
+     "format": "1F500",
+     "options": [
+      "4040Present",
+      "4000Not present"
+     ]
     }
    },
    {
@@ -16114,7 +18278,11 @@
     "spec": {
      "bytes": 1,
      "start": 12,
-     "format": "00125"
+     "format": "00125",
+     "options": [
+      "0202Present",
+      "0200Not present"
+     ]
     }
    },
    {
@@ -16124,7 +18292,11 @@
     "spec": {
      "bytes": 1,
      "start": 12,
-     "format": "19500"
+     "format": "19500",
+     "options": [
+      "1010Present",
+      "1000Not present"
+     ]
     }
    },
    {
@@ -16134,7 +18306,11 @@
     "spec": {
      "bytes": 1,
      "start": 11,
-     "format": "C6500"
+     "format": "C6500",
+     "options": [
+      "0808Present",
+      "0800Not present"
+     ]
     }
    },
    {
@@ -16144,7 +18320,11 @@
     "spec": {
      "bytes": 1,
      "start": 11,
-     "format": "11500"
+     "format": "11500",
+     "options": [
+      "8080Present",
+      "8000Not present"
+     ]
     }
    },
    {
@@ -16154,7 +18334,11 @@
     "spec": {
      "bytes": 1,
      "start": 10,
-     "format": "01500"
+     "format": "01500",
+     "options": [
+      "0202Present",
+      "0200Not present"
+     ]
     }
    },
    {
@@ -16164,7 +18348,11 @@
     "spec": {
      "bytes": 1,
      "start": 8,
-     "format": "C3500"
+     "format": "C3500",
+     "options": [
+      "0101Present",
+      "0100Not present"
+     ]
     }
    },
    {
@@ -16174,7 +18362,11 @@
     "spec": {
      "bytes": 1,
      "start": 8,
-     "format": "2A500"
+     "format": "2A500",
+     "options": [
+      "0202Present",
+      "0200Not present"
+     ]
     }
    },
    {
@@ -16184,7 +18376,11 @@
     "spec": {
      "bytes": 1,
      "start": 7,
-     "format": "42500"
+     "format": "42500",
+     "options": [
+      "0101Present",
+      "0100Not present"
+     ]
     }
    },
    {
@@ -16194,7 +18390,11 @@
     "spec": {
      "bytes": 1,
      "start": 7,
-     "format": "C7500"
+     "format": "C7500",
+     "options": [
+      "0202Present",
+      "0200Not present"
+     ]
     }
    },
    {
@@ -16204,7 +18404,11 @@
     "spec": {
      "bytes": 1,
      "start": 7,
-     "format": "43500"
+     "format": "43500",
+     "options": [
+      "0404Present",
+      "0400Not present"
+     ]
     }
    },
    {
@@ -16214,7 +18418,11 @@
     "spec": {
      "bytes": 1,
      "start": 7,
-     "format": "1A500"
+     "format": "1A500",
+     "options": [
+      "0808Present",
+      "0800Not present"
+     ]
     }
    },
    {
@@ -16224,7 +18432,11 @@
     "spec": {
      "bytes": 1,
      "start": 7,
-     "format": "44500"
+     "format": "44500",
+     "options": [
+      "4040Present",
+      "4000Not present"
+     ]
     }
    },
    {
@@ -16234,7 +18446,11 @@
     "spec": {
      "bytes": 1,
      "start": 7,
-     "format": "45500"
+     "format": "45500",
+     "options": [
+      "8080Present",
+      "8000Not present"
+     ]
     }
    },
    {
@@ -16244,7 +18460,11 @@
     "spec": {
      "bytes": 1,
      "start": 6,
-     "format": "47500"
+     "format": "47500",
+     "options": [
+      "0202Present",
+      "0202Not present"
+     ]
     }
    },
    {
@@ -16254,7 +18474,11 @@
     "spec": {
      "bytes": 1,
      "start": 6,
-     "format": "48500"
+     "format": "48500",
+     "options": [
+      "0404Present",
+      "0400Not present"
+     ]
     }
    },
    {
@@ -16264,7 +18488,11 @@
     "spec": {
      "bytes": 1,
      "start": 6,
-     "format": "00500"
+     "format": "00500",
+     "options": [
+      "0808Present",
+      "0800Not present"
+     ]
     }
    },
    {
@@ -16274,7 +18502,11 @@
     "spec": {
      "bytes": 1,
      "start": 6,
-     "format": "71500"
+     "format": "71500",
+     "options": [
+      "1010Present",
+      "1000Not present"
+     ]
     }
    },
    {
@@ -16284,7 +18516,11 @@
     "spec": {
      "bytes": 1,
      "start": 6,
-     "format": "58500"
+     "format": "58500",
+     "options": [
+      "4040Present",
+      "4000Not present"
+     ]
     }
    },
    {
@@ -16294,7 +18530,11 @@
     "spec": {
      "bytes": 1,
      "start": 5,
-     "format": "00500"
+     "format": "00500",
+     "options": [
+      "4040Present",
+      "4000Not present"
+     ]
     }
    },
    {
@@ -16304,7 +18544,11 @@
     "spec": {
      "bytes": 1,
      "start": 3,
-     "format": "4B500"
+     "format": "4B500",
+     "options": [
+      "0404Present",
+      "0400Not present"
+     ]
     }
    },
    {
@@ -16314,7 +18558,11 @@
     "spec": {
      "bytes": 1,
      "start": 2,
-     "format": "00500"
+     "format": "00500",
+     "options": [
+      "0202Present",
+      "0200Not present"
+     ]
     }
    },
    {
@@ -16324,7 +18572,11 @@
     "spec": {
      "bytes": 1,
      "start": 2,
-     "format": "17500"
+     "format": "17500",
+     "options": [
+      "0808Present",
+      "0800Not present"
+     ]
     }
    },
    {
@@ -16334,7 +18586,11 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "CB500"
+     "format": "CB500",
+     "options": [
+      "0101Present",
+      "0100Not present"
+     ]
     }
    },
    {
@@ -16344,7 +18600,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "50500"
+     "format": "50500",
+     "options": [
+      "2020Present",
+      "2000Not present"
+     ]
     }
    },
    {
@@ -16354,7 +18614,11 @@
     "spec": {
      "bytes": 1,
      "start": 15,
-     "format": "82125"
+     "format": "82125",
+     "options": [
+      "2020Present",
+      "2000Not present"
+     ]
     }
    },
    {
@@ -16364,7 +18628,11 @@
     "spec": {
      "bytes": 1,
      "start": 14,
-     "format": "C8125"
+     "format": "C8125",
+     "options": [
+      "0101Present",
+      "0100Not present"
+     ]
     }
    },
    {
@@ -16374,7 +18642,11 @@
     "spec": {
      "bytes": 1,
      "start": 14,
-     "format": "98125"
+     "format": "98125",
+     "options": [
+      "0404Present",
+      "0400Not present"
+     ]
     }
    },
    {
@@ -16384,7 +18656,11 @@
     "spec": {
      "bytes": 1,
      "start": 14,
-     "format": "2B125"
+     "format": "2B125",
+     "options": [
+      "2020Present",
+      "2000Not present"
+     ]
     }
    },
    {
@@ -16394,7 +18670,11 @@
     "spec": {
      "bytes": 1,
      "start": 13,
-     "format": "C9125"
+     "format": "C9125",
+     "options": [
+      "0202Present",
+      "0200Not present"
+     ]
     }
    },
    {
@@ -16404,7 +18684,11 @@
     "spec": {
      "bytes": 1,
      "start": 13,
-     "format": "A2125"
+     "format": "A2125",
+     "options": [
+      "0404Present",
+      "0400Not present"
+     ]
     }
    },
    {
@@ -16414,7 +18698,11 @@
     "spec": {
      "bytes": 1,
      "start": 13,
-     "format": "C5125"
+     "format": "C5125",
+     "options": [
+      "1010Present",
+      "1000Not present"
+     ]
     }
    },
    {
@@ -16424,7 +18712,11 @@
     "spec": {
      "bytes": 1,
      "start": 13,
-     "format": "A3125"
+     "format": "A3125",
+     "options": [
+      "8080Present",
+      "8000Not present"
+     ]
     }
    },
    {
@@ -16434,7 +18726,11 @@
     "spec": {
      "bytes": 1,
      "start": 12,
-     "format": "6A125"
+     "format": "6A125",
+     "options": [
+      "8080Present",
+      "8000Not present"
+     ]
     }
    },
    {
@@ -16444,7 +18740,11 @@
     "spec": {
      "bytes": 1,
      "start": 11,
-     "format": "61125"
+     "format": "61125",
+     "options": [
+      "0202Present",
+      "0200Not present"
+     ]
     }
    },
    {
@@ -16454,7 +18754,11 @@
     "spec": {
      "bytes": 1,
      "start": 11,
-     "format": "99125"
+     "format": "99125",
+     "options": [
+      "0404Present",
+      "0400Not present"
+     ]
     }
    },
    {
@@ -16464,7 +18768,11 @@
     "spec": {
      "bytes": 1,
      "start": 11,
-     "format": "87125"
+     "format": "87125",
+     "options": [
+      "1010Present",
+      "1000Not present"
+     ]
     }
    },
    {
@@ -16474,7 +18782,11 @@
     "spec": {
      "bytes": 1,
      "start": 11,
-     "format": "63125"
+     "format": "63125",
+     "options": [
+      "4040Present",
+      "4000Not present"
+     ]
     }
    },
    {
@@ -16484,7 +18796,11 @@
     "spec": {
      "bytes": 1,
      "start": 10,
-     "format": "99125"
+     "format": "99125",
+     "options": [
+      "0101Present",
+      "0100Not present"
+     ]
     }
    },
    {
@@ -16494,7 +18810,11 @@
     "spec": {
      "bytes": 1,
      "start": 10,
-     "format": "81125"
+     "format": "81125",
+     "options": [
+      "2020Present",
+      "2000Not present"
+     ]
     }
    },
    {
@@ -16504,7 +18824,11 @@
     "spec": {
      "bytes": 1,
      "start": 10,
-     "format": "83125"
+     "format": "83125",
+     "options": [
+      "4040Present",
+      "4000Not present"
+     ]
     }
    },
    {
@@ -16514,7 +18838,11 @@
     "spec": {
      "bytes": 1,
      "start": 10,
-     "format": "84125"
+     "format": "84125",
+     "options": [
+      "8080Present",
+      "8000Not present"
+     ]
     }
    },
    {
@@ -16524,7 +18852,11 @@
     "spec": {
      "bytes": 1,
      "start": 9,
-     "format": "C2125"
+     "format": "C2125",
+     "options": [
+      "0101Present",
+      "0100Not present"
+     ]
     }
    },
    {
@@ -16534,7 +18866,11 @@
     "spec": {
      "bytes": 1,
      "start": 9,
-     "format": "85125"
+     "format": "85125",
+     "options": [
+      "0404Present",
+      "0400Not present"
+     ]
     }
    },
    {
@@ -16544,7 +18880,11 @@
     "spec": {
      "bytes": 1,
      "start": 9,
-     "format": "62125"
+     "format": "62125",
+     "options": [
+      "0808Present",
+      "0800Not present"
+     ]
     }
    },
    {
@@ -16554,7 +18894,11 @@
     "spec": {
      "bytes": 1,
      "start": 9,
-     "format": "65125"
+     "format": "65125",
+     "options": [
+      "1010Present",
+      "1000Not present"
+     ]
     }
    },
    {
@@ -16564,7 +18908,11 @@
     "spec": {
      "bytes": 1,
      "start": 9,
-     "format": "86125"
+     "format": "86125",
+     "options": [
+      "2020Present",
+      "2000Not present"
+     ]
     }
    },
    {
@@ -16574,7 +18922,11 @@
     "spec": {
      "bytes": 1,
      "start": 8,
-     "format": "54125"
+     "format": "54125",
+     "options": [
+      "0404Present",
+      "0400Not present"
+     ]
     }
    },
    {
@@ -16584,7 +18936,11 @@
     "spec": {
      "bytes": 1,
      "start": 8,
-     "format": "55125"
+     "format": "55125",
+     "options": [
+      "0808Present",
+      "0800Not present"
+     ]
     }
    },
    {
@@ -16594,7 +18950,11 @@
     "spec": {
      "bytes": 1,
      "start": 8,
-     "format": "D0125"
+     "format": "D0125",
+     "options": [
+      "2020Present",
+      "2000Not present"
+     ]
     }
    },
    {
@@ -16604,7 +18964,11 @@
     "spec": {
      "bytes": 1,
      "start": 8,
-     "format": "4A125"
+     "format": "4A125",
+     "options": [
+      "8080Present",
+      "8000Not present"
+     ]
     }
    },
    {
@@ -16614,7 +18978,11 @@
     "spec": {
      "bytes": 1,
      "start": 7,
-     "format": "6F125"
+     "format": "6F125",
+     "options": [
+      "1010Present",
+      "1000Not present"
+     ]
     }
    },
    {
@@ -16624,7 +18992,11 @@
     "spec": {
      "bytes": 1,
      "start": 7,
-     "format": "41125"
+     "format": "41125",
+     "options": [
+      "2020Present",
+      "2000Not present"
+     ]
     }
    },
    {
@@ -16634,7 +19006,11 @@
     "spec": {
      "bytes": 1,
      "start": 5,
-     "format": "66125"
+     "format": "66125",
+     "options": [
+      "0202Present",
+      "0200Not present"
+     ]
     }
    },
    {
@@ -16644,7 +19020,11 @@
     "spec": {
      "bytes": 1,
      "start": 3,
-     "format": "8A125"
+     "format": "8A125",
+     "options": [
+      "8080Present",
+      "8000Not present"
+     ]
     }
    },
    {
@@ -16654,7 +19034,11 @@
     "spec": {
      "bytes": 1,
      "start": 2,
-     "format": "8B125"
+     "format": "8B125",
+     "options": [
+      "4040Present",
+      "4000Not present"
+     ]
     }
    },
    {
@@ -16664,7 +19048,11 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "90125"
+     "format": "90125",
+     "options": [
+      "0808Present",
+      "0800Not present"
+     ]
     }
    },
    {
@@ -16674,7 +19062,11 @@
     "spec": {
      "bytes": 1,
      "start": 15,
-     "format": "30500x"
+     "format": "30500x",
+     "options": [
+      "0404Present",
+      "0400Not present"
+     ]
     }
    },
    {
@@ -16684,7 +19076,11 @@
     "spec": {
      "bytes": 1,
      "start": 15,
-     "format": "28500x"
+     "format": "28500x",
+     "options": [
+      "4040Present",
+      "4000Not present"
+     ]
     }
    },
    {
@@ -16694,7 +19090,11 @@
     "spec": {
      "bytes": 1,
      "start": 13,
-     "format": "C4500x"
+     "format": "C4500x",
+     "options": [
+      "2020Present",
+      "2000Not present"
+     ]
     }
    },
    {
@@ -16704,7 +19104,11 @@
     "spec": {
      "bytes": 1,
      "start": 12,
-     "format": "A0500x"
+     "format": "A0500x",
+     "options": [
+      "0101Present",
+      "0100Not present"
+     ]
     }
    },
    {
@@ -16714,7 +19118,11 @@
     "spec": {
      "bytes": 1,
      "start": 12,
-     "format": "C0500x"
+     "format": "C0500x",
+     "options": [
+      "0404Present",
+      "0400Not present"
+     ]
     }
    },
    {
@@ -16724,7 +19132,11 @@
     "spec": {
      "bytes": 1,
      "start": 12,
-     "format": "3B500x"
+     "format": "3B500x",
+     "options": [
+      "0808Present",
+      "0800Not present"
+     ]
     }
    },
    {
@@ -16734,7 +19146,11 @@
     "spec": {
      "bytes": 1,
      "start": 12,
-     "format": "70500x"
+     "format": "70500x",
+     "options": [
+      "2020Present",
+      "2000Not present"
+     ]
     }
    },
    {
@@ -16744,7 +19160,11 @@
     "spec": {
      "bytes": 1,
      "start": 12,
-     "format": "31500x"
+     "format": "31500x",
+     "options": [
+      "4040Present",
+      "4000Not present"
+     ]
     }
    },
    {
@@ -16754,7 +19174,11 @@
     "spec": {
      "bytes": 1,
      "start": 11,
-     "format": "38500x"
+     "format": "38500x",
+     "options": [
+      "2020Present",
+      "2000Not present"
+     ]
     }
    },
    {
@@ -16764,7 +19188,11 @@
     "spec": {
      "bytes": 1,
      "start": 11,
-     "format": "A1500x"
+     "format": "A1500x",
+     "options": [
+      "0101Present",
+      "0100Not present"
+     ]
     }
    },
    {
@@ -16774,7 +19202,11 @@
     "spec": {
      "bytes": 1,
      "start": 10,
-     "format": "39500x"
+     "format": "39500x",
+     "options": [
+      "0404Present",
+      "0400Not present"
+     ]
     }
    },
    {
@@ -16784,7 +19216,11 @@
     "spec": {
      "bytes": 1,
      "start": 10,
-     "format": "64500x"
+     "format": "64500x",
+     "options": [
+      "0808Present",
+      "0800Not present"
+     ]
     }
    },
    {
@@ -16794,7 +19230,11 @@
     "spec": {
      "bytes": 1,
      "start": 10,
-     "format": "3A500x"
+     "format": "3A500x",
+     "options": [
+      "1010Present",
+      "1000Not present"
+     ]
     }
    },
    {
@@ -16804,7 +19244,11 @@
     "spec": {
      "bytes": 1,
      "start": 9,
-     "format": "C1500x"
+     "format": "C1500x",
+     "options": [
+      "0202Present",
+      "0200Not present"
+     ]
     }
    },
    {
@@ -16814,7 +19258,11 @@
     "spec": {
      "bytes": 1,
      "start": 9,
-     "format": "29500x"
+     "format": "29500x",
+     "options": [
+      "8080Present",
+      "8000Not present"
+     ]
     }
    },
    {
@@ -16824,7 +19272,11 @@
     "spec": {
      "bytes": 1,
      "start": 3,
-     "format": "20500x"
+     "format": "20500x",
+     "options": [
+      "4040Present",
+      "4000Not present"
+     ]
     }
    },
    {
@@ -16834,7 +19286,11 @@
     "spec": {
      "bytes": 1,
      "start": 2,
-     "format": "21500x"
+     "format": "21500x",
+     "options": [
+      "0101Present",
+      "0100Not present"
+     ]
     }
    },
    {
@@ -16844,7 +19300,11 @@
     "spec": {
      "bytes": 1,
      "start": 2,
-     "format": "3E500x"
+     "format": "3E500x",
+     "options": [
+      "1010Present",
+      "1000Not present"
+     ]
     }
    },
    {
@@ -16854,7 +19314,11 @@
     "spec": {
      "bytes": 1,
      "start": 2,
-     "format": "3F500x"
+     "format": "3F500x",
+     "options": [
+      "2020Present",
+      "2000Not present"
+     ]
     }
    }
   ],
@@ -16997,7 +19461,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -17090,7 +19560,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0202Open",
+      "0200Closed"
+     ]
     }
    },
    {
@@ -17100,7 +19574,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0404Open",
+      "0400Closed"
+     ]
     }
    },
    {
@@ -17110,7 +19588,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0808Open",
+      "0800Closed"
+     ]
     }
    },
    {
@@ -17120,7 +19602,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "1010Open",
+      "1000Closed"
+     ]
     }
    },
    {
@@ -17130,7 +19616,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Open",
+      "0100Closed"
+     ]
     }
    },
    {
@@ -17166,7 +19656,18 @@
     "spec": {
      "bytes": 1,
      "start": 3,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF011",
+      "FF022",
+      "FF033",
+      "FF044",
+      "FF055",
+      "FF066",
+      "FF077",
+      "FF088",
+      "FF00Not available"
+     ]
     }
    },
    {
@@ -17176,7 +19677,19 @@
     "spec": {
      "bytes": 1,
      "start": 4,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Unlock",
+      "FF01Lock",
+      "FF02Panic",
+      "FF03Boot",
+      "FF04Right sliding door",
+      "FF05Left sliding door",
+      "FF06Lock+Unlock",
+      "FF08Lock+Panic",
+      "FF11Remote Start",
+      "FF0ANo request"
+     ]
     }
    },
    {
@@ -17200,7 +19713,14 @@
     "spec": {
      "bytes": 1,
      "start": 3,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Initialization",
+      "FF03ACC",
+      "FF04Run",
+      "FF05Start",
+      "FF01Unknown"
+     ]
     }
    },
    {
@@ -17210,7 +19730,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Virgin",
+      "FF01Factory",
+      "FF02Spare parts",
+      "FF03Supplier"
+     ]
     }
    },
    {
@@ -17256,7 +19782,17 @@
     "spec": {
      "bytes": 1,
      "start": 7,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "01011",
+      "02022",
+      "04043",
+      "08084",
+      "10105",
+      "20206",
+      "40407",
+      "0000None"
+     ]
     }
    },
    {
@@ -17459,7 +19995,13 @@
     "spec": {
      "bytes": 1,
      "start": 6,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0C00Battery OK, Not synchronized",
+      "0C04Battery low, Not synchronized",
+      "0C08Battery OK, Synchronized",
+      "0C0CBattery low, Synchronized"
+     ]
     }
    },
    {
@@ -17469,7 +20011,13 @@
     "spec": {
      "bytes": 1,
      "start": 6,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0C00Battery OK, Not synchronized",
+      "0C04Battery low, Not synchronized",
+      "0C08Battery OK, Synchronized",
+      "0C0CBattery low, Synchronized"
+     ]
     }
    },
    {
@@ -17479,7 +20027,13 @@
     "spec": {
      "bytes": 1,
      "start": 6,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0C00Battery OK, Not synchronized",
+      "0C04Battery low, Not synchronized",
+      "0C08Battery OK, Synchronized",
+      "0C0CBattery low, Synchronized"
+     ]
     }
    },
    {
@@ -17489,7 +20043,13 @@
     "spec": {
      "bytes": 1,
      "start": 6,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0C00Battery OK, Not synchronized",
+      "0C04Battery low, Not synchronized",
+      "0C08Battery OK, Synchronized",
+      "0C0CBattery low, Synchronized"
+     ]
     }
    },
    {
@@ -17499,7 +20059,17 @@
     "spec": {
      "bytes": 1,
      "start": 7,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FCCCContinental, 315MHz, 7 bar",
+      "FCC0Continental, 315MHz, 3.5 bar",
+      "FCDCContinental, 433.92MHz, 7 bar",
+      "FCD0Continental, 433.92MHz, 3.5 bar",
+      "FC0CSchrader, 315MHz, 7 bar",
+      "FC00Schrader, 315MHz, 3.5 bar",
+      "FC1CSchrader, 433.92MHz, 7 bar",
+      "FC10Schrader, 433.92MHz, 3.5 bar"
+     ]
     }
    },
    {
@@ -17509,7 +20079,17 @@
     "spec": {
      "bytes": 1,
      "start": 7,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FCCCContinental, 315MHz, 7 bar",
+      "FCC0Continental, 315MHz, 3.5 bar",
+      "FCDCContinental, 433.92MHz, 7 bar",
+      "FCD0Continental, 433.92MHz, 3.5 bar",
+      "FC0CSchrader, 315MHz, 7 bar",
+      "FC00Schrader, 315MHz, 3.5 bar",
+      "FC1CSchrader, 433.92MHz, 7 bar",
+      "FC10Schrader, 433.92MHz, 3.5 bar"
+     ]
     }
    },
    {
@@ -17519,7 +20099,17 @@
     "spec": {
      "bytes": 1,
      "start": 7,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FCCCContinental, 315MHz, 7 bar",
+      "FCC0Continental, 315MHz, 3.5 bar",
+      "FCDCContinental, 433.92MHz, 7 bar",
+      "FCD0Continental, 433.92MHz, 3.5 bar",
+      "FC0CSchrader, 315MHz, 7 bar",
+      "FC00Schrader, 315MHz, 3.5 bar",
+      "FC1CSchrader, 433.92MHz, 7 bar",
+      "FC10Schrader, 433.92MHz, 3.5 bar"
+     ]
     }
    },
    {
@@ -17529,7 +20119,17 @@
     "spec": {
      "bytes": 1,
      "start": 7,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FCCCContinental, 315MHz, 7 bar",
+      "FCC0Continental, 315MHz, 3.5 bar",
+      "FCDCContinental, 433.92MHz, 7 bar",
+      "FCD0Continental, 433.92MHz, 3.5 bar",
+      "FC0CSchrader, 315MHz, 7 bar",
+      "FC00Schrader, 315MHz, 3.5 bar",
+      "FC1CSchrader, 433.92MHz, 7 bar",
+      "FC10Schrader, 433.92MHz, 3.5 bar"
+     ]
     }
    }
   ],
@@ -17672,7 +20272,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -17975,7 +20581,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -18054,7 +20666,15 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Init",
+      "FF01Normal",
+      "FF02Error",
+      "FF03Protection",
+      "FF04Adaptation/Shutdown",
+      "FF05Unknown"
+     ]
     }
    },
    {
@@ -18415,7 +21035,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
     }
    },
    {
@@ -18578,7 +21204,13 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0303Open",
+      "0300Closed",
+      "0301Slipping",
+      "0302Closing"
+     ]
     }
    },
    {
@@ -18588,7 +21220,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0300Active",
+      "0303Not active"
+     ]
     }
    },
    {
@@ -18655,7 +21291,20 @@
     "spec": {
      "bytes": 1,
      "start": 1,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "1E00Not available",
+      "1E02P",
+      "1E04R",
+      "1E06N",
+      "1E08D",
+      "1E0AL",
+      "1E0CTip",
+      "1E0E+",
+      "1E10-",
+      "1E12Sport",
+      "1E1EUnknown"
+     ]
     }
    },
    {
@@ -18665,7 +21314,22 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0F00Neutral",
+      "0F011",
+      "0F022",
+      "0F033",
+      "0F044",
+      "0F055",
+      "0F066",
+      "0F077",
+      "0F088",
+      "0F099",
+      "0F0DParking",
+      "0F0EReverse",
+      "0F0FNot available"
+     ]
     }
    },
    {
@@ -18675,7 +21339,11 @@
     "spec": {
      "bytes": 1,
      "start": 0,
-     "format": "bits"
+     "format": "bits",
+     "options": [
+      "0101Pressed",
+      "0100Released"
+     ]
     }
    },
    {

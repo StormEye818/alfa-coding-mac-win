@@ -262,12 +262,20 @@ export class Tool {
         if (!item) throw new Error('未找到功能: ' + name);
         if (item.security && item.security.level === 'server') throw new Error('该功能需服务器密钥，不支持');
         await this.session.runOn(item.module, async () => {
+            // ⚠️ 与 app.js runCommandString 同口径（2026-10-16 审计 ★3）。
+            //    此前 `if (len > 7) continue` 把多帧 UDS + FE/FF 全静默丢弃，
+            //    且 00 模板会发空请求上总线 —— 回归全绿是假象。
             for (const part of String(item.commands).split(',')) {
-                const raw = part.trim();
-                if (raw.length < 4) continue;
+                const raw = part.trim().replace(/\s/g, '');
+                if (raw.length < 2) continue;
                 const bytes = hexToBytes(raw);
-                const len = bytes[0];
-                if (len > 7) continue;
+                if (!bytes.length) continue;
+                const tag = bytes[0];
+                if (tag === 0xFE) continue;                 // 步进/循环计数：不发送
+                if (tag === 0xFF) continue;                 // 延时：模拟车不等
+                if (tag === 0x00) continue;                 // 期望响应模板：不发送
+                const len = tag;
+                if (len < 1 || bytes.length < 1 + len) continue;
                 await this.link.request(bytes.slice(1, 1 + len));
             }
         });

@@ -105,10 +105,7 @@ class ProxiBlock {
         if (!data3 || data3.length === 0) {
             return { merged: false, changed: 0, reason: 'DATA3 为空' };
         }
-        const allZero = data3.every((b) => b === 0);
-        if (allZero) {
-            return { merged: false, changed: 0, reason: 'DATA3 全零（疑似占位数据），跳过合并' };
-        }
+        // MES 对 DATA3 不做全零特判，按原样合并；这里也不特判，保持逐字节一致。
         let srcStart;   // DATA3 起点
         let len;
         if (data3.length >= 64) {

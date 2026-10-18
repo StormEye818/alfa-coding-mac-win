@@ -1951,15 +1951,21 @@ async function mergeRwUserEntry(item, picked) {
   const wpay = wraw.slice(1, 1 + wlen);
   if (wpay[0] !== 0x2e || wpay.length < 4) return null;                    // 次条=写模板
   const did = (wpay[1] << 8) | wpay[2];
-  let base = null;
-  try { base = await state.uds.readDataByIdentifier(did); } catch { /* 读不回就以模板为基线 */ }
+  // MES `_0093_008E` 读回长度 <4 就直接失败，不会拿全零模板继续写。
+  let base;
+  try {
+    base = await state.uds.readDataByIdentifier(did);
+  } catch (e) {
+    throw new Error('读改写前置读取失败：' + e.message);
+  }
   const merged = mergeWriteField(wpay.slice(3), base, picked, item);
   const np = new Uint8Array(4 + merged.length);
   np[0] = 3 + merged.length;
   np[1] = 0x2e; np[2] = wpay[1]; np[3] = wpay[2];
   np.set(merged, 4);
   const hex = Array.from(np).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join('');
-  return [parts[0], hex, ...parts.slice(2)].join(',');
+  // MES `_0093_008E` 只读 commands[0] + 写 commands[1]；后面的 commands[2..] 不发送。
+  return [parts[0], hex].join(',');
 }
 
 let fnAbort = false;   // 执行中取消标志（中止→发最后一条命令恢复，标准语义）
@@ -1990,9 +1996,18 @@ async function runCommandString(cmdStr, item) {
   //   1 条命令 → 基准 + 4×基准（2s → 10s）
   //   2 条命令 → 基准 + 3×基准（2s → 8s），加在两条之间
   //   ≥3 条    → 命令之间只等基准（2s）
-  const gapMs = parts.length === 1 ? interMs * 5 : parts.length === 2 ? interMs * 4 : interMs;
+  const rwUserEntry = flags.includes('RWUSERENTRY');
+  const gapMs = rwUserEntry ? 1000 : (parts.length === 1 ? interMs * 5 : parts.length === 2 ? interMs * 4 : interMs);
+  // RWUSERENTRY：MES `_0093_008E` 先在本地读一次、合并，然后 Sleep(1000) → 2E，
+  // 成功后 Sleep(1000)；读帧已经由 mergeRwUserEntry 发出，这里从写帧开始。
+  const startIndex = (item && item._rwReadDone) ? 1 : 0;
+  if (item) item._rwReadDone = false;
+  if (rwUserEntry && startIndex === 1) {
+    await new Promise((r) => setTimeout(r, 1000));
+  }
   let realIndex = 0;      // 真实 UDS 命令序号（FE/FF/00 不算）
   let positive = 0;       // 正响应计数：至少一条正响应才算执行成功
+  let funcPollStarted = false;
 
   // 中止/取消语义：下发最后一条真实 UDS 作恢复（回到安全态）
   let lastReal = null;
@@ -2017,7 +2032,7 @@ async function runCommandString(cmdStr, item) {
     return true;
   };
 
-  for (let i = 0; i < parts.length; i++) {
+  for (let i = startIndex; i < parts.length; i++) {
     if (fnAbort) {
       sent.push('[执行中止→恢复]');
       await restoreLast();
@@ -2075,11 +2090,9 @@ async function runCommandString(cmdStr, item) {
     const hex = Array.from(payload).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ')
       + (len > 7 ? '（多帧）' : '');
     let resp = null;
-    // 特殊功能里的 2E 可能发生在 1~10 秒的沉降/延时之后；ECU 的 S3 扩展会话可能已经掉了。
-    // 写前补一次 10 03，失败不阻塞（由 2E 自己报 NRC）。
-    if (svc === 0x2e && state.uds) {
-      await state.uds.enterExtendedSession().catch(() => {});
-    }
+    // 注意：MES 的 CAN 命令执行器在这里不额外发 10 03；普通 2E 由调用方的会话负责，
+    // PROXI 写入则由 writeDataByIdentifier 自己进扩展会话。不要在这里加“保险”，否则
+    // 会多出一帧 MES 没有的 10 03，破坏逐帧对齐。
     try {
       resp = await state.link.request(payload, timeoutMs ? { timeoutMs } : undefined);
     } catch (e) {
@@ -2089,8 +2102,9 @@ async function runCommandString(cmdStr, item) {
       // 旧实现把后续命令的 NRC 也 throw，导致多段流程（喷油嘴编码等）在第一条读之后
       // 因某条例程被拒而整条中断，与车端已验证行为不一致。
       const empty = e && (e.code === 'NO_DATA' || e.code === 'BAD_FRAME');
-      if (empty && (!firstReal || execAny)) {
-        sent.push(`${hex} → （无应答${firstReal ? '，EXECANY 允许' : ''}，继续）`);
+      // MES 的 FUNC 分支不看首条响应，直接进入 31 03 轮询；其它分支首条空应答才失败
+      if (empty && (funcPoll || !firstReal || execAny)) {
+        sent.push(`${hex} → （无应答，继续）`);
       } else {
         throw e;
       }
@@ -2102,18 +2116,18 @@ async function runCommandString(cmdStr, item) {
       }
       const nrc = resp[2];
       sent.push(`${hex} → ✗ NRC 0x${nrc.toString(16).toUpperCase()}（${NRC[nrc] || '未知'}）`);
-      const busyNrc = nrc === 0x21 || nrc === 0x23 || nrc === 0x78;
-      // 首条命令遇忙（FUNC 例程）允许继续轮询；其余首条 NRC / 非 FUNC 首条一律失败
-      if (firstReal && !(funcPoll && busyNrc)) {
+      // MES 的 FUNC 分支不看首条 NRC，直接轮询；普通分支首条 NRC 仍失败。
+      if (firstReal && !funcPoll) {
         throw new Error(`命令被拒：NRC 0x${nrc.toString(16).toUpperCase()}（${NRC[nrc] || '未知'}）`);
       }
-    } else if (resp) {
+    } else if (resp && resp.length > 1) {
       sent.push(hex + ' → ✓');
       positive++;
     }
     // FUNC：例程类（31 01 启动）按车端已验证行为**轮询 31 03** 直到 ECU 不再回「忙」
     // （：500ms 一次，NRC 0x21/0x23 继续，最多 1800 次）
     if (svc === 0x31 && funcPoll) {
+      funcPollStarted = true;
       const id = payload.slice(2);                    // 例程号（2~3 字节，原样带回）
       const statusReq = new Uint8Array(2 + id.length);
       statusReq[0] = 0x31; statusReq[1] = 0x03; statusReq.set(id, 2);
@@ -2128,8 +2142,9 @@ async function runCommandString(cmdStr, item) {
           break;
         }
         polls++;
-        if (st && st[0] !== 0x7f) positive++;
-        if (!(st && st[0] === 0x7f && (st[2] === 0x21 || st[2] === 0x23))) {
+        // MES 的响应缓冲是 [长度][服务][子功能][NRC]；协议层已去长度前缀，
+        // 所以 NRC 在 st[3]（旧实现看 st[2] 会把 0x03 当 NRC，第一次忙就停止）。
+        if (!(st && st.length >= 4 && st[0] === 0x7f && (st[3] === 0x21 || st[3] === 0x23))) {
           sent.push(`[例程状态：${st ? Array.from(st).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ') : '空'}（轮询 ${polls} 次）]`);
           break;
         }
@@ -2144,7 +2159,9 @@ async function runCommandString(cmdStr, item) {
       }
     }
   }
-  if (realIndex > 0 && positive === 0) {
+  // MES 的 FUNC 分支 (_0093_008D) 不按正响应数判失败；普通分支才按正响应数。
+  if (rwUserEntry) await new Promise((r) => setTimeout(r, 1000));
+  if (!funcPollStarted && realIndex > 0 && positive === 0) {
     throw new Error('执行失败：所有命令均未得到正响应');
   }
   return sent;
@@ -2303,10 +2320,12 @@ function renderFunctions() {
             // 读改写合并（RWUSERENTRY 族）：选择值按掩码并进写模板——此前选择值从不落盘、
             // 模板零值直发（2026-10-17 审计：98 条读改写条目全中招）
             let cmdToSend = item.commands;
-            if (picked && item.input && !item.workflow) {
+            if (picked && item.input && !item.workflow
+                && /RWUSERENTRY/.test(String(item.resultFormat || ''))) {
               const merged = await mergeRwUserEntry(item, picked);
               if (merged) {
                 cmdToSend = merged;
+                item._rwReadDone = true;
                 log(`读改写：按选择值合并字段后写入`);
               }
             }

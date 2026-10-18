@@ -87,11 +87,12 @@ console.log('\nmerge DATA3（对齐前置）');
   const r2 = b.mergeData3(d3);
   check('重复合并零变化', r2.merged && r2.changed === 0, JSON.stringify(r2));
 
-  // 全零 DATA3 跳过（沙箱占位保护）
+  // MES 对 DATA3 不做全零特判：全零也按原样合并（不是我们的占位保护）
   const b2 = new ProxiBlock(new Uint8Array(80).fill(0xAA));
   const r3 = b2.mergeData3(new Uint8Array(80));
-  check('全零 DATA3 跳过', r3.merged === false, JSON.stringify(r3));
-  check('跳过时块未被污染', b2.bytes[25] === 0xAA);
+  check('全零 DATA3 也按 MES 合并', r3.merged === true && r3.changed === 32, JSON.stringify(r3));
+  check('全零合并后 DATA1[25]=0', b2.bytes[25] === 0);
+  check('全零合并后 CRC 自洽', b2.verify().ok);
 
   // 40B 分支：只动 DATA1[25..40]
   const b3 = new ProxiBlock(new Uint8Array(80).fill(0xAA));

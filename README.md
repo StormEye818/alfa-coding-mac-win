@@ -6,9 +6,9 @@
 
 | 平台 | 安装包 | 说明 |
 |---|---|---|
-| macOS（Apple Silicon） | `AlfaProxi-0.2.11-arm64.dmg` | 已 ad-hoc 签名，双击安装 |
-| Windows x64 | `AlfaProxi.Setup.0.2.11.exe` | NSIS 免管理员安装 |
-| Android 8+ | `AlfaProxi-0.2.11-android.apk` | 侧载安装（3.5MB，用系统 WebView） |
+| macOS（Apple Silicon） | `AlfaProxi-0.2.12-arm64.dmg` | 已 ad-hoc 签名，双击安装 |
+| Windows x64 | `AlfaProxi.Setup.0.2.12.exe` | NSIS 免管理员安装 |
+| Android 8+ | `AlfaProxi-0.2.12-android.apk` | 侧载安装（3.5MB，用系统 WebView） |
 | iOS | 见下方「iOS 自行安装」 | 苹果限制无法直接分发安装包 |
 
 安装包在 [Releases](../../releases) 页下载。

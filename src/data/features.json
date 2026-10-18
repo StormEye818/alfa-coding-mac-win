@@ -13,7 +13,7 @@
       "name": "拨片进空档",
       "desc": "拨片可由 P/R 挡直接挂入 N 挡（欧规逻辑）",
       "status": "carTested",
-      "source": "厂商诊断数据 / 已验证",
+      "source": "社区实证（非 MES 对齐项）",
       "needsAlignment": true,
       "patches": [{ "addr": 156, "bits": { "4": 0, "5": 0 } }],
       "noOff": true,
@@ -76,8 +76,8 @@
       "id": "battery-type",
       "name": "蓄电池类型",
       "desc": "蓄电池容量与类型（Ah/CCA 与 铅酸/AGM）",
-      "status": "verified",
-      "source": "厂商诊断数据",
+      "status": "community",
+      "source": "社区资料（非 MES 对齐项）",
       "needsAlignment": true,
       "patches": [
         { "addr": 63, "bits": { "0": 0, "1": 1, "2": 0, "3": 0, "4": 0, "5": 1, "6": 0, "7": 1 } }

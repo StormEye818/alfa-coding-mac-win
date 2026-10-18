@@ -71,7 +71,7 @@ try {
     await timeout(session.ensureModule(session.bodyModule), 15000, 'ensureModule body');
     console.log('     车身电脑连接 OK，换线提示数:', hints.length);
     // 舒适 CAN 节点（125k，5 号蓝线）
-    const comfort = mods.alignmentNodes.find((n) => !n.excluded && n.baud === 125 && n.name !== 'Additional Heater Node (CTM)');
+    const comfort = mods.alignmentNodes.find((n) => !n.excluded && !n.addrUnknown && n.baud === 125 && n.name !== 'Additional Heater Node (CTM)');
     await timeout(session.connectNode(comfort), 15000, 'connect comfort');
     console.log('     舒适节点', comfort.name, '提示数:', hints.length);
     // 底盘/安全 CAN 节点（swapCable，6 号灰线）

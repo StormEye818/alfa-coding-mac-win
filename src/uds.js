@@ -66,6 +66,9 @@ class UdsError extends Error {
 function assertPositive(resp, service) {
     if (!resp || resp.length === 0) throw new UdsError(`${service}: 空响应`);
     if (resp[0] === 0x7f) {
+        if (resp.length < 3) {
+            throw new UdsError(`${service}: 负响应格式错误（${bytesToHex(resp)}）`);
+        }
         const nrc = resp[2];
         throw new UdsError(`${service} 被拒绝：${NRC[nrc] || 'NRC 0x' + nrc.toString(16)}`, nrc);
     }
@@ -78,8 +81,8 @@ class Uds {
         this.link = link;
     }
 
-    async testerPresent() {
-        return this.link.request(new Uint8Array([0x3e, 0x00]));
+    async testerPresent(timeoutMs = 5000) {
+        return this.link.request(new Uint8Array([0x3e, 0x00]), { timeoutMs });
     }
 
     /**
@@ -96,7 +99,7 @@ class Uds {
             // 子功能不支持：部分模块的扩展会话号是 0x92（与连接校验同口径）
             resp = await this.link.request(new Uint8Array([0x10, 0x92]), { timeoutMs: 3000 });
         }
-        if (!resp || resp[0] !== 0x50) {
+        if (!resp || resp[0] !== 0x50 || (resp[1] !== 0x03 && resp[1] !== 0x92)) {
             const hex = resp ? bytesToHex(resp) : '(空)';
             throw new UdsError(`扩展会话切换失败：期望 50 03/50 92，实得 ${hex}`, resp && resp[0] === 0x7f ? resp[2] : undefined);
         }
@@ -107,6 +110,10 @@ class Uds {
         const hi = (did >> 8) & 0xff, lo = did & 0xff;
         const resp = assertPositive(await this.link.request(new Uint8Array([0x22, hi, lo])), '读取');
         if (resp[0] !== 0x62) throw new UdsError(`意外的响应服务 0x${resp[0].toString(16)}`);
+        // 校验 DID：迟到的上一条应答若服务号同为 62，不能当本条数据用
+        if (resp.length < 3 || resp[1] !== hi || resp[2] !== lo) {
+            throw new UdsError(`响应 DID 不匹配：期望 ${hi.toString(16).padStart(2, '0')} ${lo.toString(16).padStart(2, '0')}，实得 ${bytesToHex(resp.slice(1, 3))}`);
+        }
         return resp.slice(3);       // 62 <hi> <lo> <data...>
     }
 
@@ -122,7 +129,11 @@ class Uds {
         await new Promise((r) => setTimeout(r, 200));
         for (let attempt = 0; ; attempt++) {
             try {
-                return assertPositive(await this.link.request(req, { timeoutMs: 8000 }), '写入');
+                const resp = assertPositive(await this.link.request(req, { timeoutMs: 8000 }), '写入');
+                if (resp[0] !== 0x6e || resp.length < 3 || resp[1] !== hi || resp[2] !== lo) {
+                    throw new UdsError(`写入响应不匹配：期望 6E ${hi.toString(16).padStart(2, '0')} ${lo.toString(16).padStart(2, '0')}，实得 ${bytesToHex(resp)}`);
+                }
+                return resp;
             } catch (e) {
                 const nrc = e instanceof UdsError ? e.nrc : undefined;
                 // 0x31 = 请求超出范围：典型原因是会话掉了/未在扩展会话 → 重进会话再试
@@ -145,32 +156,61 @@ class Uds {
     async readDtc() {
         // 0x19 02 FF = reportDTCByStatusMask（全部）
         const resp = assertPositive(await this.link.request(new Uint8Array([0x19, 0x02, 0xff])), '读故障码');
+        if (resp[0] !== 0x59 || resp[1] !== 0x02) {
+            throw new UdsError(`读故障码响应服务不匹配：${bytesToHex(resp.slice(0, 2))}`);
+        }
         return parseDtcList(resp);
     }
 
     /**
      * 读故障冻结帧快照（19 04 reportDTCSnapshotRecordByDTCNumber）。
      * 应答 = 59 04 <DTC3> <记录号> <数据…>；参数位置由 dtc-snapshots.json 的偏移给出。
+     *
+     * ⚠️ 请求与车端已验证行为**逐字节一致**：`19 04 00 00 00 00`（DTC 全 0 + 记录号 0）。
+     *    车端已验证行为对同一模块的所有快照参数都用这一条命令；此前我们按点击的 DTC 拼
+     *    `19 04 <hi> <lo> 00 00`，属无实证的自创路径（2026-10-18 按车端已验证行为对齐）。
      */
-    async readDtcSnapshot(dtcHi, dtcLo) {
-        return assertPositive(
-            await this.link.request(new Uint8Array([0x19, 0x04, dtcHi, dtcLo, 0x00, 0x00]), { timeoutMs: 5000 }),
+    async readDtcSnapshot() {
+        const resp = assertPositive(
+            await this.link.request(new Uint8Array([0x19, 0x04, 0x00, 0x00, 0x00, 0x00]), { timeoutMs: 5000 }),
             '读冻结帧');
+        if (resp[0] !== 0x59 || resp[1] !== 0x04) {
+            throw new UdsError(`冻结帧响应服务不匹配：${bytesToHex(resp.slice(0, 2))}`);
+        }
+        return resp;
     }
 
     async clearDtc() {
-        return assertPositive(await this.link.request(new Uint8Array([0x14, 0xff, 0xff, 0xff])), '清故障码');
+        const resp = assertPositive(await this.link.request(new Uint8Array([0x14, 0xff, 0xff, 0xff])), '清故障码');
+        if (resp[0] !== 0x54) throw new UdsError(`清码响应服务不匹配：${bytesToHex(resp.slice(0, 1))}`);
+        return resp;
     }
 
     /**
      * 安全访问：请求种子 + 发送密钥。
-     * 952/949 用 0x03/0x04，密钥是 5 位 PIN 的 BCD；0x05/0x06 是服务器算的，我们不碰。
+     * 952/949 用 0x03/0x04，密钥是 5 位 PIN 的 BCD（`02 27 04 <12 34 05>`）；
+     * 0x05/0x06 是服务器算的，我们不碰。
+     *
+     * 与车端已验证行为对齐的两点：
+     *   1. 种子全 0 = ECU 已解锁 → **不再发密钥**（车端已验证行为直接当成功返回，
+     *      否则 27 04 会被 NRC 0x24「请求顺序错误」拒掉）；
+     *   2. 密钥就是把 5 位数字按 BCD 拼成 3 字节（`022704` + 5 位数字），与 `pinToKeyBcd` 一致。
+     *
+     * @returns {{alreadyUnlocked?: boolean, seed?: number[]}}
      */
     async securityAccess(pin) {
         const seed = assertPositive(await this.link.request(new Uint8Array([0x27, 0x03])), '取种子');
-        if (seed[0] !== 0x67) throw new UdsError('取种子响应异常');
+        if (seed[0] !== 0x67 || seed[1] !== 0x03) throw new UdsError('取种子响应异常');
+        const seedBytes = Array.from(seed.slice(2));
+        if (seedBytes.length && seedBytes.every((b) => b === 0)) {
+            return { alreadyUnlocked: true, seed: seedBytes };
+        }
         const key = pinToKeyBcd(pin);
-        return assertPositive(await this.link.request(new Uint8Array([0x27, 0x04, ...key])), '送密钥');
+        const resp = assertPositive(await this.link.request(new Uint8Array([0x27, 0x04, ...key])), '送密钥');
+        if (resp[0] !== 0x67 || resp[1] !== 0x04) {
+            throw new UdsError(`送密钥响应异常：${bytesToHex(resp.slice(0, 2))}`);
+        }
+        return resp;
     }
 
     // ---- PROXI 专用 ----
@@ -179,10 +219,12 @@ class Uds {
     async readProxiWriteCounter() {
         const d = await this.readDataByIdentifier(DID.PROXI_WRITE_COUNTER);
         if (!d || !d.length) return null;
-        // ⚠️ 取**完整小端值**，别只取低字节 —— 256 回绕会让两个不同计数看起来相等，
-        //    「计数一致 = 已对齐」的辅助判据就会假通过（2026-10-16 复查 A7）。
+        // 源数据（params_all.tsv 的 `PROXI configuration write counter`）里 NumOfBytes=1，
+        // 正常就是单字节。此前对多字节按**小端**装配，2 字节 `00 0C` 会算成 3072。
+        // 现在：单字节直取；多字节按大端（与全项目其他数值口径一致）。
+        if (d.length === 1) return d[0];
         let v = 0;
-        for (let i = d.length - 1; i >= 0; i--) v = (v * 256) + d[i];
+        for (const b of d) v = v * 256 + b;
         return v;
     }
 
@@ -241,7 +283,29 @@ class Uds {
         // 标准写入序列：Sleep(200) → 2E 20 23 → 22 10 2A → 22 40 AA
         //   Sleep(200) 与 2E 20 23 在 writeDataByIdentifier（写之前）
         //   本函数只负责 22 10 2A + 22 40 AA
-        const resp = assertPositive(await this.link.request(new Uint8Array([0x22, 0x10, 0x2A])), '回读校验');
+        // 车端已验证行为：空/短应答 → Sleep(2000) → 重读一次
+        let resp = null;
+        for (let attempt = 0; ; attempt++) {
+            try {
+                resp = assertPositive(await this.link.request(new Uint8Array([0x22, 0x10, 0x2A])), '回读校验');
+            } catch (e) {
+                if (attempt === 0) {
+                    await new Promise((r) => setTimeout(r, 2000));
+                    continue;
+                }
+                throw e;
+            }
+            if (resp && resp.length >= 12) {
+                // 迟到的上一条 62 20 23（289 字节）也 >=12，必须校验服务/DID 才能避免假判定
+                if (resp[0] === 0x62 && resp[1] === 0x10 && resp[2] === 0x2a) break;
+                throw new UdsError(`回读校验响应不匹配：${bytesToHex(resp.slice(0, 3))}`);
+            }
+            if (attempt === 0) {
+                await new Promise((r) => setTimeout(r, 2000));
+                continue;
+            }
+            throw new UdsError(`回读校验应答不完整：${resp ? bytesToHex(resp) : '(空)'}`);
+        }
         const d = resp.slice(3);
         const diffs = [];
         // 3 组差异槽位：每组 3 字节 [标志, 字节号, 异或掩码]，(字节号, 掩码) 在 [1,2]、[4,5]、[7,8]

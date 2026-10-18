@@ -489,6 +489,7 @@
     {
       "name": "Adaptive Cruise Control Node (NAC)",
       "addr": "00",
+      "addrUnknown": true,
       "baud": 125,
       "swapCable": false,
       "startByte": 14,
@@ -519,6 +520,7 @@
     {
       "name": "Assisted Braking Node (NBA)",
       "addr": "00",
+      "addrUnknown": true,
       "baud": 125,
       "swapCable": false,
       "startByte": 14,
@@ -559,6 +561,7 @@
     {
       "name": "Boot Node (NVB)",
       "addr": "00",
+      "addrUnknown": true,
       "baud": 125,
       "swapCable": false,
       "startByte": 15,
@@ -569,6 +572,7 @@
     {
       "name": "Ceiling Node (NIM)",
       "addr": "00",
+      "addrUnknown": true,
       "baud": 125,
       "swapCable": false,
       "startByte": 15,
@@ -709,6 +713,7 @@
     {
       "name": "Driver monitoring system module (DMSM)",
       "addr": "00",
+      "addrUnknown": true,
       "baud": 500,
       "swapCable": false,
       "startByte": 7,
@@ -729,6 +734,7 @@
     {
       "name": "Electronic limited slip differential (ELSDM)",
       "addr": "00",
+      "addrUnknown": true,
       "baud": 500,
       "swapCable": false,
       "startByte": 3,
@@ -759,6 +765,7 @@
     {
       "name": "Engine Signals Node (NSM)",
       "addr": "00",
+      "addrUnknown": true,
       "baud": 125,
       "swapCable": false,
       "startByte": 13,
@@ -819,6 +826,7 @@
     {
       "name": "Info-Telematic/Convergence Node (NIT/NCV)",
       "addr": "00",
+      "addrUnknown": true,
       "baud": 125,
       "swapCable": false,
       "startByte": 16,
@@ -999,6 +1007,7 @@
     {
       "name": "Side Acceleration / Yaw Node (NYL)",
       "addr": "00",
+      "addrUnknown": true,
       "baud": 125,
       "swapCable": false,
       "startByte": 15,
@@ -1009,6 +1018,7 @@
     {
       "name": "Steering Angle Sensor Node (NAS)",
       "addr": "00",
+      "addrUnknown": true,
       "baud": 125,
       "swapCable": false,
       "startByte": 15,
@@ -1029,6 +1039,7 @@
     {
       "name": "Steering Wheel Controls Node (NVO)",
       "addr": "00",
+      "addrUnknown": true,
       "baud": 125,
       "swapCable": false,
       "startByte": 16,
@@ -1219,6 +1230,7 @@
     {
       "name": "Auxiliary hybrid control processor module (AHCP)",
       "addr": "00",
+      "addrUnknown": true,
       "baud": 500,
       "swapCable": false,
       "startByte": 6,

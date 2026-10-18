@@ -104,5 +104,35 @@ console.log('\nmerge DATA3（对齐前置）');
   check('40B：DATA1[41] 不动', b3.bytes[41] === 0xAA);
 }
 
+console.log('\nCRC 与车端已验证行为等价（反向逐位多项式除法）');
+{
+    // 车端已验证行为  的写法：对 [len][2E][20][23][block] 从末字节往前、
+    // 每字节 MSB→LSB 喂 0x8408，num2 全局移位不重置。数学上等价于正向 LSB 的 KERMIT，
+    // 但必须用同一块数据验证，否则"CRC 自洽"只证明自己和自己一致。
+    const MASKS = [128, 64, 32, 16, 8, 4, 2, 1];
+    const refCrc = (block) => {
+        const array = new Uint8Array(block.length + 4);
+        array[0] = array.length - 1; array[1] = 0x2e; array[2] = 0x20; array[3] = 0x23;
+        array.set(block, 4);
+        let num = 0, num2 = 1;
+        for (let i = array.length - 1; i > 28; i--) {
+            for (let j = 0; j < 8; j++) {
+                const flag = (num2 & 1) === 1;
+                num2 = (num2 >>> 1) & 0xffff;
+                if (flag) num2 = (num2 ^ 0x8408) & 0xffff;
+                if ((array[i] & MASKS[j]) !== 0) num = (num ^ num2) & 0xffff;
+            }
+        }
+        return num;
+    };
+    const b = new Uint8Array(289);
+    for (let i = 0; i < 24; i++) b[i] = 0x30 + (i % 10);      // 头部 ASCII 数字区
+    for (let i = 25; i < b.length; i++) b[i] = (i * 37 + 11) & 0xff;
+    const ours = crc16Kermit(b, 25);
+    check(`同一块两种算法同值（${ours}）`, ours === refCrc(b), `参考=${refCrc(b)}`);
+    const zeros = new Uint8Array(289);
+    check('全零正文 → 0', crc16Kermit(zeros, 25) === 0 && refCrc(zeros) === 0);
+}
+
 console.log(`\n结果：${pass} 通过 / ${fail} 失败`);
 process.exit(fail ? 1 : 0);

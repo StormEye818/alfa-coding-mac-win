@@ -7,6 +7,7 @@
 import { GiuliaCar, PROXI_LENGTH, BODY_COUNTER, presenceInfo, decodeNum } from './giulia-car.mjs';
 import { ProxiBlock } from '../src/proxi.js';
 import { parseDtcList } from '../src/uds.js';
+import { snapshotValue } from '../src/scale.js';
 import fs from 'fs';
 
 let pass = 0, fail = 0;
@@ -108,7 +109,8 @@ console.log('\n场景 3：只对齐部分模块 → snapshot().odoFlash === true
 {
     check('初始状态里程表闪烁（有未对齐模块）', car.snapshot().odoFlash === true);
     const snap = car.snapshot();
-    const mis = Object.entries(snap.nodes).filter(([, v]) => v.installed && !v.aligned);
+    // 只统计「有独立诊断地址」的节点（addr=00 的不单独写 PROXI，车端已验证行为同样跳过）
+    const mis = Object.entries(snap.nodes).filter(([, v]) => v.addressable !== false && v.installed && !v.aligned);
     check(`存在未对齐的已安装节点（${mis.length} 个）`, mis.length > 0);
 
     // 只对齐第一个未对齐节点（写入车身电脑的配置）
@@ -127,7 +129,7 @@ console.log('\n场景 4：全部对齐 → snapshot().odoFlash === false');
     const snap = car.snapshot();
     const addrs = new Set();
     for (const [, v] of Object.entries(snap.nodes)) {
-        if (v.installed) addrs.add(v.addr);
+        if (v.installed && v.addressable !== false) addrs.add(v.addr);
     }
     let ok = 0, rejected = [];
     for (const a of addrs) {
@@ -189,13 +191,35 @@ console.log('\n场景 6：故障码读取 / 清除有效');
 }
 
 // ---------------------------------------------------------------------------
+console.log('\n场景 6b：冻结帧 19 04 快照（DID 定位 / 绝对偏移）');
+{
+    const snapData = JSON.parse(fs.readFileSync(new URL('../src/data/dtc-snapshots.json', import.meta.url), 'utf8'));
+    // 车端已验证行为的请求形态：19 04 00 00 00 00
+    const rd = car.handle(E(0x40), [0x19, 0x04, 0x00, 0x00, 0x00, 0x00]);
+    check('19 04 正响应 59 04', rd[0] === 0x59 && rd[1] === 0x04, hx(rd.slice(0, 8)));
+    check('应答含 6 字节头 + 数据区', rd.length > 6 + 8, `len=${rd.length}`);
+
+    const bodyItems = snapData.modules.BODY33 || [];
+    check('BODY33 冻结帧参数表存在', bodyItems.length > 0, String(bodyItems.length));
+    const didItems = bodyItems.filter((s) => s.did);
+    const gotDid = didItems.filter((s) => snapshotValue(Uint8Array.from(rd), s) !== null).length;
+    check(`按 DID 定位能取到值（${gotDid}/${didItems.length}）`, didItems.length > 0 && gotDid === didItems.length);
+
+    // 绝对偏移形态（无 DID）的模块
+    const aaml = car.handle(E(0x3f), [0x19, 0x04, 0x00, 0x00, 0x00, 0x00]);   // AAML1 在 0x3F（excluded 但可寻址）
+    const plainItems = (snapData.modules.AAML1 || []).filter((s) => !s.did);
+    const gotPlain = plainItems.filter((s) => snapshotValue(Uint8Array.from(aaml), s) !== null).length;
+    check(`绝对偏移形态能取到值（${gotPlain}/${plainItems.length}）`, plainItems.length > 0 && gotPlain === plainItems.length);
+}
+
+// ---------------------------------------------------------------------------
 console.log('\n场景 7：参数读取并按 spec 换算正确（≥3 项）');
 {
     // 电瓶电压 BODY33 DID 1004：bytes=1, format "num,1" → 物理 = raw/10
     const body = E(0x40);
     const specV = paramsData.modules.BODY33.find((x) => x.did === '1004' && /Battery voltage/i.test(x.name)).spec;
     const rv = car.handle(body, [0x22, 0x10, 0x04]).slice(3);
-    const vPhys = decodeNum(rv.reduce((a, b, i) => a + b * 256 ** i, 0), specV);
+    const vPhys = decodeNum(rv.reduce((a, b) => a * 256 + b, 0), specV);
     check(`电瓶电压 ≈ 13.8V（实际 ${vPhys}${specV.unit}）`, vPhys >= 12 && vPhys <= 14, `raw=${hx(rv)}`);
 
     // 车速 ABG28 DID 1002：bytes=1, format "num", unit km/h
@@ -209,10 +233,10 @@ console.log('\n场景 7：参数读取并按 spec 换算正确（≥3 项）');
     const ad = E(0x01);
     const specR = paramsData.modules.ADBLU1.find((x) => x.did === '1000' && /Engine speed/i.test(x.name)).spec;
     const rr = car.handle(ad, [0x22, 0x10, 0x00]).slice(3);
-    const rPhys = decodeNum(rr.reduce((a, b, i) => a + b * 256 ** i, 0), specR);
+    const rPhys = decodeNum(rr.reduce((a, b) => a * 256 + b, 0), specR);
     check(`发动机转速 在 800-6000 rpm（实际 ${rPhys}）`, rPhys >= 800 && rPhys <= 6000, `raw=${hx(rr)}`);
     check('转速换算与 spec 的 scale=0.25 一致（raw×0.25）',
-        Math.abs(rPhys - (rr[0] + rr[1] * 256) * 0.25) < 1e-9);
+        Math.abs(rPhys - (rr[0] * 256 + rr[1]) * 0.25) < 1e-9);
 
     // 未知 DID → NRC 31
     const unk = car.handle(body, [0x22, 0x99, 0x99]);

@@ -45,9 +45,11 @@ class DemoLink {
         const head = '406200000001OUTPUT-SIT %';
         for (let i = 0; i < 24; i++) b[i] = head.charCodeAt(i);
         // 常见配置位示意值（仅用于界面展示，非实车数据）
-        b[58] = 0x00; b[59] = 0x00; b[66] = 0x00; b[88] = 0xAC;
-        b[115] = 0x14; b[149] = 0x04; b[156] = 0x10; b[159] = 0x00;
-        b[166] = 0x04; b[177] = 0x00; b[202] = 0x00;
+        // ⚠️ 这里是 **0-based 内部索引**，社区字节号 = 索引+1（Race Type 在 Byte88 = 索引 87）。
+        //    此前写成 b[88]/b[115]… 整体偏了 1 字节，演示模式下「当前值」与沙箱对不上。
+        b[57] = 0x00; b[58] = 0x00; b[65] = 0x00; b[87] = 0xAC;
+        b[114] = 0x14; b[148] = 0x04; b[155] = 0x10; b[158] = 0x00;
+        b[165] = 0x04; b[176] = 0x00; b[201] = 0x00;
         const blk = new ProxiBlock(b);
         blk.seal();
         return blk.bytes;
@@ -125,7 +127,27 @@ class DemoLink {
             }
             return Uint8Array.from([0x6e, payload[1], payload[2]]);
         }
-        if (svc === 0x19) return Uint8Array.from([0x59, 0x02, 0xff, 0x00, 0x00, 0x00]);
+        if (svc === 0x19) {
+            // 19 04 冻结帧：`59 04` + DTC(3) + 记录号(1) + 数据区
+            // 演示数据区里预置一批常见 DID（1008/1009/200A/1002/1004/0885/1921），
+            // 让「冻结帧快照」页在模拟模式下也能看到值（DID 定位与绝对偏移两种形态都覆盖）
+            if (payload[1] === 0x04) {
+                const data = new Array(64).fill(0);
+                const entries = [[0x1008, 4], [0x1009, 2], [0x200a, 2], [0x1002, 1], [0x1004, 1], [0x0885, 2], [0x1921, 9]];
+                let off = 0;
+                for (const [did, n] of entries) {
+                    data[off] = (did >> 8) & 0xff;
+                    data[off + 1] = did & 0xff;
+                    for (let i = 2; i < 2 + n; i++) data[off + i] = i % 2 ? 0x64 : 0x00;
+                    off += 2 + n;
+                }
+                // 绝对偏移形态（AAML1 之类）：Operating time 在数据区第 8 字节起
+                data[7] = 0x00; data[8] = 0x00; data[9] = 0x04; data[10] = 0xd2;
+                this.log('演示 · 返回冻结帧快照（合成数据区 64 字节）');
+                return Uint8Array.from([0x59, 0x04, 0x00, 0x00, 0x00, 0x01, ...data]);
+            }
+            return Uint8Array.from([0x59, 0x02, 0xff, 0x00, 0x00, 0x00]);
+        }
         if (svc === 0x14) return Uint8Array.from([0x54]);
         if (svc === 0x27) return Uint8Array.from([0x67, payload[1], 0x12, 0x34]);
         if (svc === 0x2f) return Uint8Array.from([0x6f, payload[1], payload[2], payload[3] || 0]);

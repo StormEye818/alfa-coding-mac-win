@@ -37,10 +37,12 @@ export const ABSENT_NODES = new Set([
 
 const dataDir = new URL('../src/data/', import.meta.url);
 
-/** 模拟车「应已安装」节点数（非 excluded 且不在 ABSENT_NODES）——清单改了测试自动跟随 */
+/** 模拟车「应已安装」节点数（非 excluded、非无地址、且不在 ABSENT_NODES）——清单改了测试自动跟随 */
 export function expectedInstalledCount() {
     const mods = JSON.parse(fs.readFileSync(new URL('modules.json', dataDir), 'utf8'));
-    return mods.alignmentNodes.filter((n) => !n.excluded && !ABSENT_NODES.has(n.name)).length;
+    return mods.alignmentNodes.filter((n) => !n.excluded && !n.addrUnknown
+        && String(n.addr).toUpperCase() !== '00'
+        && !ABSENT_NODES.has(n.name)).length;
 }
 
 export async function probeSnapshot(t, { verbose = false } = {}) {
@@ -54,8 +56,14 @@ export async function probeSnapshot(t, { verbose = false } = {}) {
     let installedCount = 0;
     for (const n of mods.alignmentNodes) {
         const excluded = !!n.excluded;
+        const addressable = !n.addrUnknown && String(n.addr).toUpperCase() !== '00';
         const installed = !excluded && !ABSENT_NODES.has(n.name);
-        if (installed) installedCount++;
+        if (installed && addressable) installedCount++;
+        if (!addressable) {
+            // 无独立诊断地址：不探测、不计入里程表同步判定（与 sandbox snapshot 一致）
+            nodes[n.name] = { addr: n.addr, addressable: false, excluded, installed, counter: null, bodyCounter, configMatches: null, aligned: null, err: null };
+            continue;
+        }
         let counter = null, configMatches = false, err = null;
         try {
             await t.session.connectNode(n);

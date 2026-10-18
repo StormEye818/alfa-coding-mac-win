@@ -9,7 +9,11 @@ class BridgePort extends Emitter {
     constructor(bridge) {
         super();
         this.bridge = bridge;
+        // ⚠️ 必须**链式**接管 onData：InterfaceTester 也会挂自己的接收缓存，
+        //    直接赋值会把前面的处理器整体覆盖（谁后建谁赢），导致对方永远收不到数据。
+        const prev = bridge.onData;
         bridge.onData = (hex) => {
+            if (prev) { try { prev(hex); } catch { /* 上游处理器异常不影响协议层 */ } }
             const out = new Uint8Array(hex.length / 2);
             for (let i = 0; i < out.length; i++) out[i] = parseInt(hex.substr(i * 2, 2), 16);
             this.emit('data', out);

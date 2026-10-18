@@ -83,7 +83,9 @@ async function main() {
   check('write-roundtrip', diff.length === 0, diff.length ? `差异 ${diff.length} 处` : `Byte${st.startByte} ${before.toString(16)}→${after.toString(16)} 读回一致`);
 
   // ---- 对齐判定（22 10 2A 主判据，镜像 drive.mjs checkAlignment）----
-  const nodes = mods.alignmentNodes.filter((n) => !n.excluded);
+  // 无独立诊断地址（addr=00）的节点按车端已验证行为跳过：真车 18DA00F1 无人应答，写不进去
+  const nodes = mods.alignmentNodes.filter((n) => !n.excluded
+    && !n.addrUnknown && String(n.addr).toUpperCase() !== '00');
   const absentSet = new Set();   // 写入被拒（NRC 0x31）= 未安装节点，不计未对齐（与 drive.mjs 一致）
   const checkAlign = async () => {
     await session.ensureModule(session.bodyModule);
@@ -96,7 +98,7 @@ async function main() {
         await session.connectNode(n);
         const v = await uds.verifyProxi(refBytes);
         const c = await uds.readProxiWriteCounter();
-        if (!(v.ok && c === ref)) misaligned++;
+        if (!(v.ok && ((c === null || ref === null) || c === ref))) misaligned++;
       } catch { failed++; }
     }
     return { misaligned, failed, absent,
@@ -126,7 +128,6 @@ async function main() {
   out(fail ? '[SMOKE] ALL FAIL' : '[SMOKE] ALL PASS');
   // 收尾：断开 TCP，停掉读循环（否则每秒空转刷屏）
   try { await bridge.close(); } catch {}
-}
 }
 
 main().catch((e) => {

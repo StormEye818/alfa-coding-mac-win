@@ -33,6 +33,7 @@ class Session extends Emitter {
         this.platform = opts.platform || '952';
         this.current = null;                // 当前已连接的模块信息
         this.currentGroup = null;
+        this.cableAborted = false;          // 用户取消过换线 → 后续连接立即失败，不再弹提示
     }
 
     /** 车型对应的车身电脑 */
@@ -44,7 +45,26 @@ class Session extends Emitter {
     needsCableSwap(code) {
         const m = this.cables.modules[code];
         if (!m) throw new SessionError(`未知模块：${code}`);
-        return !this.link.autoSwitchesBus && m.group !== 'none';
+        return this.needsPhysicalSwap(m.group || 'none');
+    }
+
+    /**
+     * 当前物理适配线是否必须换到目标总线。
+     *
+     * ⚠️ 不能只判「目标是 swap/comfort 才提示」：从 6 号灰线/5 号蓝线回到主总线
+     *    （group=none）同样要换线；旧判据 `wantGroup !== 'none'` 会静默留在
+     *    非主总线上，随后主总线模块全部 NO DATA。首次连接（currentGroup=null）
+     *    只在目标非主总线时提示。
+     */
+    needsPhysicalSwap(wantGroup) {
+        if (!wantGroup || this.link.autoSwitchesBus) return false;
+        if (this.currentGroup === null) return wantGroup !== 'none';
+        return this.currentGroup !== wantGroup;
+    }
+
+    /** 用户取消过换线后，下一次用户主动操作应重新获得提示/连接机会 */
+    resetCableAbort() {
+        this.cableAborted = false;
     }
 
     /**
@@ -53,6 +73,7 @@ class Session extends Emitter {
      * @param {{cableConfirmed?: boolean}} opts cableConfirmed=调用方已在进入前提过换线并获确认
      */
     async ensureModule(code, opts = {}) {
+        if (this.cableAborted) throw new SessionError('已取消：未确认换线');
         const m = this.cables.modules[code];
         if (!m) throw new SessionError(`未知模块：${code}`);
 
@@ -62,9 +83,7 @@ class Session extends Emitter {
         // ELM327：换线提示（vLinker 自动切，不提示）。
         // CANtieCAR：先试软件引脚路由（免换线），失败回退换线提示——绝不静默。
         const wantGroup = m.group;
-        let mustSwap = !this.link.autoSwitchesBus
-            && wantGroup !== 'none'
-            && this.currentGroup !== wantGroup;
+        let mustSwap = this.needsPhysicalSwap(wantGroup);
 
         if (!mustSwap && this.link.routePins
             && wantGroup !== 'none' && this.currentGroup !== wantGroup) {
@@ -76,14 +95,18 @@ class Session extends Emitter {
         }
 
         if (mustSwap && !opts.cableConfirmed) {
-            this.log(`需要换适配线：${m.hint}`);
+            // group=none 的模块 hint 为空；从 swap/comfort 回主总线时必须给出明确提示
+            const hint = m.hint || (wantGroup === 'swap' ? '请更换为 6 号灰色适配线'
+                : wantGroup === 'comfort' ? '请接 5 号蓝色适配线'
+                    : '请换回主总线（6/14 脚，无需适配线）');
+            this.log(`需要换适配线：${hint}`);
             // 先建立等待句柄，再发事件：回调里同步 confirmCable() 才不会丢
             const wait = this.waitForCableConfirm();
-            this.emit('cableRequired', { module: m, hint: m.hint, group: wantGroup });
+            this.emit('cableRequired', { module: m, hint, group: wantGroup });
             await wait;
             this.emit('cableDone', { module: m });
         } else if (mustSwap) {
-            this.log(`换线已确认：${m.hint}`);
+            this.log(`换线已确认：${m.hint || wantGroup}`);
             this.emit('cableDone', { module: m });
         }
 
@@ -98,14 +121,46 @@ class Session extends Emitter {
         return m;
     }
 
-    /** 等用户点「已换好」 */
+    /**
+     * 等用户点「已换好」。
+     * ⚠️ 必须同时留**取消**出口：换线提示是阻塞式等待，用户拔了线/放弃对齐时
+     *    没有任何按钮能结束它 → 整个对齐流程永久挂起（`state.aligning` 一直为 true，界面锁死）。
+     */
     waitForCableConfirm() {
-        return new Promise((resolve) => { this._cableResolve = resolve; });
+        if (this.cableAborted) {
+            return Promise.reject(new SessionError('已取消：未确认换线'));
+        }
+        // 并发进入两个换线请求时，旧的等待必须结束，不能把上一个 Promise 永久悬空
+        if (this._cableReject) {
+            const old = this._cableReject;
+            this._cableResolve = null;
+            this._cableReject = null;
+            old(new SessionError('换线请求已被新的操作取代'));
+        }
+        return new Promise((resolve, reject) => {
+            this._cableResolve = resolve;
+            this._cableReject = reject;
+        });
     }
 
     /** 由 UI 调用：用户确认已换线 */
     confirmCable() {
-        if (this._cableResolve) { this._cableResolve(); this._cableResolve = null; }
+        this.cableAborted = false;
+        if (this._cableResolve) {
+            const r = this._cableResolve;
+            this._cableResolve = null; this._cableReject = null;
+            r();
+        }
+    }
+
+    /** 由 UI 调用：用户放弃本次换线（中止当前流程，后续连接不再弹提示） */
+    cancelCable() {
+        this.cableAborted = true;
+        if (this._cableReject) {
+            const rj = this._cableReject;
+            this._cableResolve = null; this._cableReject = null;
+            rj(new SessionError('已取消：未确认换线'));
+        }
     }
 
     /**
@@ -123,10 +178,14 @@ class Session extends Emitter {
      * 跨总线分组时会提示换适配线 —— 与逐节点写入的真实流程一致。
      */
     async connectNode(node) {
+        if (this.cableAborted) throw new SessionError('已取消：未确认换线');
+        // 源数据里 ResultFormat=`00125` 的节点没有独立诊断地址（addr=00）：
+        // 18DA00F1 无人应答，硬连只会抛 CONNECT，把「工具没地址」伪装成「节点不可用」。
+        if (node.addrUnknown || !node.addr || String(node.addr).toUpperCase() === '00') {
+            throw new SessionError(`${node.name}：源数据无独立诊断地址（0x00），不能单独写入 PROXI`);
+        }
         const group = node.swapCable ? 'swap' : (node.baud === 125 ? 'comfort' : 'none');
-        let mustSwap = !this.link.autoSwitchesBus
-            && group !== 'none'
-            && this.currentGroup !== group;
+        let mustSwap = this.needsPhysicalSwap(group);
         // CANtieCAR：先试软件引脚路由（免换线），失败回退换线提示——绝不静默
         if (!mustSwap && this.link.routePins
             && group !== 'none' && this.currentGroup !== group) {
@@ -137,7 +196,9 @@ class Session extends Emitter {
             }
         }
         if (mustSwap) {
-            const hint = group === 'swap' ? '请更换为 6 号灰色适配线' : '请接 5 号蓝色适配线';
+            const hint = group === 'swap' ? '请更换为 6 号灰色适配线'
+                : group === 'comfort' ? '请接 5 号蓝色适配线'
+                    : '请换回主总线（6/14 脚，无需适配线）';
             this.log(`需要换适配线：${hint}`);
             const wait = this.waitForCableConfirm();
             this.emit('cableRequired', {
@@ -158,10 +219,28 @@ class Session extends Emitter {
         return this.current;
     }
 
-    /** 断开（保留适配器，只清模块状态） */
+    /**
+     * 断开（保留适配器，只清模块状态）。
+     * ⚠️ currentGroup 表示**物理适配线所在总线**，断开逻辑模块不等于线已回到主总线：
+     *    保留它，下一次连主总线模块才能提示换回 6/14；物理断开/重连用 resetLink()。
+     */
     disconnectModule() {
         this.current = null;
+        this.emit('moduleDisconnected', {});
+    }
+
+    /** 物理链路断开/重连：模块与总线状态都复位 */
+    resetLink() {
+        // 断开时仍在等「已换好」的流程必须结束，否则调用方永远挂在 await，busy 闸也永远不释放
+        if (this._cableReject) {
+            const rj = this._cableReject;
+            this._cableResolve = null;
+            this._cableReject = null;
+            rj(new SessionError('连接已断开：换线流程已取消'));
+        }
+        this.current = null;
         this.currentGroup = null;
+        this.cableAborted = false;
         this.emit('moduleDisconnected', {});
     }
 

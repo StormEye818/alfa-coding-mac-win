@@ -8,6 +8,7 @@
  * 模拟模式下适配器为 MockAdapter，同样走完整链路，便于验证流程与交互。
  */
 import { ProxiBlock, CRC_OFFSET, CRC_DIGITS } from '../src/proxi.js';
+import { applyScale, snapshotValue } from '../src/scale.js';
 import { Elm327, hexToBytes } from '../src/elm327.js';
 import { Uds, NRC } from '../src/uds.js';
 import { DemoLink } from '../src/demo-link.js';
@@ -49,7 +50,9 @@ const state = {
   writeState: new Map(),        // 'named:X' / 'feat:Y' -> 'pending'|'written'|'failed'
   link: null, uds: null, session: null,
   connected: false, readDone: false, simMode: false,
+  vin: null,                    // 车身电脑 VIN（在场位基线按 VIN 隔离，换车自动重算）
   aligning: false,
+  busy: null,                   // 长任务（对齐状态扫描等）并发闸：非 null = 正在跑的任务名
   bitEditIndex: null,
   ifaces: null, bridge: null, tester: null,
 };
@@ -228,10 +231,21 @@ async function disconnectBridge() {
 
 /** 供移动端连接 chip 调用：断开并复位状态（「点此断开或重连」） */
 window.__apxDisconnect = async () => {
+  // ⚠️ 顺序：先停轮询、再断开传输，否则轮询会继续往一个已关闭的 port 写（2026-10-18 审查 M7）
+  stopLiveLoop();
+  live.running = false;
+  live.samples = [];
+  live.picks = [];
+  live.items = [];
   try { await disconnectBridge(); } catch {}
   state.connected = false;
   state.readDone = false;
-  if (state.session) state.session.current = null;
+  state.vin = null;
+  state.presenceMap = null;
+  if (state.session) state.session.resetLink();
+  // 模块会话必须一起复位：否则「进入模块」被拦（提示先退出），而退出按钮又是隐藏态 → 卡死
+  modSess.code = null;
+  if (state.modules) renderModuleSessionUI();
   $('connState').textContent = '未连接';
   $('connState').className = 'pill offline';
   $('modState').textContent = '未连接模块';
@@ -239,6 +253,18 @@ window.__apxDisconnect = async () => {
   $('readState').textContent = '未读取配置';
   $('readState').className = 'pill offline';
   log('已断开连接并复位');
+};
+
+/** 供移动端「进后台自动停实时」调用（原 mobile-ui 找的 btnLiveStop 元素根本不存在） */
+window.__apxStopLive = () => {
+  const was = live.running;
+  stopLiveLoop();
+  if (was) {
+    [...document.querySelectorAll('.live-pick:checked')].forEach((el) => { el.checked = false; });
+    renderLiveParams();
+    stageDone('实时数据已停止');
+  }
+  return was;
 };
 
 /** 通信日志（elm327 层逐条记录 >> 命令 / << 应答 / FC） */
@@ -267,6 +293,9 @@ $('btnLogSave').addEventListener('click', () => {
  */
 async function exportProxiSample() {
   if (!(await ensureConnected())) return;
+  if (operationBlocked()) return;
+  stopLiveForOperation('导出 PROXI 采数');
+  if (state.session) state.session.resetCableAbort();
   try {
     await state.session.ensureModule(state.session.bodyModule);
     stage('正在读取 DATA1 / DATA2 / DATA3…');
@@ -366,6 +395,13 @@ $('ifaceType').addEventListener('change', async () => {
 $('btnTestIface').addEventListener('click', async () => {
   const spec = currentIface();
   if (!spec) return alert('当前为模拟模式，无需测试接口');
+  if (operationBlocked()) return;
+  // 测试会发 ATZ 复位适配器，并在结束时关闭端口 —— 已连接时等于把链路掐死
+  // （后续操作全部超时，界面却还显示"已连接"，2026-10-18 审查 M9）
+  if (state.connected) {
+    if (!confirm('测试接口会复位适配器（ATZ）并关闭当前端口。\n\n继续将先断开当前连接。是否继续？')) return;
+    await window.__apxDisconnect();
+  }
   try {
     stage('正在连接串口桥…');
     await ensureBridge();
@@ -479,6 +515,22 @@ async function connect(forceSim) {
     });
     state.connected = true;
     state.simMode = !spec;
+    // 新连接 = 新会话：清掉上一台车/上一个适配器留下的块与在场位基线
+    // （此前只改 connected，块、基线、VIN、模块会话都会跨会话残留 —— 2026-10-18 审查 L11）
+    state.vin = null;
+    state.presenceMap = null;
+    state.readDone = false;
+    state.block = null;
+    state.baseline = null;
+    state.selected.clear();
+    state.namedPicks.clear();
+    state.writeState.clear();
+    state.bitEditIndex = null;
+    modSess.code = null;
+    stopLiveLoop();
+    live.samples = []; live.picks = []; live.items = [];
+    $('modState').textContent = '未连接模块';
+    $('modState').className = 'pill mod';
     if (state.simMode) {
       $('connState').textContent = '模拟模式';
       $('connState').className = 'pill busy';
@@ -501,12 +553,24 @@ async function connect(forceSim) {
 /** 读取车辆配置：连上车身电脑 → 读 PROXI → 显示各项当前值 */
 async function readConfig() {
   if (!(await ensureConnected())) return;
+  if (operationBlocked()) return;
+  stopLiveForOperation('读取配置');
+  if (state.session) state.session.resetCableAbort();
+  state.busy = '读取配置';
   try {
     const bodyName = modLabel(state.session.bodyModule);
     stage(`正在连接模块：${bodyName}（${state.session.bodyModule}）…`);
     await stageWait(520);
     await state.session.ensureModule(state.session.bodyModule);
     stage(`已连接 ${bodyName}，正在读取车辆配置…`);
+    // VIN 用于隔离在场位基线（换车不能沿用上一台的装/卸判定）。读不到不致命。
+    if (!state.vin) {
+      try {
+        const rawVin = await state.uds.readDataByIdentifier(0xf190);
+        const s = Array.from(rawVin).filter((b) => b >= 32 && b < 127).map((b) => String.fromCharCode(b)).join('').trim();
+        if (s.length >= 11) { state.vin = s; log('VIN：' + s); }
+      } catch (e) { log('VIN 读取失败（在场位基线按平台共享）：' + e.message); }
+    }
     const d1 = await state.uds.readProxi();
     state.block = new ProxiBlock(d1);
     state.baseline = state.block.clone();
@@ -514,6 +578,7 @@ async function readConfig() {
     state.readDone = true;
     state.namedPicks.clear();
     state.selected.clear();
+    state.writeState.clear();   // 重读后旧的「已写入/写入失败」徽标必须清掉
     state.bitEditIndex = null;
     $('readState').textContent = `已读取 ${d1.length} 字节`;
     $('readState').className = 'pill online';
@@ -522,16 +587,20 @@ async function readConfig() {
   } catch (e) {
     stageFail('读取失败：' + e.message);
     alert('读取失败：' + e.message);
+  } finally {
+    if (state.busy === '读取配置') state.busy = null;
   }
 }
 
 $('btnConnect').addEventListener('click', async (e) => {
+  if (operationBlocked()) return;
   await connect(e.ctrlKey || e.metaKey);
   if (state.connected) await readConfig();
 });
 
 /** 模拟模式：不连接车辆，浏览各模块的参数/测试/标定（对应 Ctrl+F10） */
 $('btnSimulate').addEventListener('click', async () => {
+  if (operationBlocked()) return;
   await connect(true);
   if (state.connected) await readConfig();
 });
@@ -551,10 +620,24 @@ window.addEventListener('keydown', (e) => {
     $('btnScanTop').click();
   }
 });
+$('platform').addEventListener('change', async () => {
+  // 车型决定车身电脑（BODY33/BODY30）与在场位基线 key；已连接时切车型必须重连，
+  // 否则 Session 仍停在旧车型的车身电脑上，界面却显示新车型。
+  state.presenceMap = null;
+  state.vin = null;
+  if (!state.connected) { if (state.modules) renderAlign(); return; }
+  await window.__apxDisconnect();
+  alert('已切换车型并断开连接，请重新点「连接」。');
+});
 $('btnRead').addEventListener('click', readConfig);
 $('cableOk').addEventListener('click', () => {
   hideCableHint();
   if (state.session) state.session.confirmCable();
+});
+$('cableCancel') && $('cableCancel').addEventListener('click', () => {
+  hideCableHint();
+  if (state.session) state.session.cancelCable();
+  log('已取消换线确认');
 });
 
 /* ================= 命名配置项 ================= */
@@ -705,7 +788,13 @@ function optionToPatch(f, idx) {
   const o = f.options[idx];
   return {
     bytes: (f.patches || []).map((p) => {
-      const out = { addr: p.addr, bits: { ...(o.bits || {}) } };
+      const own = { ...(p.bits || {}) };
+      const ob = o.bits || {};
+      // 选项里的位只覆盖**同一字节上重叠的位**；多 patch 功能不会把同一组位写到别的字节
+      // （此前无条件 `bits: {...o.bits}` 会把位写进所有 patch 字节 —— 目前数据恰好都是单 patch，
+      //  属潜在雷；2026-10-18 审查 L5）
+      const overlap = Object.keys(own).some((k) => k in ob);
+      const out = { addr: p.addr, bits: overlap ? { ...own, ...ob } : own };
       if (o.fixed !== undefined && o.fixed !== null) out.fixed = o.fixed;
       return out;
     }),
@@ -745,6 +834,7 @@ function resolveFeaturePatch(f, selValue, baseline) {
 
 /** 纯位启用型补丁（无 fixed 字节）才提供「不启用」 */
 function featureHasOffOption(f) {
+  if (f && f.noOff) return false;
   return (f.patches || []).length > 0 && (f.patches || []).every((p) => p.fixed === undefined || p.fixed === null);
 }
 
@@ -808,6 +898,9 @@ function applyPicksToBlock() {
 
 $('btnApply').addEventListener('click', async () => {
   if (!(await ensureRead())) return;
+  if (operationBlocked()) return;
+  stopLiveForOperation('应用配置预览');
+  if (state.session) state.session.resetCableAbort();
   const namedPicks = state.namedPicks;
   if (state.selected.size === 0 && namedPicks.size === 0) return alert('请先选择要修改的配置项');
   const bodyName = modLabel(state.session.bodyModule);
@@ -903,7 +996,7 @@ function renderEditor() {
     const el = document.createElement('div');
     el.className = 'hbyte'
       + (isCrc ? ' crc' : '')
-      + (changed ? (isCrc ? ' changed' : ' changed') : '')
+      + (changed ? ' changed' : '')
       + (state.bitEditIndex === i ? ' active' : '');
     let bits = '';
     for (let k = 7; k >= 0; k--) bits += `<div class="b${(cur >> k) & 1 ? ' on' : ''}"></div>`;
@@ -989,7 +1082,11 @@ $('btnRevert').addEventListener('click', () => {
 });
 async function writeToEcu() {
   if (!(await ensureRead())) return;
+  if (operationBlocked()) return;
   if (!confirm('确认写入 ECU？写入前请确认已导出备份。')) return;
+  stopLiveForOperation('写入配置');
+  if (state.session) state.session.resetCableAbort();
+  state.busy = '写入配置';
   try {
     stage(`正在连接模块：${modLabel(state.session.bodyModule)}…`);
     await stageWait(460);
@@ -1028,6 +1125,8 @@ async function writeToEcu() {
     }
     state.baseline = back.clone();
     state.block = back;
+    // 写入后按新块刷新「非 CRC 区」的在场位：改过在场位配置（如打开 SGW）能立刻进入对齐范围
+    if (ok) freezePresenceBaseline(state.block);
     // 清空待写选择，但保留状态徽标供查看
     state.namedPicks.clear();
     state.selected.clear();
@@ -1039,6 +1138,8 @@ async function writeToEcu() {
     renderNamed(); renderFeatures();
     stageFail('写入失败：' + e.message);
     alert('写入失败：' + e.message + (e.nrcText ? '（' + e.nrcText + '）' : '') + '\n\n所选项已标记为「写入失败」。');
+  } finally {
+    if (state.busy === '写入配置') state.busy = null;
   }
 }
 // 「写入 ECU」在三处等价：字节编辑器页 / 隐藏功能页 / 待写浮动条
@@ -1091,15 +1192,39 @@ function presenceOverlapsCrc(node) {
   return node.startByte >= 7 && node.startByte <= 11;
 }
 
-/** 在场位基线：首次读取时判定并记住（localStorage 跨会话保持） */
+/**
+ * 在场位基线（localStorage 跨会话保持）。
+ *
+ * 为什么需要基线：部分节点的在场位字节落在 CRC 校验区（DATA1[6..10]），
+ * `seal()` 每次重算 CRC 都会改写这些字节，按块动态判装/卸会随 CRC 漂移。
+ *
+ * ⚠️ 2026-10-18 审查 H5：旧实现有两个坑 ——
+ *   ① key 只有 952/949，不含 VIN：换一台同平台的车会沿用上一台车的在场位，
+ *      对齐范围错位；② 冻结后**永不刷新**（`state.presenceMap` 一存在就直接 return），
+ *      用户通过「隐藏功能」把 SGW 在场位改成 Present 后，这个节点永远进不了对齐。
+ *  现在：key 带 VIN；每次读配置按车上块重算**非 CRC 区**的在场位（CRC 区仍冻结）；
+ *  另给「重算在场位」按钮做全量重算。
+ */
 function presenceBaselineKey() {
-  return `alfaproxi.presenceBaseline.${(document.getElementById('platform') || {}).value || '952'}`;
+  const platform = (document.getElementById('platform') || {}).value || '952';
+  const vin = state.vin || 'unknown';
+  return `alfaproxi.presenceBaseline.v2.${platform}.${vin}`;
 }
+/** @returns {{vin?:string,savedAt?:number,map?:object}|null} 旧版（v1，纯 map）会被识别并迁到当前 VIN 下 */
 function loadPresenceBaseline() {
-  try { return JSON.parse(localStorage.getItem(presenceBaselineKey()) || 'null'); } catch { return null; }
+  try {
+    const raw = JSON.parse(localStorage.getItem(presenceBaselineKey()) || 'null');
+    if (!raw || typeof raw !== 'object') return null;
+    // 新版：{vin, savedAt, map}；旧版：{节点名: bool}
+    const isNew = raw.map && typeof raw.map === 'object';
+    return { vin: raw.vin || null, savedAt: raw.savedAt || 0, map: isNew ? raw.map : raw };
+  } catch { return null; }
 }
 function savePresenceBaseline(map) {
-  try { localStorage.setItem(presenceBaselineKey(), JSON.stringify(map)); } catch { /* 隐私模式等忽略 */ }
+  try {
+    localStorage.setItem(presenceBaselineKey(),
+      JSON.stringify({ vin: state.vin || null, savedAt: Date.now(), map }));
+  } catch { /* 隐私模式等忽略 */ }
 }
 
 /** 该节点是否安装；未读取时返回 null。以基线为准，不再随 CRC 字符漂移 */
@@ -1111,19 +1236,46 @@ function nodePresent(node) {
   return (state.block.getByte(node.startByte) & mask) === presentVal;
 }
 
-/** 读取后冻结在场位基线（仅第一次；后续读取/写入/seal 均不影响） */
+/**
+ * 读取配置后刷新在场位基线。
+ *  · 非 CRC 区节点：**每次都以车上块为准**（用户改过在场位配置能立刻生效）
+ *  · CRC 区节点：沿用已冻结值（或磁盘上的值），否则 CRC 数字位会让装/卸状态乱跳
+ *  · 换了车（VIN 不同）：磁盘基线作废，全部按当前块重算
+ */
 function freezePresenceBaseline(block) {
-  if (state.presenceMap) return;
   const saved = loadPresenceBaseline();
-  state.presenceMap = {};
+  const stored = saved && saved.map ? saved.map : null;
+  const map = state.presenceMap || {};
+  let carried = 0, computed = 0;
   for (const n of state.modules.alignmentNodes) {
-    if (saved && n.name in saved) { state.presenceMap[n.name] = saved[n.name]; continue; }
     const { mask, presentVal } = presenceInfo(n);
-    state.presenceMap[n.name] = (presentVal === null || mask === 0)
-      ? null
-      : (block.getByte(n.startByte) & mask) === presentVal;
+    if (presentVal === null || mask === 0) { map[n.name] = null; continue; }
+    if (presenceOverlapsCrc(n)) {
+      if (n.name in map && map[n.name] !== null) { carried++; continue; }        // 本会话已冻结
+      if (stored && n.name in stored && stored[n.name] !== null) {
+        map[n.name] = stored[n.name]; carried++; continue;                       // 磁盘冻结值
+      }
+    }
+    map[n.name] = (block.getByte(n.startByte) & mask) === presentVal;
+    computed++;
   }
-  if (!saved) savePresenceBaseline(state.presenceMap);
+  state.presenceMap = map;
+  savePresenceBaseline(map);
+  if (saved && saved.vin && state.vin && saved.vin !== state.vin) {
+    log(`在场位基线：VIN 变了（${saved.vin} → ${state.vin}），已按当前车重算`);
+  } else if (computed || carried) {
+    log(`在场位基线：按车上块重算 ${computed} 个节点（CRC 区沿用冻结值 ${carried} 个）`);
+  }
+}
+
+/** 按车上当前块**全量**重算在场位（含 CRC 区），并落盘 */
+function resetPresenceBaseline() {
+  state.presenceMap = null;
+  try { localStorage.removeItem(presenceBaselineKey()); } catch { /* 忽略 */ }
+  if (state.block) freezePresenceBaseline(state.block);
+  if (state.modules) {
+    renderAlign();
+  }
 }
 
 /** 对齐写入结果反哺基线：车上拒写「无已安装节点」→ 学到未安装 */
@@ -1145,7 +1297,8 @@ function forEachNodeEl(fn) {
 function setSelection(pred) {
   forEachNodeEl((el, n) => {
     const cb = el.querySelector('.pick');
-    if (cb) cb.checked = pred(el, n);
+    if (!cb || cb.disabled) return;        // 无诊断地址的节点不可勾选
+    cb.checked = pred(el, n);
   });
   updateAlignButtons();
 }
@@ -1153,6 +1306,17 @@ function updateAlignButtons() {
   const n = selectedNodes().length;
   $('btnAlign').textContent = n ? `对齐所选节点（${n}）` : '对齐所选节点';
   $('btnAlign').disabled = n === 0;
+}
+
+/**
+ * 该节点能否单独写入 PROXI。
+ * 源数据（PROXIX1 的 ResultFormat=`00125`）里 11 个节点地址就是 00 —— 它们没有独立
+ * 诊断地址（NAC/NAS/NVB/NIM/NSM/NIT/NYL/NVO/ELSDM/DMSM/NBA）。真车上 18DA00F1
+ * 无人应答，硬连只会把「工具没这个地址」伪装成「节点不可用」，让全量对齐永远报失败。
+ * 这类节点照常显示（用户要看到它们在车上），但不参与「已安装分母」、不写入。
+ */
+function nodeAddressable(n) {
+  return !!n && !n.addrUnknown && String(n.addr).toUpperCase() !== '00';
 }
 
 function renderAlign() {
@@ -1178,19 +1342,23 @@ function renderAlign() {
         }</span>
         <button class="toggle-absent" data-group="${key}">显示未安装节点</button>
       </header>
-      <div class="nodes">${list.map((n) => `
-        <div class="node" data-st="wait" data-group="${key}" data-idx="${n._idx}">
-          <input type="checkbox" class="pick" checked>
-          <div class="nm">${tSpan(n.name)}${presenceOverlapsCrc(n) ? '<span class="tiny" title="该节点在场位字节落在 CRC 校验区（DATA1[6..10]）内，装/卸判定以首次读取的在场位基线为准，不随 CRC 重算漂移"> 在场位与 CRC 区重叠</span>' : ''}</div>
+      <div class="nodes">${list.map((n) => {
+        const ok = nodeAddressable(n);
+        return `
+        <div class="node${ok ? '' : ' noaddr'}" data-st="${ok ? 'wait' : 'noaddr'}" data-group="${key}" data-idx="${n._idx}">
+          <input type="checkbox" class="pick" ${ok ? 'checked' : 'disabled'}>
+          <div class="nm">${tSpan(n.name)}${presenceOverlapsCrc(n) ? '<span class="tiny" title="该节点在场位字节落在 CRC 校验区（DATA1[6..10]）内，装/卸判定以首次读取的在场位基线为准，不随 CRC 重算漂移"> 在场位与 CRC 区重叠</span>' : ''}${ok ? '' : '<span class="tiny" title="源数据里该节点没有独立诊断地址（ResultFormat=00125），无法单独写 PROXI；对齐时按车端已验证行为跳过"> 无诊断地址·不参与对齐</span>'}</div>
           <div class="ad">地址 0x${n.addr} · ${n.baud}k</div>
-          <div class="st">○ 待检查</div>
-        </div>`).join('')}</div>`;
+          <div class="st">${ok ? '○ 待检查' : '— 跳过'}</div>
+        </div>`;
+      }).join('')}</div>`;
     wrap.appendChild(div);
   }
-  $('stTotal').textContent = state.modules.alignmentNodes.filter((n) => !n.excluded).length;
+  const alignable = state.modules.alignmentNodes.filter((n) => !n.excluded && nodeAddressable(n)).length;
+  $('stTotal').textContent = alignable;
   $('stDone').textContent = 0;
   $('stFail').textContent = 0;
-  $('stPending').textContent = state.modules.alignmentNodes.length;
+  $('stPending').textContent = alignable;
   $('stPresent').textContent = '—';
   $('stAligned').textContent = '—';
   $('stMisaligned').textContent = '—';
@@ -1243,11 +1411,25 @@ function bindStatFilter(boxId, pred) {
  */
 $('btnCheckAlign').addEventListener('click', async () => {
   if (!(await ensureRead())) return;
+  if (state.aligning) return alert('正在执行 PROXI 对齐，请等它结束再读取状态。');
+  // 并发闸：整个扫描要 3~5 分钟，连点两次会跑两条循环互相踩模块地址（2026-10-18 审查 M6）
+  if (state.busy) return alert(`正在执行「${state.busy}」，请等它结束或点「取消」。`);
+  stopLiveForOperation('读取对齐状态');
+  if (state.session) state.session.resetCableAbort();
+  state.busy = '读取对齐状态';
+  $('btnCheckAlign').disabled = true;
+  let cancelFlag = false;
+  const cancelUi = showCancelButton(() => { cancelFlag = true; });
   const nodes = [...document.querySelectorAll('.node')];
-  const total = nodes.length;
-  let present = 0, aligned = 0, mis = 0, skipped = 0, failed = 0;
+  const total = nodes.filter((el) => nodeAddressable(state.modules.alignmentNodes[Number(el.dataset.idx)])).length;
+  let present = 0, aligned = 0, mis = 0, skipped = 0, failed = 0, unknown = 0;
+  // 清掉上一轮对齐的「本次成功/失败」，避免状态检查页显示陈旧数字
+  $('stDone').textContent = '0';
+  $('stFail').textContent = '0';
+  $('stPending').textContent = total;
   stage('正在读取各模块对齐状态…');
   await stageWait(320);
+  try {
 
   // 1) 车身电脑为基准：基准块（22 10 2A 比对参照）+ 写入计数（辅助）
   await state.session.ensureModule(state.session.bodyModule);
@@ -1260,8 +1442,23 @@ $('btnCheckAlign').addEventListener('click', async () => {
   let i = 0;
   for (const el of nodes) {
     i++;
+    if (cancelFlag) break;                    // 用户点了「取消」
     const n = state.modules.alignmentNodes[Number(el.dataset.idx)];
     const nm = el.querySelector('.nm').textContent.trim();
+    if (!nodeAddressable(n)) {
+      // 源数据没有独立诊断地址：不探测、不计入未对齐，但**已安装**的必须让用户看到
+      // （车端已验证行为按在场位过滤后同样写不了这类节点，所以这里只能"如实告知"）
+      const inst0 = nodePresent(n);
+      const isPresent = inst0 !== false;
+      el.dataset.st = 'noaddr';
+      el.querySelector('.st').innerHTML = isPresent
+        ? '<b>— 已安装·无地址</b><br><span class="reason">无法写入/校验</span>'
+        : '<b>— 未安装</b>';
+      const cb0 = el.querySelector('.pick');
+      if (cb0) { cb0.checked = false; cb0.disabled = true; }
+      if (isPresent) unknown++;
+      continue;
+    }
     const inst = nodePresent(n);
 
     if (inst === false) {
@@ -1281,7 +1478,9 @@ $('btnCheckAlign').addEventListener('click', async () => {
       await state.session.connectNode(n);
       const v = await state.uds.verifyProxi(refBytes);       // 22 10 2A：主判据
       const c = await state.uds.readProxiWriteCounter();     // 0x292E：辅助
-      const ok = v.ok && c === ref;
+      // 计数读不到（null）时不能判成"一致"（null===null 恒真会让坏链路假通过），退化为只看主判据
+      const counterKnown = c !== null && ref !== null;
+      const ok = v.ok && (!counterKnown || c === ref);
       const reason = !v.ok
         ? `22 10 2A 差异：Byte${v.diffs.map((d) => d.byte).join('、Byte')}`
         : `计数 ${c} / 车身 ${ref}`;
@@ -1300,29 +1499,56 @@ $('btnCheckAlign').addEventListener('click', async () => {
       el.dataset.st = 'fail';
       el.querySelector('.st').innerHTML = `<b>✗ 读取失败</b><br><span class="reason">${e.message}</span>`;
       failed++;
+      // 换线被取消/链路断开：后面的节点只会连续快速失败，直接结束本轮扫描
+      if (/已取消：未确认换线|连接已断开/.test(e.message)) {
+        stageFail('换线已取消/链路断开，停止本轮对齐状态检查');
+        break;
+      }
     }
   }
 
   $('stPresent').textContent = present;
   $('stAligned').textContent = aligned;
   $('stMisaligned').textContent = mis + failed;
+  // 扫描结束后「待检查」应归零；取消时保留实际未扫到的数量
+  $('stPending').textContent = cancelFlag ? Math.max(0, total - (aligned + mis + failed)) : 0;
 
   const v = $('alignVerdict');
   v.classList.remove('hidden', 'ok', 'bad');
-  if (mis === 0 && failed === 0 && present > 0) {
+  const skipNote = unknown ? `（${unknown} 个节点已安装但源数据无独立诊断地址，无法写入/校验）` : '';
+  if (cancelFlag) {
+    stageFail(`已取消对齐状态检查：已读 ${aligned + mis + failed} / ${total}${skipNote}`);
+  } else if (mis === 0 && failed === 0 && present > 0) {
     v.classList.add('ok');
-    v.textContent = '✓ 整车对齐正常，无里程表闪烁';
-    stageDone(`对齐状态检查完成：${aligned} 个已对齐`);
+    v.textContent = '✓ 整车对齐正常，无里程表闪烁' + skipNote;
+    stageDone(`对齐状态检查完成：${aligned} 个已对齐${skipNote}`);
   } else {
     v.classList.add('bad');
-    v.textContent = `⚠ 有 ${mis + failed} 个模块未对齐 → 里程表会闪烁`;
-    stageFail(`对齐状态检查完成：${aligned} 已对齐 / ${mis} 未对齐${failed ? ` / ${failed} 读取失败` : ''}`);
+    v.textContent = `⚠ 有 ${mis + failed} 个模块未对齐 → 里程表会闪烁${skipNote}`;
+    stageFail(`对齐状态检查完成：${aligned} 已对齐 / ${mis} 未对齐${failed ? ` / ${failed} 读取失败` : ''}${skipNote}`);
+  }
+  } catch (e) {
+    // 基准块读取 / 车身电脑连接失败：必须给用户结论，不能只留一条未处理的 Promise 拒绝
+    stageFail('读取对齐状态失败：' + e.message);
+    alert('读取对齐状态失败：' + e.message + (e.nrcText ? '（' + e.nrcText + '）' : ''));
+  } finally {
+    state.busy = null;
+    $('btnCheckAlign').disabled = false;
+    cancelUi.remove();
   }
 });
 
 $('btnAlignAll').addEventListener('click', () => {
   setSelection((el) => !el.classList.contains('absent'));
   $('btnAlign').click();
+});
+// 「重算在场位」：按车上当前块重新判定装/卸（换车、增删模块、改过在场位配置后使用）
+$('btnPresenceReset').addEventListener('click', () => {
+  if (!state.block) return alert('请先读取车辆配置');
+  if (!confirm('按车上当前配置重新判定「节点是否安装」？\n\n用于：换了一台车 / 增删过模块 / 改过在场位配置。\n只影响对齐范围，不会写车。')) return;
+  resetPresenceBaseline();
+  const presentN = Object.values(state.presenceMap || {}).filter((v) => v === true).length;
+  stageDone(`在场位已按当前配置重算：${presentN} 个节点判定为已安装`);
 });
 bindStatFilter('stMisalignedBox', (el) => el.dataset.st === 'misaligned');
 bindStatFilter('stFailBox', (el) => el.dataset.st === 'fail');
@@ -1336,7 +1562,10 @@ $('btnSelMisalign').addEventListener('click', () =>
 
 $('btnAlign').addEventListener('click', async () => {
   if (state.aligning) return;
+  if (state.busy) return alert(`正在执行「${state.busy}」，请等它结束再开始对齐。`);
   if (!(await ensureRead())) return;
+  stopLiveForOperation('PROXI 对齐');
+  if (state.session) state.session.resetCableAbort();
   // 教程 §5.3 对齐前安全警告（ABS 复位/标定、勿中断、钥匙 ON）
   const warn = '开始 PROXI 对齐？该过程将逐节点写入配置。\n\n'
     + '⚠ 对齐会复位 ABS（Giulia/Stelvio），完成后需做转向角、加速度、胎压标定。\n'
@@ -1346,8 +1575,13 @@ $('btnAlign').addEventListener('click', async () => {
   const chosen = selectedNodes();
   if (!chosen.length) return alert('请先勾选要对齐的节点');
   // —— 写前双重读一致性（标准流程）：连续两次读车身块必须一致，防读链路抖动把脏数据写下去 ——
+  // ⚠️ 必须先切回车身电脑：用户可能刚从「实时数据/诊断」退出，session 还停在 ABS/EPS 上，
+  //    那些模块也有一份 289 字节 PROXI 块，会返回"格式合法但内容不是车身电脑"的数据，
+  //    双读一致性照样"通过"，却把错块当基准（2026-10-18 审查 H3）。
   let liveBlock = null;   // 车身电脑当前块 —— 判定「部分对齐是否安全」的基准
   try {
+    stage(`正在连接模块：${modLabel(state.session.bodyModule)}…`);
+    await state.session.ensureModule(state.session.bodyModule);
     stage('写前一致性校验：连续两次读取车身配置…');
     const r1 = await state.uds.readProxi();
     const r2 = await state.uds.readProxi();
@@ -1407,7 +1641,10 @@ $('btnAlign').addEventListener('click', async () => {
   const bytesEq = (a, b) => !!a && !!b && a.length === b.length && a.every((x, i) => x === b[i]);
   const blockDrifted = !bytesEq(state.block.bytes, liveBlock);
   const presentEls = [...document.querySelectorAll('.node')]
-    .filter((el) => nodePresent(state.modules.alignmentNodes[Number(el.dataset.idx)]) !== false);
+    .filter((el) => {
+      const n = state.modules.alignmentNodes[Number(el.dataset.idx)];
+      return nodeAddressable(n) && nodePresent(n) !== false;
+    });
   const allIdx = new Set(presentEls.map((el) => Number(el.dataset.idx)));
   const chosenIdx = new Set(chosen.map((n) => n._idx));
   const isSubset = chosen.length > 0 && chosen.length < allIdx.size;
@@ -1477,8 +1714,11 @@ $('btnAlign').addEventListener('click', async () => {
   const chosenNodes = [...document.querySelectorAll('.node')]
     .filter((el) => chosenIdx.has(Number(el.dataset.idx)));
   state.aligning = true;
-  const total = chosen.length;
+  // ⚠️ 进度分母必须用"最终真正要写的节点数"：上面两道闸可能自动补选了节点，
+  //    用一开始的 chosen.length 会让进度显示成 1/1 却实际跑了 35 个（2026-10-18 审查）。
+  const total = chosenNodes.filter((el) => el.querySelector('.pick')?.checked).length;
   const failed = [];
+  let cableCancelled = false;   // 作用域必须在两个循环之外：旧写法在 for 块内声明，块外引用会 ReferenceError
   try {
     const nodes = chosenNodes;
     let done = 0, fail = 0, idx = 0;
@@ -1486,6 +1726,8 @@ $('btnAlign').addEventListener('click', async () => {
       const grp = state.modules.busGroups[key].label;
       for (const el of nodes.filter((n) => n.dataset.group === key)) {
         if (!el.querySelector('.pick')?.checked) continue;
+        const nodeMeta = state.modules.alignmentNodes[Number(el.dataset.idx)];
+        if (!nodeAddressable(nodeMeta)) continue;      // 无地址节点永不写（防御）
         idx++;
         const nodeName = el.querySelector('.nm').textContent.trim();
         // —— 开始：明确告知正在对齐哪一个 ——
@@ -1512,6 +1754,9 @@ $('btnAlign').addEventListener('click', async () => {
           if (e && e.nrc === 0x31) learnPresence(state.modules.alignmentNodes[Number(el.dataset.idx)], false);
         }
 
+        // 用户取消换线 = 主动终止整轮对齐（否则每个节点都会再报一次「已取消」，看着像全线故障）
+        cableCancelled = /已取消：未确认换线|连接已断开/.test(errMsg);
+
         // —— 结束：立刻给出结论 ——
         if (ok) {
           el.dataset.st = 'ok';
@@ -1528,9 +1773,14 @@ $('btnAlign').addEventListener('click', async () => {
         $('stDone').textContent = done;
         $('stFail').textContent = fail;
         $('stPending').textContent = total - done - fail;
+        if (cableCancelled) {
+          log('已取消换线，终止本轮对齐（剩余节点未处理）');
+          break;
+        }
         // 每节点之间留 ECU 存储沉降时间（标准流程 2.5 秒）
         await stageWait(2500);
       }
+      if (cableCancelled) break;
     }
     // 全部节点完成后留 ECU 收尾时间（标准流程 1 秒）
     await stageWait(1000);
@@ -1543,6 +1793,7 @@ $('btnAlign').addEventListener('click', async () => {
     }
   } finally {
     state.aligning = false;
+    if (state.session) state.session.resetCableAbort();
   }
 });
 
@@ -1581,14 +1832,16 @@ function askInput(item) {
 
     if (spec.kind === 'enum') {
       const multiPos = spec.bytes > 4 && spec.options.length > 8;
+      // 选项 label 可能为空（VIN 类字符盘的「空格」= 0x20），空标签在下拉里看不见 → 显式标注
+      const optLabel = (o) => (t(o.label) || o.label || '(空格)');
       if (multiPos) {
         // 多位输入（RWUSERENTRY 29 族，如 VIN 逐位）：每位一个下拉，选项表是字符/字节盘
         ctrl.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:6px">${Array.from({ length: spec.bytes }, (_, i) =>
           `<select class="imPos" data-i="${i}" style="min-width:62px">${spec.options.map((o, j) =>
-            `<option value="${j}">${t(o.label) || o.label}</option>`).join('')}</select>`).join('')}</div>`;
+            `<option value="${j}">${optLabel(o)}</option>`).join('')}</select>`).join('')}</div>`;
       } else {
         ctrl.innerHTML = `<select id="imValue">${spec.options.map((o, i) =>
-          `<option value="${i}">${t(o.label) || o.label}</option>`).join('')}</select>`;
+          `<option value="${i}">${optLabel(o)}</option>`).join('')}</select>`;
       }
     } else if (spec.kind === 'number') {
       ctrl.innerHTML = `<input id="imValue" type="number" inputmode="decimal"
@@ -1687,7 +1940,9 @@ function mergeWriteField(field, base, picked, item) {
 /** 对「读+写」模板型条目做读改写：返回替换好数据区的新命令串（无法处理时返回 null 走原路径） */
 async function mergeRwUserEntry(item, picked) {
   const parts = String(item.commands).split(',').map((s) => s.trim().replace(/\s/g, '')).filter(Boolean);
-  if (parts.length !== 2) return null;
+  // 喷油嘴编码等条目是「读 + 写 + 后续例程」5 段模板；旧实现只接受 2 段，
+  // 导致选择值完全没写进写模板，执行的是全零编码（2026-10-18 复查）。
+  if (parts.length < 2) return null;
   const rraw = hexToBytes(parts[0]);
   const wraw = hexToBytes(parts[1]);
   if (rraw.length < 4 || rraw[0] !== 3 || rraw[1] !== 0x22) return null;   // 首条=单帧读
@@ -1704,7 +1959,7 @@ async function mergeRwUserEntry(item, picked) {
   np[1] = 0x2e; np[2] = wpay[1]; np[3] = wpay[2];
   np.set(merged, 4);
   const hex = Array.from(np).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join('');
-  return parts[0] + ',' + hex;
+  return [parts[0], hex, ...parts.slice(2)].join(',');
 }
 
 let fnAbort = false;   // 执行中取消标志（中止→发最后一条命令恢复，标准语义）
@@ -1712,24 +1967,32 @@ let fnAbort = false;   // 执行中取消标志（中止→发最后一条命令
 async function runCommandString(cmdStr, item) {
   const sent = [];
   const parts = cmdStr.split(',').map((p) => p.trim().replace(/\s/g, '')).filter(Boolean);
-  // 命令间隔（标准执行器语义）：默认 2s；无旗标时 1 条命令=8s、2 条=6s（结果沉降）。
-  //
-  // ⚠️ 延时旗标必须与标准流程**全量对齐** —— 库里是 7 个，我们此前只实现了 5 个：
-  //   NOWAIT=0 · 0.5SEC · 1SEC · **10SEC** · 20SEC · **30SEC** · 50SEC
-  //   （10SEC / 30SEC 是 2026-10-16 补的，此前漏了 → 用到这两个的执行器会等错时间）
-  // 另有行为类旗标（语义待深挖，暂不拦截）：EXECANY / NOABORT / WAITY / TD100 /
-  //   IORESULT / RWUSERENTRY / SPEEDLIMIT / bitw
+  // 延时 / 行为类旗标（已按车端实测行为定论）：
+  //   NOWAIT=0 · 0.5SEC · 1SEC · 10SEC · 20SEC · 30SEC · 50SEC
+  //   **EXECANY**  = 只放行「第一条命令无应答」；负响应仍失败（后续命令的 NRC 见下）
+  //   **NOABORT**  = 中止时不发「最后一条恢复命令」        —— 9 条（灯光类执行器）
+  //   WAITY / IORESULT / TD100 / FUNCW / SPEEDLIMIT：数据侧 0~1 行，属死路径，不实现
   const flags = String((item && item.resultFormat) || '').toUpperCase();
+  const execAny = flags.includes('EXECANY');
+  const noAbort = flags.includes('NOABORT');
+  const funcPoll = /FUNC/.test(flags);
+  // 基准间隔：默认 2s，0.5SEC→500ms，1SEC→1s。
+  // 10/20/30/50SEC 在其它协议类的同一个链里（`:7647-7667`，tick 单位）。
   let interMs = 2000;
-  if (flags.includes('NOWAIT')) interMs = 0;
-  else if (flags.includes('0.5SEC')) interMs = 500;
-  else if (flags.includes('1SEC') && !flags.includes('10SEC')) interMs = 1000;
+  if (flags.includes('0.5SEC')) interMs = 500;
+  else if (flags.includes('1SEC')) interMs = 1000;
   else if (flags.includes('10SEC')) interMs = 10000;
   else if (flags.includes('20SEC')) interMs = 20000;
   else if (flags.includes('30SEC')) interMs = 30000;
   else if (flags.includes('50SEC')) interMs = 50000;
-  else if (parts.length === 2) interMs = 6000;
-  else if (parts.length === 1) interMs = 8000;
+  if (flags.includes('NOWAIT')) interMs = 0;
+  // 「结果沉降」不是替代基准，而是**在基准之上加倍数**（车端实测节奏）：
+  //   1 条命令 → 基准 + 4×基准（2s → 10s）
+  //   2 条命令 → 基准 + 3×基准（2s → 8s），加在两条之间
+  //   ≥3 条    → 命令之间只等基准（2s）
+  const gapMs = parts.length === 1 ? interMs * 5 : parts.length === 2 ? interMs * 4 : interMs;
+  let realIndex = 0;      // 真实 UDS 命令序号（FE/FF/00 不算）
+  let positive = 0;       // 正响应计数：至少一条正响应才算执行成功
 
   // 中止/取消语义：下发最后一条真实 UDS 作恢复（回到安全态）
   let lastReal = null;
@@ -1738,6 +2001,7 @@ async function runCommandString(cmdStr, item) {
     if (r.length && r[0] > 0 && r[0] < 0xF0) lastReal = r;
   }
   const restoreLast = async () => {
+    if (noAbort) { sent.push('[NOABORT：按标准语义不发恢复命令]'); return; }
     if (!lastReal) return;
     try {
       await state.link.request(lastReal.slice(1, 1 + lastReal[0]));
@@ -1802,23 +2066,86 @@ async function runCommandString(cmdStr, item) {
     const payload = raw.slice(1, 1 + len);
     // ⚠️ 必须看响应 —— 此前把结果丢掉，`7F` 负响应也计成功、弹「执行完成」。
     //    执行器/特殊功能场景下用户根本不知道失败了（2026-10-16 复查 A5）。
-    const resp = await state.link.request(payload);
+    // 超时：例程控制（31）/ 写入（2E）在真车上可能几十秒（DPF 再生、ABS 排空），
+    // 用 5s 默认会把"还在跑"误判成失败；`7F xx 78` 仍由 elm327 层持续等待。
+    const svc = payload[0];
+    const firstReal = realIndex === 0;
+    realIndex++;
+    const timeoutMs = svc === 0x31 ? 30000 : svc === 0x2e ? 15000 : undefined;
     const hex = Array.from(payload).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ')
       + (len > 7 ? '（多帧）' : '');
+    let resp = null;
+    // 特殊功能里的 2E 可能发生在 1~10 秒的沉降/延时之后；ECU 的 S3 扩展会话可能已经掉了。
+    // 写前补一次 10 03，失败不阻塞（由 2E 自己报 NRC）。
+    if (svc === 0x2e && state.uds) {
+      await state.uds.enterExtendedSession().catch(() => {});
+    }
+    try {
+      resp = await state.link.request(payload, timeoutMs ? { timeoutMs } : undefined);
+    } catch (e) {
+      // 车端已验证行为（CAN 命令执行器）：
+      //   第一条命令：空应答且无 EXECANY → 失败；NRC → 失败。
+      //   后续命令：空应答 / NRC 只记录、不中止；最终以「是否至少一条正响应」判定。
+      // 旧实现把后续命令的 NRC 也 throw，导致多段流程（喷油嘴编码等）在第一条读之后
+      // 因某条例程被拒而整条中断，与车端已验证行为不一致。
+      const empty = e && (e.code === 'NO_DATA' || e.code === 'BAD_FRAME');
+      if (empty && (!firstReal || execAny)) {
+        sent.push(`${hex} → （无应答${firstReal ? '，EXECANY 允许' : ''}，继续）`);
+      } else {
+        throw e;
+      }
+    }
     if (resp && resp[0] === 0x7f) {
+      if (resp.length < 3) {
+        sent.push(`${hex} → ✗ 负响应过短：${Array.from(resp).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ')}`);
+        throw new Error('命令被拒：负响应格式不完整');
+      }
       const nrc = resp[2];
       sent.push(`${hex} → ✗ NRC 0x${nrc.toString(16).toUpperCase()}（${NRC[nrc] || '未知'}）`);
-      throw new Error(`命令被拒：NRC 0x${nrc.toString(16).toUpperCase()}（${NRC[nrc] || '未知'}）`);
+      const busyNrc = nrc === 0x21 || nrc === 0x23 || nrc === 0x78;
+      // 首条命令遇忙（FUNC 例程）允许继续轮询；其余首条 NRC / 非 FUNC 首条一律失败
+      if (firstReal && !(funcPoll && busyNrc)) {
+        throw new Error(`命令被拒：NRC 0x${nrc.toString(16).toUpperCase()}（${NRC[nrc] || '未知'}）`);
+      }
+    } else if (resp) {
+      sent.push(hex + ' → ✓');
+      positive++;
     }
-    sent.push(hex + ' → ✓');
+    // FUNC：例程类（31 01 启动）按车端已验证行为**轮询 31 03** 直到 ECU 不再回「忙」
+    // （：500ms 一次，NRC 0x21/0x23 继续，最多 1800 次）
+    if (svc === 0x31 && funcPoll) {
+      const id = payload.slice(2);                    // 例程号（2~3 字节，原样带回）
+      const statusReq = new Uint8Array(2 + id.length);
+      statusReq[0] = 0x31; statusReq[1] = 0x03; statusReq.set(id, 2);
+      let polls = 0;
+      for (let n = 0; n < 1800; n++) {
+        if (!(await waitCancellable(500))) { sent.push('[例程轮询已中止]'); return sent; }
+        let st = null;
+        try {
+          st = await state.link.request(statusReq, { timeoutMs: 5000 });
+        } catch {
+          sent.push('[例程状态读取失败，停止轮询]');
+          break;
+        }
+        polls++;
+        if (st && st[0] !== 0x7f) positive++;
+        if (!(st && st[0] === 0x7f && (st[2] === 0x21 || st[2] === 0x23))) {
+          sent.push(`[例程状态：${st ? Array.from(st).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ') : '空'}（轮询 ${polls} 次）]`);
+          break;
+        }
+      }
+    }
     // 命令间沉降（FE/FF 节奏由 token 自带，真实命令之间按旗标等效等待）
-    if (interMs > 0 && (i < parts.length - 1 || parts.length === 1)) {
-      if (!(await waitCancellable(interMs))) {
+    if (gapMs > 0 && (i < parts.length - 1 || parts.length === 1)) {
+      if (!(await waitCancellable(gapMs))) {
         sent.push('[执行中止→恢复]');
         await restoreLast();
         return sent;
       }
     }
+  }
+  if (realIndex > 0 && positive === 0) {
+    throw new Error('执行失败：所有命令均未得到正响应');
   }
   return sent;
 }
@@ -1826,6 +2153,11 @@ async function runCommandString(cmdStr, item) {
 function renderFunctions() {
   const wrap = $('funcList');
   const all = state.funcs.categories.flatMap((c) => c.items.map((i) => ({ ...i, category: c.category })));
+  // ⚠️ 稳定唯一号：数据里有 3 组「同模块 + 同名」但命令完全不同的条目
+  //    （LRBSS1 VIN lock 读/写、ZF8HP50 Self-adaptation reset 例程/IO、
+  //      ABSMMKC1 Hydraulic unit bleed 两套序列）。此前按钮只带 name+module，
+  //      `all.find(name && module)` 永远命中第一条 → 点第二行执行第一行（2026-10-18 审查 M5）。
+  all.forEach((x, i) => { x._uid = i; });
   $('fnTotal').textContent = all.length;
   $('fnOffline').textContent = all.filter((i) => i.security.level === 'none').length;
   $('fnPin').textContent = all.filter((i) => i.security.level === 'pin').length;
@@ -1887,7 +2219,7 @@ function renderFunctions() {
         ${i.warning ? `<div class="pend-note">⚠ ${t(i.warning)}</div>` : ''}
         <div class="fn-cmds">${i.commands}</div>
       </div>
-      <button class="small" data-run="${encodeURIComponent(i.name)}" data-mod="${i.module}"${
+      <button class="small" data-run="${encodeURIComponent(i.name)}" data-uid="${i._uid}" data-mod="${i.module}"${
         i.security.level === 'server' ? ' disabled' : ''
       }>${i.kind === '执行器' ? '执行' : '运行'}</button>
     </div>`).join('') +
@@ -1897,7 +2229,9 @@ function renderFunctions() {
     b.addEventListener('click', async () => {
       const name = decodeURIComponent(b.dataset.run);
       const mod = b.dataset.mod;
-      const item = all.find((x) => x.name === name && x.module === mod);
+      // 按唯一号取条目（同名同模块的重复条目不能靠名字查）
+      const item = all.find((x) => String(x._uid) === b.dataset.uid)
+        || all.find((x) => x.name === name && x.module === mod);
       if (!item) return;
       if (!modSess.code) {
         alert('请先「进入模块」：在上方选择本功能所属模块，点「进入模块」并确认。');
@@ -1907,6 +2241,18 @@ function renderFunctions() {
         alert(`当前已进入模块 ${modLabel(modSess.code)}（${modSess.code}）。\n此功能属于 ${modLabel(item.module)}（${item.module}）。\n请先「退出模块」，再进入该模块。`);
         return;
       }
+      if (item.category === 'PROXI 对齐' || /,992E2023/.test(item.commands || '')) {
+        // 这条一键命令会下发全零配置块（input 的掩码/值从未套用到块上），
+        // 必须在询问输入之前就拦住，避免用户填完才被告知不能用。
+        alert('「' + t(item.name) + '」已改走「隐藏功能 / 命名设置」路径。\n\n'
+          + '原因：这条一键命令会下发全零配置块，有写坏 PROXI 配置区的风险。\n\n'
+          + '请到「隐藏功能」页找同名设置项修改 —— 那条路径走的是'
+          + '读块 → 按 startByte/mask/value 改位 → 写回真实块 → 回读校验。');
+        return;
+      }
+      if (operationBlocked()) return;
+      stopLiveForOperation('执行特殊功能');
+      if (state.session) state.session.resetCableAbort();
       const mName = modLabel(item.module);
       const bOld = b.textContent;
       let picked = null;
@@ -1922,7 +2268,10 @@ function renderFunctions() {
         if (!pin) { stageDone('已取消（未输入 PIN）'); return; }
         try {
           stage('正在安全访问…');
-          await state.uds.securityAccess(String(pin).trim());
+          const sec = await state.uds.securityAccess(String(pin).trim());
+          if (sec && sec.alreadyUnlocked) {
+            stageDone('该模块已处于解锁状态（种子为 0），无需送密钥');
+          }
         } catch (e) {
           stageFail('安全访问失败：' + e.message);
           alert('安全访问失败：' + e.message + (e.nrcText ? '（' + e.nrcText + '）' : ''));
@@ -1934,6 +2283,7 @@ function renderFunctions() {
       cancelBtn.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:118px;z-index:98;min-height:44px;padding:10px 22px;border-radius:12px;border:1px solid #b33;background:#2a1215;color:#f88;font-size:15px;';
       cancelBtn.onclick = () => { fnAbort = true; cancelBtn.textContent = '正在取消…'; };
       document.body.appendChild(cancelBtn);
+      state.busy = '执行特殊功能';
       try {
         stage(`已连接 ${mName}（地址 0x${(state.cables.modules[item.module] || {}).tx || '??'}）`);
         fnAbort = false;
@@ -1976,19 +2326,6 @@ function renderFunctions() {
               }
               return out;
             }
-            // ⛔ PROXI 对齐类目的一键执行已禁用（2026-10-16 审计 ★4）。
-            // 原因：commands 里的 `992E2023` + 全零模板，`input.options` 的 mask/value
-            // **从不套用到块上**（askInput 结果只用于显示）→ 会把 PROXI 配置区写成全零。
-            // 正确路径是 named-settings：{startByte, mask, value} → applyPatch → writeProxi(真实 289 字节块)。
-            // 而且 functions.json 里这 45 项与 named-settings 的 44 项是同名副本（named-settings 有 startByte）。
-            if (item.category === 'PROXI 对齐' || /,992E2023/.test(item.commands || '')) {
-              alert('「' + t(item.name) + '」已改走「隐藏功能 / 命名设置」路径。\n\n'
-                + '原因：这条一键命令会下发**全零配置块**（输入项的掩码/值从未套用到块上），'
-                + '有写坏 PROXI 配置区的风险。\n\n'
-                + '请到「隐藏功能」页找同名设置项修改 —— 那条路径走的是'
-                + '读块 → 按 startByte/mask/value 改位 → 写回真实块 → 回读校验。');
-              return null;
-            }
             return await runCommandString(cmdToSend, item);
           } finally {
             b.disabled = false;
@@ -2002,9 +2339,16 @@ function renderFunctions() {
           stageDone(`已取消：${t(item.name)}（恢复命令已下发）`);
           return;
         }
-        stageDone(`完成：${t(item.name)}（下发 ${sent.length} 帧）`);
+        // EXECANY 类条目允许部分命令被拒（车端已验证行为继续执行），但结果必须让用户看见
+        const rejected = sent.filter((s) => /✗ NRC 0x/.test(String(s))).length;
         const valLine = (picked && typeof picked === 'object') ? `\n设定值：${picked.label}` : '';
-        alert(`执行完成\n\n项目：${t(item.name)}\n模块：${m2label(item.module)}${valLine}\n下发帧：\n${sent.join('\n') || '（无）'}`);
+        if (rejected) {
+          stageFail(`完成（有 ${rejected} 条命令被拒）：${t(item.name)}`);
+          alert(`执行结束，但有 ${rejected} 条命令被 ECU 拒绝\n\n项目：${t(item.name)}\n模块：${m2label(item.module)}${valLine}\n下发帧：\n${sent.join('\n') || '（无）'}`);
+        } else {
+          stageDone(`完成：${t(item.name)}（下发 ${sent.length} 帧）`);
+          alert(`执行完成\n\n项目：${t(item.name)}\n模块：${m2label(item.module)}${valLine}\n下发帧：\n${sent.join('\n') || '（无）'}`);
+        }
         // DISCONNECTONSUCCESS：成功后自动退出模块（标准语义）
         if (fnFlags.includes('DISCONNECTONSUCCESS')) {
           await exitModule({ auto: true });
@@ -2016,6 +2360,7 @@ function renderFunctions() {
       } finally {
         cancelBtn.remove();
         fnAbort = false;
+        if (state.busy === '执行特殊功能') state.busy = null;
       }
     });
   });
@@ -2045,37 +2390,69 @@ function stageDone(text) { stage(text, 'done'); setTimeout(() => $('stageBar').c
 function stageFail(text) { stage(text, 'fail'); }
 const stageWait = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * 长任务的「执行中浮出取消按钮」（对齐状态扫描要 3~5 分钟，没取消只能干等）。
+ * 返回 { remove }，调用方 finally 里 remove()。
+ */
+function showCancelButton(onCancel) {
+  const b = document.createElement('button');
+  b.textContent = '取消';
+  b.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:118px;z-index:98;min-height:44px;padding:10px 22px;border-radius:12px;border:1px solid #b33;background:#2a1215;color:#f88;font-size:15px;';
+  b.onclick = () => { b.textContent = '正在取消…'; b.disabled = true; onCancel(); };
+  document.body.appendChild(b);
+  return { remove: () => b.remove() };
+}
+
 $('btnScan').addEventListener('click', async () => {
   if (!(await ensureConnected())) return;
+  if (operationBlocked()) return;
+  stopLiveForOperation('扫描模块');
+  if (state.session) state.session.resetCableAbort();
+  state.busy = '扫描模块';
+  $('btnScan').disabled = true;
   const list = state.modules.modules;
   stage(`正在扫描车辆支持的控制模块…`);
   // 真实逐模块探测：对每个模块发 testerPresent，按应答标注（不再只是静态清单）
   let ok = 0, none = 0, skipped = 0;
-  for (const m of list) {
-    const grp = (state.cables.modules[m.code] || {}).group || 'none';
-    const mustSwap = !(state.link && state.link.autoSwitchesBus) && grp !== 'none'
-      && state.session.currentGroup !== grp;
-    if (mustSwap) { m.scanState = 'skip'; skipped++; renderModules(); continue; }
-    stage(`正在探测 ${m.code}（${modLabel(m.code)}）…`);
-    try {
-      await Promise.race([
-        state.session.runOn(m.code, async () => { await state.uds.testerPresent(); }),
-        new Promise((_, rej) => setTimeout(() => rej(new Error('超时')), 1500)),
-      ]);
-      m.scanState = 'ok'; ok++;
-    } catch {
-      m.scanState = 'none'; none++;
+  try {
+    for (const m of list) {
+      const grp = (state.cables.modules[m.code] || {}).group || 'none';
+      // 不在这里弹换线提示：跨总线模块标记为「跳过」，等用户接好线后再扫；
+      // 反过来从 swap/comfort 回主总线同样要跳过（旧判据会漏掉回主总线的换线）。
+      const mustSwap = !!state.session && state.session.needsPhysicalSwap(grp);
+      if (mustSwap) { m.scanState = 'skip'; skipped++; renderModules(); continue; }
+      stage(`正在探测 ${m.code}（${modLabel(m.code)}）…`);
+      try {
+        // ✅ 不搞 Promise.race 弃单：被弃的 ensureModule 仍在跑，会和下一条模块
+        //    的 ATSH/ATSPB 交错。直接 await 一个较短的 testerPresent 超时。
+        await state.session.runOn(m.code, async () => { await state.uds.testerPresent(1500); });
+        m.scanState = 'ok'; ok++;
+      } catch {
+        m.scanState = 'none'; none++;
+      }
+      renderModules();
     }
     renderModules();
+    stageDone(`扫描完成：${ok} 个有应答${none ? ` / ${none} 个无应答` : ''}${skipped ? ` / ${skipped} 个跨总线未探测（需换适配线）` : ''}`);
+  } catch (e) {
+    stageFail('扫描失败：' + e.message);
+  } finally {
+    if (state.busy === '扫描模块') state.busy = null;
+    $('btnScan').disabled = false;
   }
-  renderModules();
-  stageDone(`扫描完成：${ok} 个有应答${none ? ` / ${none} 个无应答` : ''}${skipped ? ` / ${skipped} 个跨总线未探测（需换适配线）` : ''}`);
 });
 
 /** 手动连接指定模块（选模块→连接） */
 async function connectModuleManual(code) {
   try {
     if (!(await ensureConnected())) return;
+    if (modSess.code) {
+      alert(`当前已进入模块 ${modLabel(modSess.code)}（${modSess.code}）。\n换模块必须先点「退出模块」并确认退出。`);
+      return;
+    }
+    if (operationBlocked()) return;
+    stopLiveForOperation('连接模块');
+    if (state.session) state.session.resetCableAbort();
     stage('正在连接模块 ' + modLabel(code) + '…');
     await state.session.ensureModule(code);
     $('modState').textContent = '已连接模块：' + modLabel(code);
@@ -2090,7 +2467,13 @@ async function connectModuleManual(code) {
 
 /** 手动断开当前模块 */
 function disconnectModuleManual() {
-  if (state.session) state.session.current = null;
+  if (operationBlocked()) return;
+  stopLiveForOperation('断开模块');
+  if (state.session) state.session.disconnectModule();
+  if (modSess.code) {
+    modSess.code = null;
+    renderModuleSessionUI();
+  }
   $('modState').textContent = '未连接模块';
   $('modState').className = 'pill mod';
   renderModules();
@@ -2174,6 +2557,12 @@ $('btnReadDtc').addEventListener('click', async () => {
   const code = $('dtcModule').value;
   if (!code) return alert('请先选择模块');
   if (!(await ensureConnected())) return;
+  if (state.aligning) return alert('正在执行 PROXI 对齐，请等它结束。');
+  if (state.busy) return alert(`正在执行「${state.busy}」，请等它结束。`);
+  stopLiveForOperation('读取故障码');
+  if (state.session) state.session.resetCableAbort();
+  state.busy = '读取故障码';
+  $('btnReadDtc').disabled = true;
   try {
     stage(`正在连接模块：${modLabel(code)}…`);
     await stageWait(420);
@@ -2196,43 +2585,109 @@ $('btnReadDtc').addEventListener('click', async () => {
             ${hit && hit.desc ? `<div class="sub">${hit.desc}</div>` : ''}
             <div class="sub">原始码 ${rawHex} · 状态 0x${d.status.toString(16).toUpperCase().padStart(2, '0')}</div>
           </div>
-          <button class="small ghost" data-snap="${rawHex}">冻结帧</button>
         </div>`;
       }).join('');
-      // 冻结帧（19 04）：故障发生瞬间的车速/水温等快照——排障关键数据
-      wrap.onclick = async (e) => {
-        const btn = e.target.closest('[data-snap]');
-        if (!btn) return;
-        const rawHex = btn.dataset.snap;
-        const panelId = 'snap-' + rawHex;
-        const old = document.getElementById(panelId);
-        if (old) { old.remove(); return; }
-        const hi = parseInt(rawHex.substr(0, 2), 16);
-        const lo = parseInt(rawHex.substr(2, 2), 16);
-        try {
-          stage(`正在读取 ${rawHex} 的冻结帧…`);
-          await state.session.runOn(code, async () => {
-            const resp = await state.uds.readDtcSnapshot(hi, lo);
-            const items = (state.snapshots && state.snapshots.modules && state.snapshots.modules[code]) || [];
-            const rows = items.map((s) => {
-              const v = applyScale(resp, { spec: s });
-              return `<div class="mrow"><div class="grow"><div class="name">${tSpan(s.name)}</div></div>`
-                + `<div class="live-val">${v ?? '—'}<span style="color:var(--dim);font-size:12px"> ${s.unit || ''}</span></div></div>`;
-            }).join('');
-            btn.closest('.mrow').insertAdjacentHTML('afterend',
-              `<div id="${panelId}" style="grid-column:1/-1">${rows || '<div class="dim" style="padding:10px">该模块无冻结帧参数表</div>'}</div>`);
-            stageDone(`冻结帧：${items.length} 项`);
-          });
-        } catch (err) {
-          stageFail('冻结帧读取失败：' + err.message);
-          alert('冻结帧读取失败：' + err.message);
-        }
-      };
       stageDone(`读取完成：${list.length} 条故障码`);
     });
   } catch (e) {
     stageFail('读取失败：' + e.message);
     alert('读取失败：' + e.message);
+  } finally {
+    state.busy = null;
+    $('btnReadDtc').disabled = false;
+  }
+});
+
+/**
+ * 冻结帧快照（19 04）。
+ *
+ * ⚠️ 请求与车端已验证行为**逐字节一致**：`19 04 00 00 00 00`（DTC 全 0 + 记录号 0）。
+ *    车端已验证行为的同一模块内所有快照参数表都用这一条命令 —— 它读的是 ECU 当前保存的
+ *    那份快照，而不是"某个 DTC 专属的那份"。此前我们按点击的 DTC 拼 hi/lo，
+ *    那是没有实证的自创路径（2026-10-18 修正）。
+ *
+ * 取值口径（实证链）：
+ *   1. 车端已验证行为 `qv()`：`P_2++; value = buffer[StartByte+1]` —— StartByte 是
+ *      **1-based、相对数据区**（实时参数 03220885 StartByte=1 取到第 1 字节，实车已验证）。
+ *   2. 冻结帧参数表与实时参数表**用同一套 StartByte 口径**（ABSMMKC1 转向角在两张表里
+ *      StartByte 都是 1、NumOfBytes 都是 2、格式都是 nums,2,6.25）。
+ *   3. `19 04` 应答头 = `59 04` + DTC(3) + 记录号(1) = **6 字节**，数据区从这里开始。
+ *   3b. 表里带第二个 token 的（如 `…,0885,02`）表示**按 DID 定位**：在数据区里找到该 DID，
+ *       跳过 2 字节 DID，再按 StartByte-1 取 NumOfBytes 字节。
+ */
+/**
+ * 模拟模式下的冻结帧合成数据区：按该模块的参数表把 DID/绝对偏移都填上，
+ * 让「冻结帧快照」页在演示时每项都有值（真机走 ECU 应答，不用这个）。
+ */
+function synthSnapshotData(items) {
+    const DATA = 64;
+    const data = new Uint8Array(DATA);
+    const putVal = (off, n) => {
+        for (let i = 0; i < n && off + i < DATA; i++) data[off + i] = i === n - 1 ? 0x64 : 0x00;
+    };
+    let off = 0;
+    const seen = new Set();
+    for (const s of items) {
+        if (!s.did) continue;
+        if (seen.has(s.did)) continue;
+        seen.add(s.did);
+        const did = parseInt(s.did, 16);
+        if (off + 2 + s.bytes > DATA) break;
+        data[off] = (did >> 8) & 0xff; data[off + 1] = did & 0xff;
+        putVal(off + 2, s.bytes);
+        off += 2 + s.bytes;
+    }
+    for (const s of items) {
+        if (s.did) continue;
+        putVal(Math.max(0, (s.start || 1) - 1), s.bytes);
+    }
+    return Uint8Array.from([0x59, 0x04, 0x00, 0x00, 0x00, 0x01, ...data]);
+}
+
+$('btnDtcSnap').addEventListener('click', async () => {
+  const code = $('dtcModule').value;
+  if (!code) return alert('请先选择模块');
+  if (!(await ensureConnected())) return;
+  if (state.aligning) return alert('正在执行 PROXI 对齐，请等它结束。');
+  if (state.busy) return alert(`正在执行「${state.busy}」，请等它结束。`);
+  stopLiveForOperation('读取冻结帧');
+  if (state.session) state.session.resetCableAbort();
+  state.busy = '读取冻结帧';
+  $('btnDtcSnap').disabled = true;
+  const box = $('dtcSnap');
+  try {
+    stage(`正在读取 ${modLabel(code)} 的冻结帧快照…`);
+    await state.session.runOn(code, async () => {
+      const real = await state.uds.readDtcSnapshot();
+      // 模拟模式：演示链路不模拟快照内容，用参数表合成一份，避免整页都是「—」
+      const resp = state.simMode ? synthSnapshotData(
+        (state.snapshots && state.snapshots.modules && state.snapshots.modules[code]) || []) : real;
+      const items = (state.snapshots && state.snapshots.modules && state.snapshots.modules[code]) || [];
+      if (!items.length) {
+        box.innerHTML = '<div class="dim" style="padding:14px">该模块没有冻结帧参数表</div>';
+        stageDone('该模块无冻结帧参数表');
+        return;
+      }
+      const rows = items.map((s) => {
+        const v = snapshotValue(resp, s);
+        const shown = v === null || v === undefined ? '—' : v;
+        return `<div class="mrow">
+          <div class="grow"><div class="name">${tSpan(s.name)}</div></div>
+          <div class="live-val">${shown}<span style="color:var(--dim);font-size:12px"> ${s.unit || ''}</span></div>
+        </div>`;
+      }).join('');
+      const got = items.filter((s) => snapshotValue(resp, s) !== null).length;
+      box.innerHTML = `<div class="sec-head" style="margin:0 0 8px"><h3 style="font-size:14px">冻结帧快照</h3>
+        <p class="dim">ECU 保存的快照（19 04）· ${got}/${items.length} 项有值 · 应答 ${resp.length} 字节</p></div>${rows}`;
+      stageDone(`冻结帧：${got}/${items.length} 项有值`);
+    });
+  } catch (e) {
+    box.innerHTML = '';
+    stageFail('冻结帧读取失败：' + e.message);
+    alert('冻结帧读取失败：' + e.message + (e.nrcText ? '（' + e.nrcText + '）' : ''));
+  } finally {
+    state.busy = null;
+    $('btnDtcSnap').disabled = false;
   }
 });
 
@@ -2241,6 +2696,12 @@ $('btnClearDtc').addEventListener('click', async () => {
   if (!code) return alert('请先选择模块');
   if (!confirm(`确认清除 ${modLabel(code)} 的故障码？\n\n清除后历史故障记录将丢失，需重新读取才能显示。`)) return;
   if (!(await ensureConnected())) return;
+  if (state.aligning) return alert('正在执行 PROXI 对齐，请等它结束。');
+  if (state.busy) return alert(`正在执行「${state.busy}」，请等它结束。`);
+  stopLiveForOperation('清除故障码');
+  if (state.session) state.session.resetCableAbort();
+  state.busy = '清除故障码';
+  $('btnClearDtc').disabled = true;
   try {
     await state.session.runOn(code, async () => {
       stage('正在清除故障码…');
@@ -2251,6 +2712,9 @@ $('btnClearDtc').addEventListener('click', async () => {
   } catch (e) {
     stageFail('清除失败：' + e.message);
     alert('清除失败：' + e.message);
+  } finally {
+    state.busy = null;
+    $('btnClearDtc').disabled = false;
   }
 });
 
@@ -2275,18 +2739,21 @@ async function enterModule(code) {
     return false;
   }
   if (!(await ensureConnected())) return false;
+  if (operationBlocked()) return false;
+  if (state.session) state.session.resetCableAbort();
   const m = state.cables.modules[code] || {};
   // 非免换线适配器：连接前提醒接对应适配线，确认后再连（与通用诊断流程一致）
   const wantGroup = m.group || 'none';
-  const autoBus = state.link && state.link.autoSwitchesBus;
-  const mustSwap = !autoBus && wantGroup !== 'none'
-    && (!state.session || state.session.currentGroup !== wantGroup);
+  const mustSwap = !!state.session && state.session.needsPhysicalSwap(wantGroup);
   const lines = [
     `进入模块：${modLabel(code)}（${code}）`,
     `地址 0x${m.tx || '??'} · ${m.baud || '?'}k`,
   ];
   if (mustSwap) {
-    lines.push('', `⚠ 请先接好适配线：${m.hint || cableBrief(code)}`, '接好后点「确定」，App 再连接模块。');
+    const hint = m.hint || (wantGroup === 'swap' ? '请更换为 6 号灰色适配线'
+      : wantGroup === 'comfort' ? '请接 5 号蓝色适配线'
+        : '请换回主总线（6/14 脚，无需适配线）');
+    lines.push('', `⚠ 请先接好适配线：${hint}`, '接好后点「确定」，App 再连接模块。');
   } else {
     lines.push('', cableBrief(code), '', '确认进入该模块？');
   }
@@ -2309,9 +2776,14 @@ async function enterModule(code) {
 
 async function exitModule(opts = {}) {
   if (!modSess.code) return;
+  // 用户手动退出时，不能从正在执行的功能/对齐中间抽走模块；自动退出（DISCONNECTONSUCCESS）放行
+  if (!opts.auto && operationBlocked()) return;
   if (!opts.auto && !confirm(`确认退出模块 ${modLabel(modSess.code)}（${modSess.code}）？\n退出后才能选择其他模块。`)) return;
   stopLiveLoop();
-  if (state.session) state.session.disconnectModule();
+  if (state.session) {
+    state.session.disconnectModule();
+    state.session.resetCableAbort();
+  }
   const name = modLabel(modSess.code);
   modSess.code = null;
   $('modState').textContent = '未连接模块';
@@ -2343,74 +2815,37 @@ function renderModuleSessionUI() {
 /* ================= 实时数据 ================= */
 const live = { running: false, samples: [], lastItems: [], items: [], picks: [] };
 
-function applyScale(raw, item) {
-  if (!raw || !raw.length) return null;
-  const spec = item.spec || {};
-  const nb = spec.bytes || 1;
-  const st = spec.start || 0;                       // 参数在应答里的起始偏移（0-based）
-  const fmt = spec.format || '';
-  const slice = raw.slice(st, Math.min(raw.length, st + nb));
-  if (!slice.length) return null;
+/**
+ * 任何会切模块 / 写车 / 长扫的操作开始前，先停掉实时轮询。
+ * 实时循环是一个独立的异步 while，和 setAddress/对齐写共享半双工串口；
+ * 不先停会出现「轮询请求插进节点切换之后、拿上一个模块的地址读数据」。
+ */
+function stopLiveForOperation(reason) {
+  if (!live.running) return;
+  stopLiveLoop();
+  live.running = false;
+  live.picks = [];
+  live.items = [];
+  [...document.querySelectorAll('.live-pick:checked')].forEach((el) => {
+    el.checked = false;
+    const cell = document.getElementById('liveVal-' + el.dataset.idx);
+    if (cell) { cell.textContent = '—'; cell.classList.remove('live-val-hot'); }
+  });
+  if ($('liveParams')) renderLiveParams();
+  log(`已自动停止实时数据（${reason}）`);
+}
 
-  // 非数值格式：按格式族分支
-  if (fmt === 'str') return slice.map((b) => (b >= 32 && b < 127 ? String.fromCharCode(b) : '')).join('').replace(/\0+$/, '');
-  if (fmt === 'hex') return Array.from(slice).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join('');
-  if (fmt === 'hex2') return Array.from(slice).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
-  if (fmt === 'bits' || fmt === 'bitw' || fmt === 'bitchars' || /^\d{3,5}$/.test(fmt)) {
-    // bit 族语义（2026-10-17 审计）：选项表 = `MMVV标签`（bits 首字节）/
-    // `MMVVMMVV标签`（bitw 双字节配对）/ bitchars 逐字节拼字符；末项为兜底。
-    const opts = spec.options;
-    const hx = (s, i) => parseInt(s.substr(i, 2), 16);
-    if (!opts || !opts.length) {
-      return Array.from(slice).map((b) => b.toString(2).padStart(8, '0')).join(' ');
-    }
-    const match1 = (b, e) => (b & hx(e, 0)) === hx(e, 2);
-    if (fmt === 'bitw' && slice.length >= 2) {
-      for (let k = 0; k < opts.length; k++) {
-        const e = opts[k];
-        if (((slice[0] & hx(e, 0)) === hx(e, 2) && (slice[1] & hx(e, 4)) === hx(e, 6)) || k === opts.length - 1) {
-          return e.slice(8);
-        }
-      }
-    }
-    if (fmt === 'bitchars') {
-      let out = '';
-      for (const b of slice) {
-        for (let k = 0; k < opts.length; k++) {
-          if (match1(b, opts[k]) || k === opts.length - 1) { out += opts[k].slice(4); break; }
-        }
-      }
-      return out;
-    }
-    for (let k = 0; k < opts.length; k++) {
-      if (match1(slice[0], opts[k]) || k === opts.length - 1) return opts[k].slice(4);
-    }
+/** 长任务/写车/换模块的统一并发闸：返回 true 表示可以继续 */
+function operationBlocked() {
+  if (state.aligning) {
+    alert('正在执行 PROXI 对齐，请等它结束。');
+    return true;
   }
-  // nm 族：nm,小数位,系数,偏移,掩码 —— 先按掩码截位再线性换算（如节气门开度 %）
-  if (fmt.startsWith('nm')) {
-    const p = fmt.split(',');
-    const mask = p[4] ? (parseInt(p[4], 16) >>> 0) : 0xff;
-    let n = 0;
-    for (const b of slice) n = n * 256 + b;
-    n &= mask;
-    n = n * (spec.scale ?? (p[2] ? Number(p[2]) : 1)) + (spec.offset ?? (p[3] ? Number(p[3]) : 0));
-    const dec = spec.decimals ?? (p[1] ? Number(p[1]) : 0);
-    return Number((n / Math.pow(10, dec)).toFixed(dec));
+  if (state.busy) {
+    alert(`正在执行「${state.busy}」，请等它结束。`);
+    return true;
   }
-  if (fmt === 'date' || fmt === 'datehalf' || fmt.startsWith('eq3') || fmt.startsWith('equ')) {
-    // 日期/多项式：数据侧未导入换算参数，退化为 hex
-    return Array.from(slice).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
-  }
-
-  // 数值格式：大端装配 + nums 族按字节宽两位补码 + (raw*scale+offset)/10^decimals
-  let n = 0;
-  for (const b of slice) n = n * 256 + b;
-  const signed = spec.signed === true || fmt.startsWith('nums');
-  if (signed && n >= Math.pow(2, 8 * slice.length - 1)) n -= Math.pow(2, 8 * slice.length);
-  n = n * (spec.scale ?? 1) + (spec.offset ?? 0);
-  const dec = spec.decimals ?? 0;
-  n = n / Math.pow(10, dec);
-  return Number(n.toFixed(dec));
+  return false;
 }
 
 function renderLive(items) {
@@ -2444,10 +2879,19 @@ function renderLiveParams() {
     wrap.innerHTML = '<div class="dim" style="padding:16px">点「进入模块」并确认连接成功后，这里显示该模块可读参数</div>';
     return;
   }
-  const items = (state.params && state.params.modules && state.params.modules[code]) || [];
+  const all = (state.params && state.params.modules && state.params.modules[code]) || [];
+  // DATA1/DATA2/DATA3 是整块原始 hex（NumOfBytes=512）：不是"实时参数"，
+  // 勾上会把 289 字节 hex（578 字符）塞进值槽撑爆一行，而且每 120ms 轮询一次整块毫无意义。
+  const isRawBlock = (i) => (i.spec && i.spec.bytes >= 100)
+    || /^DATA\d[S]?$/i.test(String(i.name || '').trim());
+  const q = ($('liveSearch') && $('liveSearch').value) || '';
+  const items = all.filter((i) => !isRawBlock(i) && hit(q, i.name, t(i.name), i.did, i.spec && i.spec.unit));
   state.liveItems = items;
-  $('liveCount').textContent = items.length;
-  wrap.innerHTML = items.slice(0, 150).map((i, idx) => `
+  $('liveCount').textContent = items.length === all.filter((i) => !isRawBlock(i)).length
+    ? items.length
+    : `${items.length} / ${all.filter((i) => !isRawBlock(i)).length}`;
+  const CAP = 400;
+  wrap.innerHTML = items.slice(0, CAP).map((i, idx) => `
     <div class="mrow">
       <input type="checkbox" class="live-pick" data-idx="${idx}" ${modSess.code ? '' : 'disabled'} style="accent-color:var(--accent)">
       <div class="grow">
@@ -2455,9 +2899,19 @@ function renderLiveParams() {
         <div class="sub">DID ${i.did} · ${i.spec && i.spec.unit ? '单位 ' + i.spec.unit + ' · ' : ''}${i.spec && i.spec.scale && i.spec.scale !== 1 ? '换算 ×' + i.spec.scale : ''}</div>
       </div>
       <div class="live-val" id="liveVal-${idx}">—</div>
-    </div>`).join('') || '<div class="dim" style="padding:14px">该模块无可读参数</div>';
+    </div>`).join('') + (items.length > CAP
+    ? `<div class="dim" style="padding:10px">仅显示前 ${CAP} 条（共 ${items.length} 条），请用上方搜索缩小范围</div>`
+    : '') || '<div class="dim" style="padding:14px">该模块无可读参数</div>';
 }
 $('liveModule') && $('liveModule').addEventListener('change', renderLiveParams);
+$('liveSearch') && $('liveSearch').addEventListener('input', () => {
+  // 重新渲染会重建勾选框，轮询中的监控项会失配 → 先停掉轮询再过滤
+  if (live.running) {
+    stopLiveLoop();
+    live.running = false; live.picks = []; live.items = [];
+  }
+  renderLiveParams();
+});
 
 $('btnLiveEnter') && $('btnLiveEnter').addEventListener('click', async () => {
   const code = $('liveModule').value;
@@ -2475,6 +2929,16 @@ function pickedLiveItems() {
 
 async function syncLiveAuto() {
   if (!modSess.code) return;
+  // 长任务期间不允许从实时页重新开轮询（读配置/写车/对齐/扫描共享半双工串口）
+  if (state.busy || state.aligning) {
+    [...document.querySelectorAll('.live-pick:checked')].forEach((el) => {
+      el.checked = false;
+      const cell = document.getElementById('liveVal-' + el.dataset.idx);
+      if (cell) { cell.textContent = '—'; cell.classList.remove('live-val-hot'); }
+    });
+    log(`正在执行「${state.busy || 'PROXI 对齐'}」，实时数据已取消`);
+    return;
+  }
   const picked = pickedLiveItems();
   if (picked.length > 8) {
     alert('最多同时监控 8 项参数，已保留前 8 项');

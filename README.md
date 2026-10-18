@@ -6,9 +6,9 @@
 
 | 平台 | 安装包 | 说明 |
 |---|---|---|
-| macOS（Apple Silicon） | `AlfaProxi-0.2.0-arm64.dmg` | 已 ad-hoc 签名，双击安装 |
-| Windows x64 | `AlfaProxi.Setup.0.2.0.exe` | NSIS 免管理员安装 |
-| Android 8+ | `AlfaProxi-0.2.0-android.apk` | 侧载安装（3.5MB，用系统 WebView） |
+| macOS（Apple Silicon） | `AlfaProxi-0.2.11-arm64.dmg` | 已 ad-hoc 签名，双击安装 |
+| Windows x64 | `AlfaProxi.Setup.0.2.11.exe` | NSIS 免管理员安装 |
+| Android 8+ | `AlfaProxi-0.2.11-android.apk` | 侧载安装（3.5MB，用系统 WebView） |
 | iOS | 见下方「iOS 自行安装」 | 苹果限制无法直接分发安装包 |
 
 安装包在 [Releases](../../releases) 页下载。
@@ -112,7 +112,7 @@ npm run dist:mac           # macOS dmg
 npm run dist:win           # Windows NSIS（arm64 Mac 需设 ELECTRON_BUILDER_NSIS_DIR=.nsis-arm64）
 ```
 
-测试：`npm test`（协议层单测）；`test-agent1/`（60 项端到端回归，需模拟车 `node sandbox/harness.mjs`）。
+测试：`npm test`（语法门禁 + 协议层单测）；`test-agent1/`（61 项端到端回归，需先起 `node bridge/server.js`，再起模拟车 `node sandbox/harness.mjs`）。
 
 ## License
 

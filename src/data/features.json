@@ -15,8 +15,9 @@
       "status": "carTested",
       "source": "厂商诊断数据 / 已验证",
       "needsAlignment": true,
-      "patches": [{ "addr": 156, "bits": { "4": 0 } }],
-      "notes": "对应 bit5-4 组合：00=欧规（可挂空挡），01=美规。该字节的 bit5 会一并写入，请核对改后值。"
+      "patches": [{ "addr": 156, "bits": { "4": 0, "5": 0 } }],
+      "noOff": true,
+      "notes": "对应 bit5-4 组合：00=欧规（可挂空挡），01=美规。必须同时清 bit5+bit4 才是欧规 00。"
     },
     {
       "id": "remote-window",
@@ -78,8 +79,15 @@
       "status": "verified",
       "source": "厂商诊断数据",
       "needsAlignment": true,
-      "patches": [],
-      "notes": "Byte63：低 4 位为容量（0x2=95Ah/800A），高 4 位为类型（0xA=H8 铅酸，0xB=AGM）。写入前须按实车蓄电池型号取值。"
+      "patches": [
+        { "addr": 63, "bits": { "0": 0, "1": 1, "2": 0, "3": 0, "4": 0, "5": 1, "6": 0, "7": 1 } }
+      ],
+      "options": [
+        { "label": "H8 铅酸（0xA）", "bits": { "4": 0, "5": 1, "6": 0, "7": 1 } },
+        { "label": "AGM（0xB）", "bits": { "4": 1, "5": 1, "6": 0, "7": 1 } }
+      ],
+      "noOff": true,
+      "notes": "Byte63：低 4 位容量固定 0x2（95Ah/800A），高 4 位类型（0xA=H8 铅酸，0xB=AGM）。写入前须确认实车蓄电池为 95Ah/800A 规格。"
     },
     {
       "id": "android-auto",

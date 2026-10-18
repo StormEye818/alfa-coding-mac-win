@@ -4993,8 +4993,8 @@
      "resultFormat": "num",
      "desc": "",
      "security": {
-      "level": "none",
-      "text": "无需安全访问"
+      "level": "server",
+      "text": "需要服务器按 VIN 算密钥（27 05）→ 本工具不支持"
      },
      "needsUserInput": false,
      "execManual": false
@@ -11270,8 +11270,8 @@
      "resultFormat": "num",
      "desc": "",
      "security": {
-      "level": "none",
-      "text": "无需安全访问"
+      "level": "server",
+      "text": "需要服务器按 VIN 算密钥（27 05）→ 本工具不支持"
      },
      "needsUserInput": false,
      "execManual": false
@@ -18697,8 +18697,8 @@
      "resultFormat": "num",
      "desc": "",
      "security": {
-      "level": "none",
-      "text": "无需安全访问"
+      "level": "server",
+      "text": "需要服务器按 VIN 算密钥（27 05）→ 本工具不支持"
      },
      "needsUserInput": false,
      "execManual": false

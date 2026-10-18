@@ -421,6 +421,10 @@ main { padding: 22px; max-width: 1360px; margin: 0 auto; }
 }
 .node.absent { opacity: .42; }
 .node.absent .st { color: var(--dim); }
+/* 源数据里没有独立诊断地址（ResultFormat=00125）的节点：照常显示，但不参与对齐 */
+.node.noaddr { opacity: .55; }
+.node.noaddr .pick { cursor: not-allowed; }
+.node.noaddr .st { color: var(--dim); }
 .st.aligned { color: #56d364; }
 .st.misaligned { color: var(--amber); }
 .verdict {

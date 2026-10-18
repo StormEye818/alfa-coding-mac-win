@@ -71,6 +71,26 @@ function build() {
 
     // ---- 2. PROXI 对齐节点表 ----
     const params = readTsv('params_all.tsv');
+    // 952/949 不支持的混动/纯电/空气悬架/拖车节点：源数据 PROXIX1 表里存在，
+    // 但本平台没有这些硬件。生成时必须保留排除标记，否则整页会多出 15 个
+    // 永远读不到、也无法对齐的节点（旧产物是人工排除的，重跑会丢）。
+    const EXCLUDED = new Set([
+        'Auxiliary hybrid control processor module (AHCP)',
+        'Battery Pack Control Node (BPCM)',
+        'Electric Air Compressor Node (EAC)',
+        'Electric Vehicle Control Node (EVCU)',
+        'Gas Injector Node (SDU)',
+        'Hybrid control processor module (HCP)',
+        'Integrated Dual Charger Module (IDCM)',
+        'Onboard Battery Charger Node (OBCM)',
+        'Power Inverter Node (PIM)',
+        'Regenerative Brakes Control Node (RBC)',
+        'Trailer Tow Node (TTM)',
+        'Air Suspension Node (NMA/ASM)',
+        'Overweight Monitoring Node (OMM)',
+        'Roll Control Node (NRC)',
+        'Suspension Controlled Node (DCM)',
+    ]);
     const nodes = [];
     for (const r of params) {
         if (r.ModuleID !== 'PROXIX1' || r.CmdType !== '2') continue;
@@ -79,6 +99,11 @@ function build() {
         nodes.push({
             name: r.ParamName,
             addr: rf.addr,
+            // ⚠️ ResultFormat 形如 `00125` 的节点（NAC/NAS/NVB/NIM/NSM/NIT/NYL/NVO/ELSDM/DMSM/NBA）
+            //    源数据给的地址就是 00 = 没有独立诊断地址（不是笔误）。
+            //    这类节点不能单独 2E 写 PROXI（18DA00F1 无人应答），对齐时必须跳过。
+            addrUnknown: rf.addr === '00',
+            ...(EXCLUDED.has(r.ParamName) ? { excluded: true } : {}),
             baud: rf.baud,
             swapCable: rf.swapCable,
             startByte: parseInt(r.StartByte, 10),

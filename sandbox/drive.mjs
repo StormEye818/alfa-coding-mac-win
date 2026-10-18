@@ -152,7 +152,7 @@ export class Tool {
      */
     async checkAlignment() {
         const mods = readJson('../src/data/modules.json');
-        const nodes = mods.alignmentNodes.filter((n) => !n.excluded);
+        const nodes = mods.alignmentNodes.filter((n) => !n.excluded && !n.addrUnknown && String(n.addr).toUpperCase() !== '00');
         await this.session.ensureModule(this.session.bodyModule);
         const refBytes = await this.uds.readProxi();          // 基准块（车身电脑 PROXI）
         const ref = await this.uds.readProxiWriteCounter();   // 辅助参考
@@ -165,7 +165,7 @@ export class Tool {
                 await this.session.connectNode(n);
                 const v = await this.uds.verifyProxi(refBytes);   // 22 10 2A 回读校验
                 const c = await this.uds.readProxiWriteCounter(); // 0x292E 辅助
-                const ok = v.ok && c === ref;
+                const ok = v.ok && ((c === null || ref === null) || c === ref);   // 计数读不到时只看主判据
                 const reason = !v.ok
                     ? `配置差异 Byte${v.diffs.map((d) => d.byte).join('、Byte')}`
                     : `计数 ${c} / 车身 ${ref}`;
@@ -236,7 +236,8 @@ export class Tool {
     /** 第 5 步：对齐所选节点（教程 §5.2） */
     async alignNodes(predicate) {
         const mods = readJson('../src/data/modules.json');
-        const nodes = mods.alignmentNodes.filter((n) => !n.excluded && predicate(n, this.presenceOf(n)));
+        const nodes = mods.alignmentNodes.filter((n) => !n.excluded
+            && !n.addrUnknown && String(n.addr).toUpperCase() !== '00' && predicate(n, this.presenceOf(n)));
         let done = 0, fail = 0;
         for (const n of nodes) {
             try {

@@ -22,7 +22,14 @@ import { SerialPort } from 'serialport';
 const PORT = Number(process.env.BRIDGE_PORT || 8850);
 const wss = new WebSocketServer({ port: PORT });
 
-function send(ws, obj) { ws.send(JSON.stringify(obj)); }
+function send(ws, obj) {
+  // ⚠️ 接收/发送都是事件驱动：串口还在刷数据时用户拔线（ws 已 close），
+  //    `ws.send` 会同步抛 "WebSocket is not open" → 事件回调里没人接 → **桥进程崩**。
+  try {
+    if (!ws || ws.readyState !== 1) return;
+    ws.send(JSON.stringify(obj));
+  } catch { /* 已断开，忽略 */ }
+}
 
 async function listPorts() {
   try {
@@ -85,7 +92,9 @@ wss.on('connection', (ws) => {
           }
           sp = p;
           sp.on('data', (buf) => {
-            console.log('[bridge] 桥转发', buf.length, '字节  t=', Date.now() % 100000);
+            // 逐块 console.log 在实时轮询下每秒几十次，mac/Win 控制台会拖慢转发；
+            // 只在显式打开 BRIDGE_LOG 时输出
+            if (process.env.BRIDGE_LOG) console.log('[bridge] 桥转发', buf.length, '字节');
             send(ws, { op: 'data', hex: Buffer.from(buf).toString('hex') });
           });
           sp.on('error', (e) => send(ws, { op: 'error', message: e.message }));
@@ -96,15 +105,19 @@ wss.on('connection', (ws) => {
         case 'tcpOpen': {
           closeAll();
           sock = net.createConnection({ host: msg.host, port: msg.port });
-          const to = setTimeout(() => {
-            try { sock && sock.destroy(); } catch {}
-            rej0(new Error('TCP 连接超时'));
-          }, msg.timeout || 4000);
           let rej0 = null;
+          let settled = false;
+          const to = setTimeout(() => {
+            if (settled) return;
+            settled = true;
+            try { sock && sock.destroy(); } catch {}
+            // 超时可能早于 Promise 建立（例如连接同步失败），rej0 为空时不要把异常抛到顶层
+            if (rej0) rej0(new Error('TCP 连接超时'));
+          }, msg.timeout || 4000);
           await new Promise((res, rej) => {
             rej0 = rej;
-            sock.once('connect', () => { clearTimeout(to); res(); });
-            sock.once('error', (e) => { clearTimeout(to); rej(e); });
+            sock.once('connect', () => { settled = true; clearTimeout(to); res(); });
+            sock.once('error', (e) => { settled = true; clearTimeout(to); rej(e); });
           });
           sock.on('data', (buf) => send(ws, { op: 'data', hex: Buffer.from(buf).toString('hex') }));
           sock.on('error', (e) => send(ws, { op: 'error', message: e.message }));

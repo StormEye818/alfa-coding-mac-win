@@ -155,10 +155,16 @@ function decodeNum(raw, spec) {
     return (raw * scale + offset) / Math.pow(10, dec);
 }
 
-function toLeBytes(value, n) {
+/**
+ * 数值 → 字节，**大端**（与实车/界面 applyScale 一致）。
+ * ⚠️ 这里曾用小端，导致沙箱里所有 2 字节以上数值与界面换算互为镜像
+ *    （850 rpm 被界面读成 4611），55 项车自检/61 项回归因此对数值语义零覆盖
+ *    （2026-10-18 审查 M2）。实车口径已由 `FF EF → -17 → -1.06°` 闭环确认是大端。
+ */
+function toBeBytes(value, n) {
     const out = [];
     let v = Math.max(0, Math.round(value));
-    for (let i = 0; i < n; i++) { out.push(v & 0xff); v >>>= 8; }
+    for (let i = n - 1; i >= 0; i--) { out.push(Math.floor(v / Math.pow(256, i)) & 0xff); }
     return out;
 }
 
@@ -193,6 +199,7 @@ export class GiuliaCar {
         this.cablesData = readJson('cables.json');
         this.paramsData = readJson('params.json');
         this.dtcData = readJson('dtc.json');
+        this.snapData = readJson('dtc-snapshots.json');
         this.funcsData = readJson('functions.json');
 
         this.ecus = new Map();
@@ -271,6 +278,7 @@ export class GiuliaCar {
             if (!ecu.bus) ecu.bus = m.bus;
         }
         for (const n of nodes) {
+            if (n.addrUnknown || String(n.addr).toUpperCase() === '00') continue;  // 无独立地址，不建 ECU
             const addr = parseInt(n.addr, 16) & 0xff;
             const ecu = this.#ecu(addr);
             ecu.nodes.push(n);
@@ -375,9 +383,14 @@ export class GiuliaCar {
 
     // ---- 契约接口 ----
 
-    /** 按 CAN 目标地址（tx）取 ECU；未知地址返回 null */
+    /** 按 CAN 目标地址（tx）取 ECU；未知地址返回 null
+     *  ⚠️ 0x00 永远返回 null：源数据里 `ResultFormat=00125` 的 11 个节点没有独立诊断地址，
+     *  真车上 18DA00F1 无人应答。沙箱以前"为任何地址现造一个 ECU"，把这些节点全测成可写，
+     *  把真车必然失败的问题全掩盖了（2026-10-18 审查）。 */
     ecuByAddress(addr) {
-        return this.ecus.get((Number(addr) || 0) & 0xff) || null;
+        const a = (Number(addr) || 0) & 0xff;
+        if (a === 0) return null;
+        return this.ecus.get(a) || null;
     }
 
     /** 处理一帧 UDS 请求，返回应答字节（无应答返回 null） */
@@ -426,6 +439,11 @@ export class GiuliaCar {
         const nodes = {};
         let odoFlash = false;
         for (const n of this.modulesData.alignmentNodes) {
+            // 无独立诊断地址的节点不参与里程表同步判定（车端已验证行为也不单独写它们）
+            if (n.addrUnknown || String(n.addr).toUpperCase() === '00') {
+                nodes[n.name] = { addr: n.addr, addressable: false, excluded: !!this.excluded.get(n.name), installed: !!this.installed.get(n.name), counter: null, configMatches: null, aligned: null };
+                continue;
+            }
             const ecu = this.ecus.get(parseInt(n.addr, 16) & 0xff);
             const installed = !!this.installed.get(n.name);
             const excluded = !!this.excluded.get(n.name);
@@ -500,7 +518,7 @@ export class GiuliaCar {
         const name = String(entry.name || '');
 
         if (fmt.startsWith('num')) {
-            return toLeBytes(encodeNum(this.#pickPhysical(ecu, name, spec), spec), n);
+            return toBeBytes(encodeNum(this.#pickPhysical(ecu, name, spec), spec), n);
         }
         if (fmt === 'str') {
             if (/vin/i.test(name)) return asciiBytes('ZAR95200001234567', n);
@@ -688,10 +706,47 @@ export class GiuliaCar {
     /** 读故障码 0x19 02 FF：59 02 FF + [码高 码低 状态]…（码值取自 dtc.json） */
     #readDtc(ecu, p) {
         const sub = p[1] || 0;
+        if (sub === 0x04) return this.#snapshot(ecu);       // 19 04 冻结帧快照
         if (sub !== 0x02 && sub !== 0x01 && sub !== 0x03) return [0x7f, 0x19, 0x12];
         const out = [0x59, sub, 0xff];
         for (const d of ecu.dtcs) out.push(d.raw[0], d.raw[1], d.status);
         return out;
+    }
+
+    /**
+     * 19 04 冻结帧：`59 04` + DTC(3) + 记录号(1) + 数据区。
+     * 数据区按该模块的冻结帧参数表合成：有 DID 形态 → DID+值 顺序排；否则按绝对偏移写。
+     * 只保证「形状正确、能取出非零值」，不追求与真车数值一致（沙箱职责）。
+     */
+    #snapshot(ecu) {
+        const DATA = 64;
+        const data = new Uint8Array(DATA);
+        const list = [];
+        for (const code of (ecu.modules || [])) {
+            if (this.snapData.modules[code]) list.push(...this.snapData.modules[code]);
+        }
+        const byDid = list.filter((s) => s.did);
+        const put = (off, n) => {
+            // 只在最后一个字节放 0x64（=100），其余 0 —— 让界面显示的是 100 而不是 0x00646464
+            for (let i = 0; i < n && off + i < DATA; i++) data[off + i] = i === n - 1 ? 0x64 : 0x00;
+        };
+        if (byDid.length) {
+            let off = 0;
+            const seen = new Set();
+            for (const s of byDid) {
+                if (seen.has(s.did)) continue;
+                seen.add(s.did);
+                const did = parseInt(s.did, 16);
+                if (off + 2 + s.bytes > DATA) break;
+                data[off] = (did >> 8) & 0xff;
+                data[off + 1] = did & 0xff;
+                put(off + 2, s.bytes);
+                off += 2 + s.bytes;
+            }
+        } else {
+            for (const s of list) put(Math.max(0, (s.start || 1) - 1), s.bytes);
+        }
+        return [0x59, 0x04, 0x00, 0x00, 0x00, 0x01, ...data];
     }
 
     /** 清故障码 0x14 FF FF FF → 54 */

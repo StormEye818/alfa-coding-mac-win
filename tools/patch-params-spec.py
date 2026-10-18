@@ -89,6 +89,10 @@ def main():
     print(f'重建 spec：命中 {hit}，源缺失 {miss}（保留原样）')
 
     # ===== 冻结帧（CmdType=9，19 04 服务）→ dtc-snapshots.json =====
+    # ⚠️ 取值口径（2026-10-18 按车端已验证行为源码实证）：StartByte 是 **1-based、相对数据区**，
+    #    与实时参数同一口径；`19 04` 数据区在 `59 04` + DTC(3) + 记录号(1) 之后。
+    #    Commands 第二个 token（如 `…,0885,02`）= DID，有则按 DID 定位（详见
+    #    tools/build-dtc-snapshots.cjs 头注释）。**原 +2 口径已废弃**。
     snap = {}
     with open(TSV, newline='', encoding='utf-8') as f:
         for r in csv.DictReader(f, delimiter='\t'):
@@ -99,13 +103,13 @@ def main():
                 continue
             nbytes = int(r['NumOfBytes'] or 1)
             sb = int(r['StartByte'] or 1)
-            spec = {
-                'name': r['ParamName'],
-                # 值 = 完整 59 应答[StartByte+2]（与实时参数同一 +3/长度前缀口径）
-                'start': sb + 2,
-                'bytes': nbytes,
-                **parse_format(r['ResultFormat'], nbytes),
-            }
+            toks = [t for t in (r['Commands'] or '').replace(' ', '').upper().split(',') if t]
+            spec = {'name': r['ParamName']}
+            if len(toks) > 1 and toks[1].isalnum() and len(toks[1]) <= 4:
+                spec['did'] = toks[1].rjust(4, '0')
+            spec['start'] = sb                      # 1-based，原样保留
+            spec['bytes'] = nbytes
+            spec.update(parse_format(r['ResultFormat'], nbytes))
             if (r['Units'] or '').strip():
                 spec['unit'] = r['Units'].strip()
             bits = (r.get('BitResults') or '').strip()
@@ -113,8 +117,9 @@ def main():
                 spec['options'] = [e for e in bits.split('|') if e]
             snap.setdefault(code, []).append(spec)
     snap_out = OUT.parent / 'dtc-snapshots.json'
-    json.dump({'generatedFrom': 'params_all.tsv CmdType=9（19 04 冻结帧）', 'modules': snap},
-              open(snap_out, 'w'), ensure_ascii=False, indent=1)
+    json.dump({'generatedFrom': 'params_all.tsv CmdType=9（19 04 冻结帧）；口径见 tools/build-dtc-snapshots.cjs',
+               'note': 'start 为 1-based：无 did 时相对 19 04 数据区（59 04+DTC3+记录号=6 字节之后）；有 did 时相对该 DID 的值区',
+               'modules': snap}, open(snap_out, 'w'), ensure_ascii=False, indent=1)
     print(f'冻结帧：{sum(len(v) for v in snap.values())} 项 / {len(snap)} 模块')
 
     # ===== 特殊功能选项表（BitResults：结果标签 + FE 步进文本）→ functions.json =====

@@ -50,8 +50,7 @@ function cleanLines(buf) {
         .filter((s) => s.length > 0 && s !== '>');
 }
 
-/** 把 ELM327 返回的原始帧拼成完整 ISO-TP 报文 */
-function reassembleIsoTp(frames) {
+/** 把 ELM327 返回的原始帧拼成完整 ISO-TP 报文 */function reassembleIsoTp(frames) {
     const out = [];
     let pending = null; // { total, chunks:[] }
     for (const frame of frames) {
@@ -89,6 +88,27 @@ function hexToBytes(hex) {
     return out;
 }
 
+/**
+ * 原始应答文本 → 干净的帧 hex 行（独立函数，便于单测）。
+ *
+ * ⚠️ 响应 ID 必须**锚定行首**剥离：此前用无锚定的全局正则，数据区里一旦出现
+ *    与响应 ID 相同的字节序列（块内恰好是 18 DA F1 40），就会被当头部删掉 → 块错位。
+ *    车端已验证行为的头部由 `ATCRA` 过滤 + 行首剥离完成，等价于"只剥行首"。
+ * @param {string} raw
+ * @param {number} [respId]
+ */
+function parseFrames(raw, respId) {
+    const respIdRe = new RegExp(
+        '^' + (respId ? respId.toString(16).padStart(8, '0') : '(?!x)x'), 'i');
+    // 真车 ELM 用 \r 分隔帧、以 \r\r> 结尾（无 \n）——必须按 [\r\n]+ 切帧，
+    // 否则删 \r 后所有帧粘成一条（实车日志 dump 全连在一起就是证据）
+    return String(raw).split(/[\r\n]+/)
+        // 真车 ELM 结尾是「\r\r>」无换行——'>' 粘在最后一帧行尾（实车踩坑），
+        // 必须先剥掉提示符再做 hex 校验，否则多帧应答永远缺最后一帧
+        .map((l) => l.replace(/[\s>]/g, '').replace(respIdRe, ''))
+        .filter((l) => /^[0-9A-Fa-f]+$/.test(l) && l.length >= 2 && l.length % 2 === 0);
+}
+
 function strToBytes(str) {
     const out = new Uint8Array(str.length);
     for (let i = 0; i < str.length; i++) out[i] = str.charCodeAt(i) & 0xff;
@@ -117,7 +137,6 @@ class Elm327 {
         // 2026-10-15 预检：readProxiAll 用 Promise.all 并发读 DATA1/2/3，
         // request() 当时无互斥 → 三路收发交错，读到串帧垃圾后会被 merge 进配置写进 ECU。
         this.reqChain = Promise.resolve();
-        this._inExclusive = false;   // 可重入标志，见 #exclusive
         port.on('data', (chunk) => this.#onData(chunk));
     }
 
@@ -144,7 +163,8 @@ class Elm327 {
      *
      * 标准流程的 ATST 全档（xx×4ms）：01 02 03 04 05 07 08 09 10 19 20 21 22 25 26 27 28
      *   29 30 35 38 41 52 62 72 80 90 94 99 FE F0 FF
-     * 我们当前用到：32(初始化) / 03(多帧连续帧) / 99(等最终响应) / FF(最长)。
+     * 我们当前用到：22（初始化 + 每次连接，车端已验证行为 CAN 初始化串的档位）
+     *   / 03（多帧连续帧）/ 99（多帧收尾与等最终响应，车端已验证行为同样发 99）。
      * **慢 ECU 超时就调这里**，不要回去改 init 里的固定值。
      *
      * 三元组必须**一起切**，不要只改其中一个（否则又会踩 ATAT 两处相反值的坑）。
@@ -219,7 +239,16 @@ class Elm327 {
         try { this.port.write(cmd + '\r'); } catch (e) {
             return Promise.reject(new Elm327Error('写失败：' + e.message, 'WRITE'));
         }
-        return this.#nextSeg(timeoutMs, cmd);
+        return this.#nextSeg(timeoutMs, cmd).catch(async (e) => {
+            // 超时后不能把「迟到的上一条应答」留给下一条命令消费：
+            // 串口半双工没有请求标签，唯一安全的做法是等一个短排空窗口后清空接收。
+            // （实测：50ms 超时 + 120ms 迟到应答，下一条 22 10 2A 会读到上一条 62 20 23）
+            if (e && e.code === 'TIMEOUT') {
+                await new Promise((r) => setTimeout(r, 120));
+                this.#flush();
+            }
+            throw e;
+        });
     }
 
     /** 取一段应答（到下一个 '>' 为止）；先消费积压队列，FIFO 保序 */
@@ -262,10 +291,11 @@ class Elm327 {
         await this.#send('ATCAF0');         // 关自动格式化，拿原始帧
         await this.#send('ATSP' + protocol);
         this.protocol = protocol;
-        // ⚠️ ATST32 不在参考实现命令表里（2026-10-16 审计 ★2）。
-        //    表内 29 档：01 02 03 04 05 07 08 09 10 19 20 21 22 25 26 27 28 29 30 35 41 62 72 80 90 99 F0 FE FF
-        //    改用 ATST20（80ms）—— 主力初始化模板用的就是这档。
-        await this.#send('ATST20');
+        // ATST22（88ms）—— 车端已验证行为 CAN 初始化串逐字用的是这一档：
+        //   `ATE0 ATL0 ATH0 ATS0 ATAL ATAT0 ATST22 ATCRA`（字符串资源 52572）
+        // 此前我们发 ATST20（80ms），同族但不是同一档；多帧发送后仍恢复 ATST99，
+        // 与车端已验证行为 `:9126 qy("ATST99")` 完全一致（不是笔误）。
+        await this.#send('ATST22');
         await this.#send('ATCFC1');         // 自动流控 ON（适配器内建发 FC）
         // 链路参数：ATAL 允许长消息、ATCP18 29 位优先级域、ATAT0 关自适应
         await this.#send('ATAL');
@@ -330,7 +360,7 @@ class Elm327 {
         // ⚠️ ATAT 与 init() 必须同口径：此前 init 发 ATAT0、这里发 ATAT1，两处相反值互相覆盖
         //    （2026-10-15 预检发现）。标准流程主用 ATAT0，
         //    且 ATCAF/ATAT/ATST 是**一起按操作切**的三元组，见 setLinkMode()。
-        for (const c of ['ATE0', 'ATL0', 'ATS0', 'ATH1', 'ATCAF0', 'ATAL', 'ATCP18', 'ATAT0', 'ATST99']) await this.#send(c);
+        for (const c of ['ATE0', 'ATL0', 'ATS0', 'ATH1', 'ATCAF0', 'ATAL', 'ATCP18', 'ATAT0', 'ATST22']) await this.#send(c);
         await this.#send('ATSH' + reqId.toString(16).toUpperCase().padStart(8, '0'));
         await this.#send('ATCRA' + this.respId.toString(16).toUpperCase().padStart(8, '0'));
         // 流控配方：FC 必须由适配器内建发（手动注入会在收应答窗口触发 STOPPED 中止）。
@@ -347,16 +377,17 @@ class Elm327 {
     async #connectProbe() {
         let resp = null;
         try {
-            resp = await this.request(new Uint8Array([0x10, 0x03]), { timeoutMs: 3000 });
+            // 内部调用：本函数运行在 setAddress 的排他区内，不能再排队（会死锁）
+            resp = await this.#requestDirect(new Uint8Array([0x10, 0x03]), { timeoutMs: 3000 });
         } catch {
             await this.#send('ATV0').catch(() => {});            // 无应答：关 verbose 重试（标准恢复）
             try {
-                resp = await this.request(new Uint8Array([0x10, 0x03]), { timeoutMs: 3000 });
+                resp = await this.#requestDirect(new Uint8Array([0x10, 0x03]), { timeoutMs: 3000 });
             } catch { /* fallthrough */ }
         }
         if (resp && resp[0] === 0x7f && resp[2] === 0x12) {
             // 子功能不支持：换 10 92（部分模块的扩展会话号不同）
-            resp = await this.request(new Uint8Array([0x10, 0x92]), { timeoutMs: 3000 }).catch(() => null);
+            resp = await this.#requestDirect(new Uint8Array([0x10, 0x92]), { timeoutMs: 3000 }).catch(() => null);
         }
         if (!resp || resp[0] !== 0x50) {
             const why = resp ? bytesToHex(resp) : '无应答';
@@ -382,21 +413,16 @@ class Elm327 {
      *    模块扫描用 Promise.race 弃单后立刻跑下一个模块，两条 AT 流会交错配对应答，
      *    链路参数（ATSH/ATSPB/ATST…）可能设到错的模块头上。
      *    （2026-10-16 复查 A4）
+     *
+     * ⚠️⚠️ **不要再用"可重入标志"绕过锁**（2026-10-18 审查 H1）：
+     *    之前用全局布尔 `_inExclusive` 做可重入，结果**并发调用也一起放行** ——
+     *    实测 setAddress 跑到第 3 条 AT 时，另一条并发 request 就插进去了（那时 ATSH 还没设）。
+     *    现在改成「**锁只包入口**」：内部实现（#connectProbe / #sendMulti / routePins 内部）
+     *    一律走 #requestDirect / #send，不再回到这里排队 → 天然可重入且不会放行外部并发。
+     *    **新加内部调用时请用 #requestDirect，不要用 request()**，否则会死锁。
      */
     #exclusive(fn) {
-        // 可重入：setAddress 持锁后内部还会调 request()，不能再排一次，
-        // 否则 reqChain 等自己 → 死锁（2026-10-16 跑测试抓到）。
-        if (this._inExclusive) return fn();
-        // ⚠️ 必须 async/await：`try{ return fn() } finally{...}` 会在 fn **返回 promise**
-        //    时立刻跑 finally，标志提前清掉，可重入保护形同虚设。
-        const run = this.reqChain.then(async () => {
-            this._inExclusive = true;
-            try {
-                return await fn();
-            } finally {
-                this._inExclusive = false;
-            }
-        });
+        const run = this.reqChain.then(() => fn());
         // 失败也必须放行下一个
         this.reqChain = run.then(() => { }, () => { });
         return run;
@@ -404,6 +430,11 @@ class Elm327 {
 
     async request(payload, { timeoutMs = ELM_TIMEOUT_MS } = {}) {
         return this.#exclusive(() => this.#requestLocked(payload, timeoutMs));
+    }
+
+    /** 内部用：已在排他区内（setAddress/init 等）时发请求，**不再排队**（排队会死锁） */
+    async #requestDirect(payload, { timeoutMs = ELM_TIMEOUT_MS } = {}) {
+        return this.#requestLocked(payload, timeoutMs);
     }
 
     async #requestLocked(payload, timeoutMs) {
@@ -467,20 +498,30 @@ class Elm327 {
 
     /** 从原始应答提取合法 ISO-TP 帧（容错：空格/响应 ID/回显混杂） */
     #parseFrames(raw) {
-        // respId 未 setAddress 就 request 时不要炸（现流程不触发，但别留雷）
-        const respIdRe = new RegExp(this.respId ? this.respId.toString(16) : '(?!x)x', 'gi');
-        // 真车 ELM 用 \r 分隔帧、以 \r\r> 结尾（无 \n）——必须按 [\r\n]+ 切帧，
-        // 否则 cleanLines 删 \r 后所有帧粘成一条（实车日志 dump 全连在一起就是证据）
-        return String(raw).split(/[\r\n]+/)
-            // 真车 ELM 结尾是「\r\r>」无换行——'>' 粘在最后一帧行尾（实车踩坑），
-            // 必须先剥掉提示符再做 hex 校验，否则多帧应答永远缺最后一帧
-            .map((l) => l.replace(/[\s>]/g, '').replace(respIdRe, ''))
-            .filter((l) => /^[0-9A-Fa-f]+$/.test(l) && l.length >= 2 && l.length % 2 === 0);
+        return parseFrames(raw, this.respId);
     }
 
 
+    /**
+     * 单帧请求 = `0L <payload>`，并**补齐到 8 字节 DLC**。
+     *
+     * 依据（车端实测行为）：车端已验证行为常驻 `ATCAF1`，
+     * 单帧请求只把裸 payload 交给适配器，由 **ELM 自己补 PCI 并填充到 8 字节**；
+     * 多帧发送时才临时切 `ATCAF0`（`:9067-9079`），发完再回 `ATCAF1`（`:9150`）。
+     * 我们走的是 CAF0 自补 PCI 的路线（见 init 注释），所以填充也必须自己做，
+     * 否则线上是 4 字节短帧 —— 宽松 ECU 能收，严格 ECU 会按 DLC 不符拒收。
+     *
+     * 填充字节用 0x00（ISO 15765-2 约定的填充值，与 ELM CAF1 行为一致）。
+     * K 线协议（ATSP 3/5）不是 ISO-TP，不填充。
+     */
     #singleFrame(payload) {
-        const frame = new Uint8Array(payload.length + 1);
+        // `ATSPB` 表示 USER 协议 B 槽（本工具在 CAN 上使用），此前的数值判断把
+        // 字符串 'B' 当成非 CAN → setAddress 之后所有单帧都退回短帧，DLC=8 填充失效。
+        // 这也是“车端已验证行为常驻 CAF1、适配器补填充”路径必须由我们自补的原因。
+        const isCan = this.protocol === undefined || this.protocol === 'B'
+            || (this.protocol >= 6 && this.protocol <= 9);
+        const size = isCan ? Math.max(8, payload.length + 1) : payload.length + 1;
+        const frame = new Uint8Array(size);
         frame[0] = payload.length;
         frame.set(payload, 1);
         return frame;
@@ -507,7 +548,8 @@ class Elm327 {
         if (fc.flowStatus === 0x02) throw new Elm327Error('ECU 流控：溢出，写入中止', 'OVERFLOW');
 
         // 连续帧用短超时快发（ATST03=12ms），避免逐帧卡满响应超时
-        await this.#send('ATST03');
+        // 走 setLinkMode 的同一个 body（操作级三元组机制），不要另发裸 ATST 命令
+        await this.#setLinkModeBody({ st: 0x03 });
 
         let idx = 1, off = 6, sinceFc = 0;
         let lastResp = '';
@@ -524,7 +566,7 @@ class Elm327 {
                 const isLast = off + dataLen >= total;
                 if (isLast) {
                     // 尾帧前恢复正常超时，等 ECU 的最终 UDS 响应（ATST99）
-                    await this.#send('ATST99');
+                    await this.#setLinkModeBody({ st: 0x99 });
                     restored = true;
                 }
                 const raw = await this.#send(bytesToHex(cf), isLast ? timeoutMs : 2000);
@@ -542,7 +584,7 @@ class Elm327 {
         } finally {
             // 仅中途出错时补恢复；成功路径已由 ATST99 恢复，不再插命令
             // 与 setAddress 的常驻节奏一致（ATST99），别恢复成 ATST32 —— 否则失败后链路定时口径不一致
-            if (!restored) await this.#send('ATST99').catch(() => {});
+            if (!restored) await this.#setLinkModeBody({ st: 0x99 }).catch(() => {});
         }
         // 最后一帧的应答里可能已带响应，也可能还要再取
         return lastResp;
@@ -582,12 +624,15 @@ class Elm327 {
         if (this.adapter !== 'cantiecar') return true;
         const token = { none: '6E', swap: 'CD', comfort: '3B' }[busGroup];
         if (!token) return true;
-        try {
-            const r = await this.#send('ATMC' + token);
-            return !/\?/.test(String(r || ''));
-        } catch {
-            return false;
-        }
+        // 同样是"发一条 AT"，必须排队，避免插进别人的收发窗口
+        return this.#exclusive(async () => {
+            try {
+                const r = await this.#send('ATMC' + token);
+                return !/\?/.test(String(r || ''));
+            } catch {
+                return false;
+            }
+        });
     }
 }
 
@@ -596,6 +641,7 @@ export {
     Elm327Error,
     PortLike,
     reassembleIsoTp,
+    parseFrames,
     cleanLines,
     hexToBytes,
     bytesToHex,

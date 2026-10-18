@@ -83,6 +83,7 @@
     <div id="cableHint" class="cable-detail"></div>
   </div>
   <button id="cableOk" class="primary">已换好，继续</button>
+  <button id="cableCancel" class="ghost">取消</button>
 </div>
 
 <div class="todo-bar hidden" id="todoBar">
@@ -173,6 +174,7 @@
       </div>
       <div class="actions">
         <button id="btnCheckAlign" class="ghost" title="逐模块读 22 10 2A 回读校验，与车身电脑基准比对（0x292E 计数仅作辅助）">读取对齐状态</button>
+        <button id="btnPresenceReset" class="ghost" title="按车上当前 PROXI 块重新判定「节点是否安装」。换了车、增删过模块、或改过在场位配置后点这里">重算在场位</button>
         <button id="btnSelAll" class="ghost">全选</button>
         <button id="btnSelNone" class="ghost">清空</button>
         <button id="btnSelFail" class="ghost">只选失败</button>
@@ -216,6 +218,7 @@
       </div>
       <div class="actions">
         <select id="liveModule"><option value="">选择模块</option></select>
+        <input id="liveSearch" placeholder="搜索参数 / DID" spellcheck="false" style="max-width:190px">
         <button id="btnLiveEnter" class="primary">进入模块</button>
         <button id="btnLiveExit" class="ghost hidden">退出模块</button>
         <button id="btnLiveCsv" class="ghost">导出 CSV</button>
@@ -297,9 +300,11 @@
     <div class="actions" style="margin-bottom:14px">
       <select id="dtcModule"><option value="">选择模块</option></select>
       <button id="btnReadDtc" class="primary">读取故障码</button>
+      <button id="btnDtcSnap" class="ghost" title="读 ECU 保存的冻结帧快照（19 04，与车端已验证行为同一条命令：19 04 00 00 00 00）">冻结帧快照</button>
       <button id="btnClearDtc" class="ghost">清除故障码</button>
     </div>
     <div id="dtcList" class="module-list"></div>
+    <div id="dtcSnap" class="module-list" style="margin-top:12px"></div>
   </section>
 
   <!-- ============ 待验证（开发用，?dev=1 显示） ============ -->

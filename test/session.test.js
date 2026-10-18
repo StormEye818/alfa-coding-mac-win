@@ -40,6 +40,15 @@ console.log('\nELM327：换线要提示');
     await p;
     check('确认后连上 ABSMMKC1', s.current.code === 'ABSMMKC1');
     check('换线组已更新', s.currentGroup === 'swap');
+
+    // 回主总线同样要提示：只判「目标是 swap/comfort」的旧逻辑会静默留在灰线上
+    let backPrompts = 0;
+    s.on('cableRequired', () => backPrompts++);
+    const back = s.ensureModule('BODY33');
+    check('从 swap 回主总线要提示换线', backPrompts === 1);
+    s.confirmCable();
+    await back;
+    check('回主总线后 currentGroup=none', s.currentGroup === 'none');
 }
 
 console.log('\nvLinker MS：免换线');
@@ -79,6 +88,32 @@ console.log('\n未知模块要报错');
     let threw = false;
     try { await s.ensureModule('NOPE'); } catch (e) { threw = true; }
     check('未知模块抛错', threw);
+}
+
+console.log('\n换线确认：取消必须能结束等待（否则整轮对齐永久挂起）');
+{
+    const { link } = mk('sim');
+    const s = new Session(link, { cables, platform: '952' });
+    const wait = s.waitForCableConfirm().then(() => 'resolved', (e) => 'rejected:' + e.message);
+    s.cancelCable();
+    const r = await wait;
+    check('cancelCable 让等待以拒绝结束', String(r).startsWith('rejected:'), String(r));
+    let threw = false;
+    try { await s.ensureModule('ABG28'); } catch { threw = true; }
+    check('取消后不再阻塞（后续连接立即失败）', threw);
+    s.confirmCable();
+    check('confirmCable 清除取消状态', s.cableAborted === false);
+}
+
+console.log('\n物理断开必须结束换线等待（否则 busy 闸永远不释放）');
+{
+    const { link } = mk('sim');
+    const s = new Session(link, { cables, platform: '952' });
+    const wait = s.waitForCableConfirm().then(() => 'resolved', (e) => 'rejected:' + e.message);
+    s.resetLink();
+    const r = await wait;
+    check('resetLink 拒绝挂起的换线等待', String(r).startsWith('rejected:'), String(r));
+    check('resetLink 复位物理总线组', s.currentGroup === null);
 }
 
 console.log(`\n结果：${pass} 通过 / ${fail} 失败`);

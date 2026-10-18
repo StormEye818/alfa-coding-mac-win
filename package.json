@@ -1,18 +1,20 @@
 {
   "name": "alfaproxi",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "private": true,
   "type": "module",
   "description": "Alfa Romeo Giulia/Stelvio (952/949) 刷隐藏与 PROXI 对齐工具",
   "main": "electron/main.cjs",
   "scripts": {
-    "test": "node test/proxi.test.js && node test/protocol.test.js && node test/session.test.js && node test/align.test.js",
+    "test": "node tools/check-syntax.mjs && node test/proxi.test.js && node test/protocol.test.js && node test/session.test.js && node test/align.test.js && node test/scale.test.js",
     "build-data": "node tools/build-data.cjs",
     "app": "python3 -m http.server 8848",
     "electron": "electron .",
     "dist": "electron-builder --mac --win",
     "dist:mac": "electron-builder --mac",
-    "dist:win": "electron-builder --win"
+    "dist:win": "electron-builder --win",
+    "test:car": "node sandbox/car-selftest.mjs",
+    "test:syntax": "node tools/check-syntax.mjs"
   },
   "dependencies": {
     "serialport": "^12.0.0",
@@ -59,9 +61,5 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     }
-  },
-  "allowScripts": {
-    "electron@33.4.11": true,
-    "@serialport/bindings-cpp@12.0.1": true
   }
 }

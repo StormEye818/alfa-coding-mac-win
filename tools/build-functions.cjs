@@ -144,6 +144,11 @@ function build() {
             needsUserInput: flags.userEntry !== null,
             execManual: flags.execManual,
         };
+        // 命令模板自带 `27 05/06`（服务器密钥路径）的条目：即便数据侧没打 SECURITY 旗标，
+        // 也必须标成需服务器密钥 —— 否则界面允许点，执行时必被 NRC 拒（2026-10-18 审查 L8）
+        if (/2705|2706/.test(String(r.Commands || '')) && item.security.level !== 'server') {
+            item.security = { level: 'server', text: '需要服务器按 VIN 算密钥（27 05）→ 本工具不支持' };
+        }
         if (!perCat.has(cat)) perCat.set(cat, []);
         perCat.get(cat).push(item);
     }
@@ -152,6 +157,44 @@ function build() {
         list.sort((a, b) => a.module.localeCompare(b.module) || a.name.localeCompare(b.name));
         funcs.push({ category: cat, count: list.length, items: list });
     }
+    funcs.sort((a, b) => b.count - a.count);
+
+    // ⚠️ 生成器只产出数据侧字段；input/workflow/options/warning/notes/added 是人工/专项脚本
+    //    补的（例如 5 段模板的逐位选择、恢复保养提醒的工作流）。重跑生成器必须按
+    //    (module,name,commands) 原样继承这些字段，否则 539 条特殊功能会丢掉输入定义，
+    //    界面不再询问选择值，模板零值直发。
+    let oldItems = [];
+    try {
+        const old = JSON.parse(fs.readFileSync(path.join(OUT, 'functions.json'), 'utf8'));
+        oldItems = (old.categories || []).flatMap((c) => c.items || []);
+    } catch { /* 首次生成 */ }
+    const oldByKey = new Map(oldItems.map((i) => [i.module + '\u0000' + i.name + '\u0000' + i.commands, i]));
+    const preserve = ['input', 'options', 'workflow', 'warning', 'notes', 'added', 'kind', 'cmdType'];
+    const generatedKeys = new Set();
+    for (const cat of funcs) {
+        for (const item of cat.items) {
+            const key = item.module + '\u0000' + item.name + '\u0000' + item.commands;
+            generatedKeys.add(key);
+            const old = oldByKey.get(key);
+            if (!old) continue;
+            for (const k of preserve) {
+                if (old[k] !== undefined && item[k] === undefined) item[k] = old[k];
+            }
+        }
+    }
+    // 人工新增的 workflow（如「恢复保养提醒」）在数据源里没有对应行，生成器不能丢
+    for (const old of oldItems) {
+        if (!old.workflow) continue;
+        const key = old.module + '\u0000' + old.name + '\u0000' + old.commands;
+        if (generatedKeys.has(key)) continue;
+        const catName = CAT[old.module] || `其它（${old.module}）`;
+        let cat = funcs.find((f) => f.category === catName);
+        if (!cat) { cat = { category: catName, count: 0, items: [] }; funcs.push(cat); }
+        cat.items.push(old);
+        cat.count++;
+        generatedKeys.add(key);
+    }
+    for (const cat of funcs) cat.count = cat.items.length;
     funcs.sort((a, b) => b.count - a.count);
 
     fs.writeFileSync(path.join(OUT, 'functions.json'), JSON.stringify({

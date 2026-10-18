@@ -1,5 +1,5 @@
 /** 协议层端到端自测（走模拟适配器，离车可跑）：node test/protocol.test.js */
-import { Elm327, reassembleIsoTp, hexToBytes, bytesToHex } from '../src/elm327.js';
+import { Elm327, reassembleIsoTp, parseFrames, hexToBytes, bytesToHex } from '../src/elm327.js';
 import { Uds, DID, pinToKeyBcd, parseDtcList, dtcCodeToString } from '../src/uds.js';
 import { MockAdapter } from '../src/mock-adapter.js';
 import { ProxiBlock } from '../src/proxi.js';
@@ -36,6 +36,15 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         JSON.stringify(port.txLog.filter((c) => c.startsWith('ATSH'))));
 
     const uds = new Uds(link);
+    // ATSPB 之后 protocol 字段是字符串 'B'；旧 #singleFrame 把它当非 CAN，DLC=8 填充失效。
+    // 这条断言必须放在 setAddress 之后，才能覆盖真实连模块路径。
+    {
+        const before = port.txLog.length;
+        await uds.readDataByIdentifier(DID.VIN);
+        const sf = port.txLog.slice(before).find((c) => /^0322F190/i.test(c));
+        check('setAddress 后单帧仍补齐 8 字节', sf === '0322F19000000000', String(sf));
+    }
+
     const d1 = await uds.readDataByIdentifier(DID.PROXI_DATA1);
     check('读 PROXI DATA1 成功', d1.length === 289, `got ${d1.length} 字节`);
 
@@ -68,6 +77,64 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
     console.log('\n模拟器快照可用于 UI');
     check('snapshot 输出 hex 文本', port.snapshot().split('\n').length > 1);
+
+    console.log('\n线格式（与车端已验证行为逐字节对齐点）');
+    {
+        // ① 单帧必须补齐 8 字节：车端已验证行为常驻 ATCAF1（适配器补 PCI+填充），
+        //    我们走 CAF0 自补 PCI，填充也得自己做，否则线上是短帧。
+        const raw = [];
+        const fake = {
+            on(ev, cb) { if (ev === 'data') this.h = cb; },
+            write(d) { raw.push(String(d).replace(/\r$/, '')); setTimeout(() => this.h && this.h('OK\r\r>'), 1); },
+        };
+        const l2 = new Elm327(fake, { adapter: 'elm327', log: () => {} });
+        await l2.init({ protocol: 7 });
+        await l2.request(Uint8Array.from([0x22, 0xf1, 0x90])).catch(() => {});
+        const sf = raw.find((x) => /^[0-9A-F]{2}22F190/i.test(x));
+        check('单帧请求 = 03 22 F1 90 + 4 字节 0x00 填充', sf === '0322F19000000000', String(sf));
+
+        // ② 多帧首帧：>255 字节用 0x11（12 位长度），低字节 = 总长-256
+        const big = new Uint8Array(292);              // 2E 20 23 + 289 字节块
+        big[0] = 0x2e; big[1] = 0x20; big[2] = 0x23;
+        raw.length = 0;
+        await l2.request(big).catch(() => {});
+        const ff = raw.find((x) => /^11/i.test(x));
+        check('292 字节写 → 首帧 11 24 2E 20 23…', !!ff && ff.startsWith('11242E2023'), String(ff && ff.slice(0, 16)));
+    }
+
+    console.log('\n响应解析：CAN ID 只剥行首');
+    {
+        // 数据区里出现与响应 ID 相同的字节序列时，不能被当头部剥掉（旧实现会）
+        const frames = parseFrames('18DAF140 62 20 23 18 DA F1 40 00\r\r>', 0x18daf140);
+        check('行首 ID 被剥掉、数据区 18DAF140 保留',
+            frames.length === 1 && frames[0].toUpperCase() === '62202318DAF14000',
+            JSON.stringify(frames));
+    }
+
+    console.log('\n超时后的迟到应答（半双工串口最容易踩的串帧）');
+    {
+        // 第一条 22 20 23 在 50ms 超时，应答 100ms 才到；第二条 22 10 2A 必须拿到自己的应答
+        let cb = null, n = 0;
+        const fake = {
+            on(ev, fn) { if (ev === 'data') cb = fn; },
+            write() {
+                const i = ++n;
+                setTimeout(() => cb && cb(i === 1
+                    ? '18DAF14003622023\r\r>'
+                    : '18DAF1400C62102A000000000000000000\r\r>'), i === 1 ? 100 : 5);
+            },
+        };
+        const l3 = new Elm327(fake, { adapter: 'elm327', log: () => {} });
+        l3.protocol = 7;
+        l3.respId = 0x18daf140;
+        let code = null;
+        try { await l3.request(Uint8Array.from([0x22, 0x20, 0x23]), { timeoutMs: 50 }); }
+        catch (e) { code = e.code; }
+        const r = await l3.request(Uint8Array.from([0x22, 0x10, 0x2a]), { timeoutMs: 500 });
+        check('超时排空后不消费上一条迟到应答',
+            code === 'TIMEOUT' && bytesToHex(r).startsWith('62102A'),
+            `first=${code} second=${bytesToHex(r)}`);
+    }
 
     console.log(`\n结果：${pass} 通过 / ${fail} 失败`);
     process.exit(fail ? 1 : 0);

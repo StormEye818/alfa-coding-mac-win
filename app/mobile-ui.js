@@ -206,10 +206,11 @@
       if (isWifi) {
         input.removeAttribute('readonly');
         input.onfocus = null;
+        input.onclick = null;       // 关键：切到 WiFi 后必须解除选择单拦截，否则无法输入 IP
       } else {
         input.setAttribute('readonly', 'readonly');
         input.onfocus = openSheet;
-        input.addEventListener('click', openSheet);
+        input.onclick = openSheet;  // 用 onclick 覆盖，而非重复 addEventListener（否则切回 WiFi 仍有残留监听）
       }
     };
     syncMode();
@@ -236,11 +237,13 @@
   function initBackgroundGuard() {
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) return;
-      // 进后台：若有实时轮询在跑，点既有停止按钮（零耦合，不触碰 app.js 内部状态）
-      const stop = document.getElementById('btnLiveStop');
-      if (stop && !stop.disabled) {
-        try { stop.click(); window.__apxToast && window.__apxToast('已切到后台，实时数据自动停止'); } catch {}
-      }
+      // 进后台：停掉实时轮询（app.js 暴露的 __apxStopLive；此前找的 #btnLiveStop 元素不存在，
+      // 这段一直是空操作，2026-10-18 审查 M8）
+      try {
+        if (window.__apxStopLive && window.__apxStopLive()) {
+          window.__apxToast && window.__apxToast('已切到后台，实时数据自动停止');
+        }
+      } catch {}
     });
     // TODO(真机): PROXI 对齐长流程进行中切后台时给出强警示（需要 app.js 暴露流程状态）
   }

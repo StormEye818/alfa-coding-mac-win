@@ -225,6 +225,17 @@
       "source": "已验证",
       "needsAlignment": true,
       "patches": [{ "addr": 166, "bits": { "6": 1 } }]
+    },
+    {
+      "id": "after-wipe",
+      "name": "额外雨刮",
+      "desc": "关闭点火后额外刮刷一次",
+      "status": "carTested",
+      "source": "实车备份（0=启用）",
+      "needsAlignment": true,
+      "patches": [{ "addr": 126, "bits": { "5": 0 } }],
+      "offBits": { "5": 1 },
+      "notes": "Byte126 bit5：0=启用、1=关闭。本车备份 Byte126=0x84，bit5=0；写入只改 bit5，保留该字节其余位。"
     }
   ],
   "pending": [
@@ -237,16 +248,6 @@
       "heldBecause": "来源待确认。该项为整字节写入，会覆盖该字节的其余位，风险较高。",
       "patches": [{ "addr": 119, "bits": {}, "fixed": 121 }],
       "notes": "Byte119 整字节设为 0x79。"
-    },
-    {
-      "id": "after-wipe",
-      "name": "额外雨刮",
-      "desc": "关闭点火后额外刮刷一次",
-      "status": "conflict",
-      "source": "取值冲突",
-      "heldBecause": "该项的取值方向在不同资料中不一致（bit5=0 或 1 分别被标注为开启），需实测确认后开放。",
-      "patches": [{ "addr": 126, "bits": { "5": 1 } }],
-      "notes": "Byte126 的 bit5。"
     }
   ]
 }

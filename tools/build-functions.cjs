@@ -1,7 +1,7 @@
 'use strict';
 /**
  * 从 诊断数据源生成：
- *   src/data/named-settings.json — PROXI 命名设置（诊断软件自带的一键写项，44 条）
+ *   src/data/named-settings.json — PROXI 命名设置（数据源自带的一键写项，44 条）
  *   src/data/functions.json     — 特殊功能（保养复位/配钥匙/执行器/编程）
  *
  * 选项编码：`HHHH<label>`，HHHH = 掩码(2hex) + 取值(2hex)。
@@ -100,7 +100,7 @@ function build() {
     named.sort((a, b) => a.startByte - b.startByte || a.name.localeCompare(b.name));
 
     fs.writeFileSync(path.join(OUT, 'named-settings.json'), JSON.stringify({
-        note: '诊断软件自带的 PROXI 命名设置（一键写）。每个 = 在 DATA1 的 startByte 上按 mask 改成某个 value，然后 2E 20 23 写回 + 重算 CRC。',
+        note: '数据源自带的 PROXI 命名设置（一键写）。每个 = 在 DATA1 的 startByte 上按 mask 改成某个 value，然后 2E 20 23 写回 + 重算 CRC。',
         source: 'diag-data/data/params_all.tsv (ModuleID=PROXIX1, CmdType=4)',
         count: named.length,
         settings: named,

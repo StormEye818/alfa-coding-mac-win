@@ -575,6 +575,7 @@ async function readConfig() {
     state.block = new ProxiBlock(d1);
     state.baseline = state.block.clone();
     freezePresenceBaseline(state.block);      // 首读冻结在场位基线（P1-1：防 CRC 区漂移）
+    renderAlign();                            // 按车上在场位重渲染（只跳过 presence=0）
     state.readDone = true;
     state.namedPicks.clear();
     state.selected.clear();
@@ -805,15 +806,19 @@ function optionToPatch(f, idx) {
  * 扩展项选择值 → 补丁。值域：
  *   number   = 选项索引（有选项项）
  *   null     = 启用（无选项项的默认补丁）
- *   'off'    = 不启用（纯位启用型：对应位写 0）
+ *   'off'    = 不启用（有 offBits 时写 offBits；否则纯位启用型写 0）
  *   'revert' = 恢复原状（覆盖的位/字节写回基线读取值）
  */
 function resolveFeaturePatch(f, selValue, baseline) {
   if (selValue === 'off') {
+    // 有些位是低有效（如额外雨刮 bit5：0=启用、1=关闭），off 不能一律写 0。
+    const offBits = f.offBits || null;
     return {
       bytes: (f.patches || []).map((p) => ({
         addr: p.addr,
-        bits: Object.fromEntries(Object.keys(p.bits || {}).map((b) => [b, 0])),
+        bits: offBits
+          ? Object.fromEntries(Object.keys(offBits).map((b) => [b, Number(offBits[b]) ? 1 : 0]))
+          : Object.fromEntries(Object.keys(p.bits || {}).map((b) => [b, 0])),
       })),
     };
   }
@@ -1309,23 +1314,53 @@ function updateAlignButtons() {
 }
 
 /**
- * 该节点能否单独写入 PROXI。
- * 源数据（PROXIX1 的 ResultFormat=`00125`）里 11 个节点地址就是 00 —— 它们没有独立
- * 诊断地址（NAC/NAS/NVB/NIM/NSM/NIT/NYL/NVO/ELSDM/DMSM/NBA）。真车上 18DA00F1
- * 无人应答，硬连只会把「工具没这个地址」伪装成「节点不可用」，让全量对齐永远报失败。
- * 这类节点照常显示（用户要看到它们在车上），但不参与「已安装分母」、不写入。
+ * 该节点是否有独立诊断地址。addr=00 的节点在数据里只有共享的 22 20 23
+ * 车身块读取，没有自己的 22/2E 命令；对齐时也没有写入目标，直接忽略。
  */
 function nodeAddressable(n) {
   return !!n && !n.addrUnknown && String(n.addr).toUpperCase() !== '00';
 }
 
+/**
+ * 加载时清理“不参与”的项，而不是渲染后再置灰：
+ *  - PROXIX1 是 PROXI 对齐程序本身，不是可手动诊断的 ECU；从模块/实时/DTC/功能下拉移除；
+ *  - alignmentNodes 只保留有独立诊断地址且非平台 excluded 的节点；addr=00 的节点
+ *    只有车身块 presence 位、没有自己的读写命令，直接忽略；
+ *  - 15 个其它平台专属 excluded 节点移除；
+ *  - functions 里 PROXIX1 的 45 条对齐副本没有可执行意义（原本点击也会被拦），移除。
+ * 源 JSON 保留完整数据供追溯/重建，这里只清理 UI 流程。
+ */
+function removeNonParticipating() {
+  state.modules.modules = state.modules.modules.filter((m) => m.code !== 'PROXIX1');
+  // 只保留可独立寻址的节点；addr=00 没有自己的读写命令，直接忽略
+  state.modules.alignmentNodes = state.modules.alignmentNodes.filter((n) => !n.excluded && nodeAddressable(n));
+  state.funcs.categories = state.funcs.categories
+    .map((c) => ({
+      ...c,
+      items: c.items.filter((i) => i.module !== 'PROXIX1' && i.category !== 'PROXI 对齐'),
+    }))
+    .filter((c) => c.items.length)
+    .map((c) => ({ ...c, count: c.items.length }));
+  state.funcs.total = state.funcs.categories.reduce((n, c) => n + c.items.length, 0);
+}
+
 function renderAlign() {
   const wrap = $('alignGroups');
   wrap.innerHTML = '';
+  if (!state.block) {
+    // 还没有读 PROXI 块：不知道在场位，先不渲染节点
+    wrap.innerHTML = '<div class="dim" style="padding:16px">请先读取车辆配置；对齐节点会按在场位和可写地址自动过滤。</div>';
+    ['stTotal', 'stDone', 'stFail', 'stPending'].forEach((id) => { if ($(id)) $(id).textContent = '0'; });
+    if ($('stPresent')) $('stPresent').textContent = '—';
+    if ($('stAligned')) $('stAligned').textContent = '—';
+    if ($('stMisaligned')) $('stMisaligned').textContent = '—';
+    return;
+  }
   state.modules.alignmentNodes.forEach((n, i) => { n._idx = i; });
   const groups = { plain: [], comfort: [], swap: [] };
   for (const n of state.modules.alignmentNodes) {
-    if (n.excluded) continue;                 // 其它平台专属节点，952/949 不装配
+    if (n.excluded || !nodeAddressable(n)) continue;   // addr=00 无独立读写命令，直接忽略
+    if (nodePresent(n) === false) continue;
     groups[nodeGroupOf(n)].push(n);
   }
 
@@ -1342,19 +1377,16 @@ function renderAlign() {
         }</span>
         <button class="toggle-absent" data-group="${key}">显示未安装节点</button>
       </header>
-      <div class="nodes">${list.map((n) => {
-        const ok = nodeAddressable(n);
-        return `
-        <div class="node${ok ? '' : ' noaddr'}" data-st="${ok ? 'wait' : 'noaddr'}" data-group="${key}" data-idx="${n._idx}">
-          <input type="checkbox" class="pick" ${ok ? 'checked' : 'disabled'}>
-          <div class="nm">${tSpan(n.name)}${presenceOverlapsCrc(n) ? '<span class="tiny" title="该节点在场位字节落在 CRC 校验区（DATA1[6..10]）内，装/卸判定以首次读取的在场位基线为准，不随 CRC 重算漂移"> 在场位与 CRC 区重叠</span>' : ''}${ok ? '' : '<span class="tiny" title="源数据里该节点没有独立诊断地址（ResultFormat=00125），无法单独写 PROXI；对齐时按车端已验证行为跳过"> 无诊断地址·不参与对齐</span>'}</div>
+      <div class="nodes">${list.map((n) => `
+        <div class="node" data-st="wait" data-group="${key}" data-idx="${n._idx}">
+          <input type="checkbox" class="pick" checked>
+          <div class="nm">${tSpan(n.name)}${presenceOverlapsCrc(n) ? '<span class="tiny" title="该节点在场位字节落在 CRC 校验区（DATA1[6..10]）内，装/卸判定以首次读取的在场位基线为准，不随 CRC 重算漂移"> 在场位与 CRC 区重叠</span>' : ''}</div>
           <div class="ad">地址 0x${n.addr} · ${n.baud}k</div>
-          <div class="st">${ok ? '○ 待检查' : '— 跳过'}</div>
-        </div>`;
-      }).join('')}</div>`;
+          <div class="st">○ 待检查</div>
+        </div>`).join('')}</div>`;
     wrap.appendChild(div);
   }
-  const alignable = state.modules.alignmentNodes.filter((n) => !n.excluded && nodeAddressable(n)).length;
+  const alignable = state.modules.alignmentNodes.filter((n) => nodeAddressable(n) && nodePresent(n) !== false).length;
   $('stTotal').textContent = alignable;
   $('stDone').textContent = 0;
   $('stFail').textContent = 0;
@@ -1421,8 +1453,8 @@ $('btnCheckAlign').addEventListener('click', async () => {
   let cancelFlag = false;
   const cancelUi = showCancelButton(() => { cancelFlag = true; });
   const nodes = [...document.querySelectorAll('.node')];
-  const total = nodes.filter((el) => nodeAddressable(state.modules.alignmentNodes[Number(el.dataset.idx)])).length;
-  let present = 0, aligned = 0, mis = 0, skipped = 0, failed = 0, unknown = 0;
+  const total = nodes.length;
+  let present = 0, aligned = 0, mis = 0, skipped = 0, failed = 0;
   // 清掉上一轮对齐的「本次成功/失败」，避免状态检查页显示陈旧数字
   $('stDone').textContent = '0';
   $('stFail').textContent = '0';
@@ -1445,20 +1477,6 @@ $('btnCheckAlign').addEventListener('click', async () => {
     if (cancelFlag) break;                    // 用户点了「取消」
     const n = state.modules.alignmentNodes[Number(el.dataset.idx)];
     const nm = el.querySelector('.nm').textContent.trim();
-    if (!nodeAddressable(n)) {
-      // 源数据没有独立诊断地址：不探测、不计入未对齐，但**已安装**的必须让用户看到
-      // （车端已验证行为按在场位过滤后同样写不了这类节点，所以这里只能"如实告知"）
-      const inst0 = nodePresent(n);
-      const isPresent = inst0 !== false;
-      el.dataset.st = 'noaddr';
-      el.querySelector('.st').innerHTML = isPresent
-        ? '<b>— 已安装·无地址</b><br><span class="reason">无法写入/校验</span>'
-        : '<b>— 未安装</b>';
-      const cb0 = el.querySelector('.pick');
-      if (cb0) { cb0.checked = false; cb0.disabled = true; }
-      if (isPresent) unknown++;
-      continue;
-    }
     const inst = nodePresent(n);
 
     if (inst === false) {
@@ -1515,7 +1533,7 @@ $('btnCheckAlign').addEventListener('click', async () => {
 
   const v = $('alignVerdict');
   v.classList.remove('hidden', 'ok', 'bad');
-  const skipNote = unknown ? `（${unknown} 个节点已安装但源数据无独立诊断地址，无法写入/校验）` : '';
+  const skipNote = '';
   if (cancelFlag) {
     stageFail(`已取消对齐状态检查：已读 ${aligned + mis + failed} / ${total}${skipNote}`);
   } else if (mis === 0 && failed === 0 && present > 0) {
@@ -1727,7 +1745,6 @@ $('btnAlign').addEventListener('click', async () => {
       for (const el of nodes.filter((n) => n.dataset.group === key)) {
         if (!el.querySelector('.pick')?.checked) continue;
         const nodeMeta = state.modules.alignmentNodes[Number(el.dataset.idx)];
-        if (!nodeAddressable(nodeMeta)) continue;      // 无地址节点永不写（防御）
         idx++;
         const nodeName = el.querySelector('.nm').textContent.trim();
         // —— 开始：明确告知正在对齐哪一个 ——
@@ -3050,6 +3067,7 @@ async function load() {
     fetch('../src/data/dtc-snapshots.json').then((r) => r.json()).catch(() => ({ modules: {} })),
   ]);
   Object.assign(state, { features: f, modules: m, named: ns, funcs: fn, cables, i18n, i18nDesc, ifaces: ifaceData.interfaces, dtc, params, snapshots });
+  removeNonParticipating();
   renderIfaceTypes();
   renderDtcModuleOptions();
   renderNamed();

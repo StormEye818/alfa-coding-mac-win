@@ -30,3 +30,7 @@ HANDOFF.md
 # 注意：docs/使用教程.md 是要提交的，别用 docs/ 整目录排除
 docs/*审查*.md
 docs/修复记录-*.md
+
+# 本车配置核对报告（含第三方来源名词，禁进公开面）
+docs/车辆PROXI核对-*.md
+docs/车辆PROXI核对-*.csv

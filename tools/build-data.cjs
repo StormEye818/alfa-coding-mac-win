@@ -123,7 +123,7 @@ function build() {
     };
 
     fs.writeFileSync(path.join(OUT, 'modules.json'), JSON.stringify({
-        generatedFrom: 'diag-data/data (诊断软件 5.4 DB)',
+        generatedFrom: 'diag-data/data (5.4 DB)',
         platforms: {
             '952': { name: 'Giulia', code: '952', bodyModule: 'BODY33', proxiModule: 'PROXIX1' },
             '949': { name: 'Stelvio', code: '949', bodyModule: 'BODY30', proxiModule: 'PROXIX1' },

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""生成 src/data/i18n.json —— 诊断软件 术语中文对照（汽车行业标准说法，非机翻）。"""
+"""生成 src/data/i18n.json —— 参考数据术语中文对照（汽车行业标准说法，非机翻）。"""
 import json, os, re
 
 BASE = os.path.join(os.path.dirname(__file__), '..', 'src', 'data')
@@ -551,7 +551,7 @@ def main():
             missing.remove(m)
 
     out = {
-        "note": "诊断软件 术语中文对照。zh=译文（汽车行业标准说法），en=原文。用于界面显示；en 保留以便与 诊断软件 对照。",
+        "note": "参考数据术语中文对照。zh=译文（汽车行业标准说法），en=原文。用于界面显示；en 保留以便对照。",
         "version": "1.0",
         "terms": {k: {"zh": v, "en": k} for k, v in TERMS.items()},
         "options": {k: {"zh": v, "en": k} for k, v in OPTIONS.items()},

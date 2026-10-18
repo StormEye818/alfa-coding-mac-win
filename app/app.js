@@ -1951,7 +1951,7 @@ async function mergeRwUserEntry(item, picked) {
   const wpay = wraw.slice(1, 1 + wlen);
   if (wpay[0] !== 0x2e || wpay.length < 4) return null;                    // 次条=写模板
   const did = (wpay[1] << 8) | wpay[2];
-  // MES `_0093_008E` 读回长度 <4 就直接失败，不会拿全零模板继续写。
+  // 车端已验证的读改写流程在读回长度 <4 时直接失败，不会拿全零模板继续写。
   let base;
   try {
     base = await state.uds.readDataByIdentifier(did);
@@ -1964,7 +1964,7 @@ async function mergeRwUserEntry(item, picked) {
   np[1] = 0x2e; np[2] = wpay[1]; np[3] = wpay[2];
   np.set(merged, 4);
   const hex = Array.from(np).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join('');
-  // MES `_0093_008E` 只读 commands[0] + 写 commands[1]；后面的 commands[2..] 不发送。
+  // 车端已验证的读改写流程只读 commands[0] + 写 commands[1]；后面的 commands[2..] 不发送。
   return [parts[0], hex].join(',');
 }
 
@@ -1998,7 +1998,7 @@ async function runCommandString(cmdStr, item) {
   //   ≥3 条    → 命令之间只等基准（2s）
   const rwUserEntry = flags.includes('RWUSERENTRY');
   const gapMs = rwUserEntry ? 1000 : (parts.length === 1 ? interMs * 5 : parts.length === 2 ? interMs * 4 : interMs);
-  // RWUSERENTRY：MES `_0093_008E` 先在本地读一次、合并，然后 Sleep(1000) → 2E，
+  // RWUSERENTRY：车端已验证流程先在本地读一次、合并，然后 Sleep(1000) → 2E，
   // 成功后 Sleep(1000)；读帧已经由 mergeRwUserEntry 发出，这里从写帧开始。
   const startIndex = (item && item._rwReadDone) ? 1 : 0;
   if (item) item._rwReadDone = false;
@@ -2090,9 +2090,9 @@ async function runCommandString(cmdStr, item) {
     const hex = Array.from(payload).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ')
       + (len > 7 ? '（多帧）' : '');
     let resp = null;
-    // 注意：MES 的 CAN 命令执行器在这里不额外发 10 03；普通 2E 由调用方的会话负责，
+    // 注意：车端已验证的 CAN 命令执行器在这里不额外发 10 03；普通 2E 由调用方的会话负责，
     // PROXI 写入则由 writeDataByIdentifier 自己进扩展会话。不要在这里加“保险”，否则
-    // 会多出一帧 MES 没有的 10 03，破坏逐帧对齐。
+    // 会多出一帧参考流程没有的 10 03，破坏逐帧对齐。
     try {
       resp = await state.link.request(payload, timeoutMs ? { timeoutMs } : undefined);
     } catch (e) {
@@ -2102,7 +2102,7 @@ async function runCommandString(cmdStr, item) {
       // 旧实现把后续命令的 NRC 也 throw，导致多段流程（喷油嘴编码等）在第一条读之后
       // 因某条例程被拒而整条中断，与车端已验证行为不一致。
       const empty = e && (e.code === 'NO_DATA' || e.code === 'BAD_FRAME');
-      // MES 的 FUNC 分支不看首条响应，直接进入 31 03 轮询；其它分支首条空应答才失败
+      // 车端已验证的 FUNC 分支不看首条响应，直接进入 31 03 轮询；其它分支首条空应答才失败
       if (empty && (funcPoll || !firstReal || execAny)) {
         sent.push(`${hex} → （无应答，继续）`);
       } else {
@@ -2116,7 +2116,7 @@ async function runCommandString(cmdStr, item) {
       }
       const nrc = resp[2];
       sent.push(`${hex} → ✗ NRC 0x${nrc.toString(16).toUpperCase()}（${NRC[nrc] || '未知'}）`);
-      // MES 的 FUNC 分支不看首条 NRC，直接轮询；普通分支首条 NRC 仍失败。
+      // 车端已验证的 FUNC 分支不看首条 NRC，直接轮询；普通分支首条 NRC 仍失败。
       if (firstReal && !funcPoll) {
         throw new Error(`命令被拒：NRC 0x${nrc.toString(16).toUpperCase()}（${NRC[nrc] || '未知'}）`);
       }
@@ -2142,7 +2142,7 @@ async function runCommandString(cmdStr, item) {
           break;
         }
         polls++;
-        // MES 的响应缓冲是 [长度][服务][子功能][NRC]；协议层已去长度前缀，
+        // 车端已验证的响应缓冲是 [长度][服务][子功能][NRC]；协议层已去长度前缀，
         // 所以 NRC 在 st[3]（旧实现看 st[2] 会把 0x03 当 NRC，第一次忙就停止）。
         if (!(st && st.length >= 4 && st[0] === 0x7f && (st[3] === 0x21 || st[3] === 0x23))) {
           sent.push(`[例程状态：${st ? Array.from(st).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ') : '空'}（轮询 ${polls} 次）]`);
@@ -2159,7 +2159,7 @@ async function runCommandString(cmdStr, item) {
       }
     }
   }
-  // MES 的 FUNC 分支 (_0093_008D) 不按正响应数判失败；普通分支才按正响应数。
+  // 车端已验证的 FUNC 分支不按正响应数判失败；普通分支才按正响应数。
   if (rwUserEntry) await new Promise((r) => setTimeout(r, 1000));
   if (!funcPollStarted && realIndex > 0 && positive === 0) {
     throw new Error('执行失败：所有命令均未得到正响应');

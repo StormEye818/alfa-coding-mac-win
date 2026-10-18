@@ -35,7 +35,7 @@ const DID = {
  * **= 1（1-based）** —— 已由标准流程逐字节确认：解析处是 `block[字节号 - 1]`。
  * 响应缓冲固定 **13 字节** = 1 字节长度前缀 + 12 载荷（`62 10 2A` + 9 数据），
  * 三组差异在缓冲 [5,6] / [8,9] / [11,12]，即载荷数据区 [1,2] / [4,5] / [7,8]。
- * MES `:37110` 的 `block[n-1]` 已确认 1-based；若出现整体偏一位，先怀疑载荷切片，再考虑改这里。
+ * 车端已验证行为的 `block[n-1]` 已确认 1-based；若出现整体偏一位，先怀疑载荷切片，再考虑改这里。
  */
 const PROXI_BYTE_INDEX_BASE = 1;
 
@@ -123,7 +123,7 @@ class Uds {
         req[0] = 0x2e; req[1] = hi; req[2] = lo; req.set(data, 3);
         // 写入前强制进扩展会话（S3 超时会掉回默认会话，那时写入必被拒 0x31）
         await this.enterExtendedSession();
-        // MES 的写流程在组帧/写之前固定 Sleep(500)（`:36875`），不是 200ms。
+        // 车端已验证的写流程在组帧/写之前固定 Sleep(500)，不是 200ms。
         // 逐帧对齐时这个时序也必须一致；500ms 必须在 **2E 之前**。
         await new Promise((r) => setTimeout(r, 500));
         for (let attempt = 0; ; attempt++) {

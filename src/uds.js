@@ -244,7 +244,7 @@ class Uds {
      *   `03 22 20 23` 读 DATA1
      *   `03 22 20 24` 读 DATA1S   ← 我们此前没有
      *   `02 3E 00`    TesterPresent ← 我们此前没有
-     * 之后才进入逐节点的 `Sleep(200) → 2E 20 23 → 22 10 2A → 22 40 AA`。
+     * 之后才进入逐节点的 `Sleep(500) → 2E 20 23 → 22 10 2A → 22 40 AA`。
      *
      * DATA1S 语义尚未深挖（名称来自标准流程字符串 `DATA1S:`），先采集进日志，
      * 不参与判定 —— 拿到实车样本后再定它的用途。
@@ -279,8 +279,8 @@ class Uds {
      *    若实车发现差异字节整体偏一位，改这个常量即可，不要改解析槽位。
      */
     async verifyProxi(expected) {
-        // 标准写入序列：Sleep(200) → 2E 20 23 → 22 10 2A → 22 40 AA
-        //   Sleep(200) 与 2E 20 23 在 writeDataByIdentifier（写之前）
+        // 标准写入序列：Sleep(500) → 2E 20 23 → 22 10 2A → 22 40 AA
+        //   Sleep(500) 与 2E 20 23 在 writeDataByIdentifier（写之前）；500ms 已对照块写入口核实（源 36873 Thread.Sleep(500)）
         //   本函数只负责 22 10 2A + 22 40 AA
         // 车端已验证行为：空/短应答 → Sleep(2000) → 重读一次
         let resp = null;

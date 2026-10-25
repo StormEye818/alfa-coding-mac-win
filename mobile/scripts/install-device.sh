@@ -9,11 +9,12 @@
 #   Xcode → Settings → Accounts → 登录 Apple ID（Team MW795KJMTY）
 #   否则 xcodebuild 报 "No Accounts" / "requires a provisioning profile"
 #   iPhone Duo 上：设置 → 隐私与安全性 → 开发者模式 → 打开并重启
+#   首次装完还要：设置 → 通用 → VPN与设备管理 → 信任 MW795KJMTY
 #
 # 用法：
-#   ./scripts/install-device.sh              # 编译 + 装到 iPhone Duo
-#   ./scripts/install-device.sh --build-only # 只编译不装
-#   DEVICE_UDID=<udid> ./scripts/install-device.sh   # 临时装到别的机
+#   bash scripts/install-device.sh              # 编译 + 装到 iPhone Duo
+#   bash scripts/install-device.sh --build-only # 只编译不装
+#   DEVICE_UDID=<udid> bash scripts/install-device.sh   # 临时装到别的机
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -31,24 +32,7 @@ node scripts/sync-web.mjs
 npx cap sync ios >/dev/null
 node scripts/sync-web.mjs --bridge-only
 
-echo "── 2/4 编真机包 ──"
-# 固定构建路径防装错旧包（HANDOFF §四 规矩：禁 find DerivedData -name App.app）
-xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug \
-  -destination 'generic/platform=iOS' -derivedDataPath ios/build \
-  DEVELOPMENT_TEAM=MW795KJMTY CODE_SIGN_STYLE=Automatic \
-  CODE_SIGN_IDENTITY="Apple Development" \
-  -allowProvisioningUpdates build 2>&1 | tail -5
-
-APP=ios/build/Build/Products/Debug-iphoneos/App.app
-[ -d "$APP" ] || { echo "❌ 构建产物缺失: $APP"; exit 1; }
-echo "   ✅ $APP"
-
-if [ "$BUILD_ONLY" = 1 ]; then
-  echo "── 跳过安装（--build-only）──"
-  exit 0
-fi
-
-echo "── 3/4 找设备 ──"
+echo "── 2/4 找设备 ──"
 # ⚠️ 状态字可能是 connected/available 等，别写死一种
 UDID="${DEVICE_UDID:-$DEFAULT_UDID}"
 if ! xcrun devicectl list devices 2>/dev/null | grep -q "$UDID"; then
@@ -64,6 +48,30 @@ if xcrun devicectl device info details --device "$UDID" 2>&1 | grep -q "Develope
   echo "❌ iPhone Duo 的开发者模式没开，装不进去。"
   echo "   手机上：设置 → 隐私与安全性 → 开发者模式 → 打开，重启后再跑本脚本。"
   exit 1
+fi
+
+echo "── 3/4 编真机包 ──"
+# ⚠️ 2026-10-25 踩过：换新机后装机报 0xe8008012「provisioning profile cannot
+#    be installed on this device」——团队 profile 里只有旧机的 UDID。
+#    两个开关缺一不可，而且 -destination 必须写具体 id=UDID：
+#      · 写 generic/platform=iOS 时「destination device」不存在，
+#        -allowProvisioningDeviceRegistration 等于没开
+#      · 该开关才会把这台机注册到开发者门户并重出团队 profile
+# 固定构建路径防装错旧包（HANDOFF §四 规矩：禁 find DerivedData -name App.app）
+xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug \
+  -destination "id=$UDID" -derivedDataPath ios/build \
+  DEVELOPMENT_TEAM=MW795KJMTY CODE_SIGN_STYLE=Automatic \
+  CODE_SIGN_IDENTITY="Apple Development" \
+  -allowProvisioningUpdates -allowProvisioningDeviceRegistration \
+  build 2>&1 | tail -5
+
+APP=ios/build/Build/Products/Debug-iphoneos/App.app
+[ -d "$APP" ] || { echo "❌ 构建产物缺失: $APP"; exit 1; }
+echo "   ✅ $APP"
+
+if [ "$BUILD_ONLY" = 1 ]; then
+  echo "── 跳过安装（--build-only）──"
+  exit 0
 fi
 
 echo "── 4/4 安装 ──"

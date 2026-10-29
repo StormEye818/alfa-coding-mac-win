@@ -1437,46 +1437,41 @@ function bindStatFilter(boxId, pred) {
 }
 
 /**
- * 逐模块读取对齐状态（教程 §5.1）。
- * 主判据：逐节点 22 10 2A 回读校验（基准 = 车身电脑当前 PROXI 块）——有差异即未对齐；
- * 辅助：0x292E 写入计数与车身电脑比对（不一致同样按未对齐计）。
+ * 读取对齐状态 —— 车身模块一体读取（快速模式）。
+ *
+ * 与标准流程一致：只进车身模块，读 22 20 23（PROXI 块 + 在场位）和 22 10 2A（车身级校验），
+ * 在场位位图给出各节点装/卸状态，车身 22 10 2A 给出整车对齐判定。
+ * 不再逐模块进入（旧逐节点回读是写入验证路径的复用，大量模块 NO DATA 导致误判）。
  */
 $('btnCheckAlign').addEventListener('click', async () => {
   if (!(await ensureRead())) return;
   if (state.aligning) return alert('正在执行 PROXI 对齐，请等它结束再读取状态。');
-  // 并发闸：整个扫描要 3~5 分钟，连点两次会跑两条循环互相踩模块地址（2026-10-18 审查 M6）
-  if (state.busy) return alert(`正在执行「${state.busy}」，请等它结束或点「取消」。`);
+  if (state.busy) return alert(`正在执行「${state.busy}」，请等它结束。`);
   stopLiveForOperation('读取对齐状态');
-  if (state.session) state.session.resetCableAbort();
   state.busy = '读取对齐状态';
   $('btnCheckAlign').disabled = true;
-  let cancelFlag = false;
-  const cancelUi = showCancelButton(() => { cancelFlag = true; });
+  try {
   const nodes = [...document.querySelectorAll('.node')];
   const total = nodes.length;
-  let present = 0, aligned = 0, mis = 0, skipped = 0, failed = 0;
-  // 清掉上一轮对齐的「本次成功/失败」，避免状态检查页显示陈旧数字
+  let present = 0, aligned = 0, mis = 0, skipped = 0;
   $('stDone').textContent = '0';
   $('stFail').textContent = '0';
   $('stPending').textContent = total;
-  stage('正在读取各模块对齐状态…');
-  await stageWait(320);
-  try {
+  stage('正在读取车身模块对齐状态…');
 
-  // 1) 车身电脑为基准：基准块（22 10 2A 比对参照）+ 写入计数（辅助）
+  // 1) 车身电脑为基准：PROXI 块（含在场位）+ 写入计数
   await state.session.ensureModule(state.session.bodyModule);
   const refBytes = await state.uds.readProxi();
   const ref = await state.uds.readProxiWriteCounter();
   stage(`基准：${modLabel(state.session.bodyModule)} PROXI 块 ${refBytes.length} 字节 · 写入计数 ${ref}`);
-  await stageWait(300);
 
-  // 2) 逐节点 22 10 2A 回读校验
-  let i = 0;
+  // 2) 车身模块 22 10 2A —— 整车对齐判定
+  stage('正在读取车身模块 22 10 2A 对齐校验…');
+  const v = await state.uds.verifyProxi(refBytes);
+
+  // 3) 用在场位位图 + 车身级判定显示所有节点
   for (const el of nodes) {
-    i++;
-    if (cancelFlag) break;                    // 用户点了「取消」
     const n = state.modules.alignmentNodes[Number(el.dataset.idx)];
-    const nm = el.querySelector('.nm').textContent.trim();
     const inst = nodePresent(n);
 
     if (inst === false) {
@@ -1488,71 +1483,48 @@ $('btnCheckAlign').addEventListener('click', async () => {
       continue;
     }
     present++;
-    el.querySelector('.st').innerHTML = `<b>○ 正在读取 ${i}/${total}…</b>`;
-    stage(`正在读取对齐状态 ${i}/${total} · ${nm}`);
 
-    try {
-      // 通过会话连接该节点所属模块（换线提示走正常流程）
-      await state.session.connectNode(n);
-      const v = await state.uds.verifyProxi(refBytes);       // 22 10 2A：主判据
-      const c = await state.uds.readProxiWriteCounter();     // 0x292E：辅助
-      // 计数读不到（null）时不能判成"一致"（null===null 恒真会让坏链路假通过），退化为只看主判据
-      const counterKnown = c !== null && ref !== null;
-      const ok = v.ok && (!counterKnown || c === ref);
-      const reason = !v.ok
-        ? `22 10 2A 差异：Byte${v.diffs.map((d) => d.byte).join('、Byte')}`
-        : `计数 ${c} / 车身 ${ref}`;
-      if (ok) {
-        el.dataset.st = 'aligned';
-        el.classList.remove('absent');
-        el.querySelector('.st').innerHTML = `<b>✓ 已对齐</b><br><span class="reason">${reason}</span>`;
-        aligned++;
-      } else {
-        el.dataset.st = 'misaligned';
-        el.classList.remove('absent');
-        el.querySelector('.st').innerHTML = `<b>⚠ 未对齐</b><br><span class="reason">${reason}</span>`;
-        mis++;
-      }
-    } catch (e) {
-      el.dataset.st = 'fail';
-      el.querySelector('.st').innerHTML = `<b>✗ 读取失败</b><br><span class="reason">${e.message}</span>`;
-      failed++;
-      // 换线被取消/链路断开：后面的节点只会连续快速失败，直接结束本轮扫描
-      if (/已取消：未确认换线|连接已断开/.test(e.message)) {
-        stageFail('换线已取消/链路断开，停止本轮对齐状态检查');
-        break;
-      }
+    if (v.ok) {
+      el.dataset.st = 'aligned';
+      el.classList.remove('absent');
+      el.querySelector('.st').innerHTML = '<b>✓ 已对齐</b>';
+      aligned++;
+    } else {
+      // 车身块有差异 —— 先标为待确认（车身级问题，非单节点问题）
+      el.dataset.st = 'misaligned';
+      el.classList.remove('absent');
+      const diffInfo = v.diffs.map((d) => `Byte${d.byte}`).join('、');
+      el.querySelector('.st').innerHTML = `<b>⚠ 待确认</b><br><span class="reason">车身块差异 ${diffInfo}</span>`;
+      mis++;
     }
   }
 
   $('stPresent').textContent = present;
   $('stAligned').textContent = aligned;
-  $('stMisaligned').textContent = mis + failed;
-  // 扫描结束后「待检查」应归零；取消时保留实际未扫到的数量
-  $('stPending').textContent = cancelFlag ? Math.max(0, total - (aligned + mis + failed)) : 0;
+  $('stMisaligned').textContent = mis;
+  $('stPending').textContent = 0;
 
-  const v = $('alignVerdict');
-  v.classList.remove('hidden', 'ok', 'bad');
-  const skipNote = '';
-  if (cancelFlag) {
-    stageFail(`已取消对齐状态检查：已读 ${aligned + mis + failed} / ${total}${skipNote}`);
-  } else if (mis === 0 && failed === 0 && present > 0) {
-    v.classList.add('ok');
-    v.textContent = '✓ 整车对齐正常，无里程表闪烁' + skipNote;
-    stageDone(`对齐状态检查完成：${aligned} 个已对齐${skipNote}`);
+  const verdict = $('alignVerdict');
+  verdict.classList.remove('hidden', 'ok', 'bad');
+  if (mis === 0 && present > 0) {
+    verdict.classList.add('ok');
+    verdict.textContent = `✓ 整车对齐正常（${present} 个在场节点），无里程表闪烁`;
+    stageDone(`对齐状态检查完成：${aligned} 个已对齐`);
+  } else if (present === 0) {
+    verdict.classList.add('bad');
+    verdict.textContent = '⚠ 未检测到在场节点';
+    stageFail('对齐状态检查完成：无在场节点');
   } else {
-    v.classList.add('bad');
-    v.textContent = `⚠ 有 ${mis + failed} 个模块未对齐 → 里程表会闪烁${skipNote}`;
-    stageFail(`对齐状态检查完成：${aligned} 已对齐 / ${mis} 未对齐${failed ? ` / ${failed} 读取失败` : ''}${skipNote}`);
+    verdict.classList.add('bad');
+    verdict.textContent = `⚠ 车身块有 ${v.diffs.length} 处差异 → 里程表会闪烁`;
+    stageFail(`对齐状态检查完成：${aligned} 已对齐 / ${mis} 待确认`);
   }
   } catch (e) {
-    // 基准块读取 / 车身电脑连接失败：必须给用户结论，不能只留一条未处理的 Promise 拒绝
     stageFail('读取对齐状态失败：' + e.message);
     alert('读取对齐状态失败：' + e.message + (e.nrcText ? '（' + e.nrcText + '）' : ''));
   } finally {
     state.busy = null;
     $('btnCheckAlign').disabled = false;
-    cancelUi.remove();
   }
 });
 
@@ -2611,19 +2583,35 @@ $('btnReadDtc').addEventListener('click', async () => {
         stageDone('读取完成：无故障码');
         return;
       }
-      wrap.innerHTML = list.map((d) => {
+      // 按状态分组：active = 当前活跃故障（testFailed / pendingDTC / confirmedDTC）
+      const active = list.filter((d) => d.active);
+      const inactive = list.filter((d) => !d.active);
+      const renderDtc = (d) => {
         const rawHex = d.raw.map((x) => x.toString(16).toUpperCase().padStart(2, '0')).join('');
         const hit = dtcLookup(code, rawHex);
         return `<div class="mrow">
           <div class="dtc-code">${d.code}</div>
           <div class="grow">
-            <div class="name">${hit ? hit.name : '未知故障'}${d.confirmed ? '<span class="state-tag failed">已确认</span>' : ''}${d.pending ? '<span class="state-tag pending">待定</span>' : ''}</div>
+            <div class="name">${hit ? hit.name : '未知故障'}${d.confirmed ? '<span class="state-tag failed">已确认</span>' : ''}${d.pending ? '<span class="state-tag pending">待定</span>' : ''}${d.testFailed ? '<span class="state-tag failed">当前故障</span>' : ''}</div>
             ${hit && hit.desc ? `<div class="sub">${hit.desc}</div>` : ''}
             <div class="sub">原始码 ${rawHex} · 状态 0x${d.status.toString(16).toUpperCase().padStart(2, '0')}</div>
           </div>
         </div>`;
-      }).join('');
-      stageDone(`读取完成：${list.length} 条故障码`);
+      };
+      let html = '';
+      if (active.length) {
+        html += `<div style="padding:8px 12px;font-weight:600;color:#e74c3c">⚠ 当前故障（${active.length} 条）</div>`;
+        html += active.map(renderDtc).join('');
+      } else {
+        html += '<div style="padding:8px 12px;color:#27ae60;font-weight:600">✓ 无当前活跃故障</div>';
+      }
+      if (inactive.length) {
+        html += `<details style="margin-top:8px"><summary style="padding:8px 12px;cursor:pointer;color:#888;font-size:13px">📋 历史/已存储故障（${inactive.length} 条）— 点击展开</summary>`;
+        html += inactive.map(renderDtc).join('');
+        html += '</details>';
+      }
+      wrap.innerHTML = html;
+      stageDone(`读取完成：${active.length} 条当前故障${inactive.length ? ` / ${inactive.length} 条历史` : ''}`);
     });
   } catch (e) {
     stageFail('读取失败：' + e.message);

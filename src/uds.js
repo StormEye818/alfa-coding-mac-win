@@ -344,7 +344,16 @@ function pinToKeyBcd(pin) {
     ];
 }
 
-/** 0x19 响应 → DTC 列表 */
+/**
+ * 0x19 响应 → DTC 列表。
+ * DTC 状态字节（ISO 14229-1 DtcStatusOfDTC）各位含义：
+ *   bit0 testFailed · bit1 testFailedThisOperationCycle · bit2 pendingDTC
+ *   bit3 confirmedDTC · bit4 testNotCompletedSinceLastClear
+ *   bit5 testFailedSinceLastClear · bit6 testNotCompletedThisOperationCycle
+ *   bit7 warningIndicatorRequested
+ * active = 当前活跃故障（testFailed | pendingDTC | confirmedDTC）；
+ * 非 active 的是历史/已存储条目（如仅 testFailedSinceLastClear = 曾经有但现在没了）。
+ */
 function parseDtcList(resp) {
     // 59 02 <statusAvailabilityMask> [ <dtcHi> <dtcLo> <status> ]...
     const out = [];
@@ -355,8 +364,10 @@ function parseDtcList(resp) {
             code: dtcCodeToString(hi, lo),
             raw: [hi, lo],
             status: st,
+            testFailed: (st & 0x01) !== 0,
             pending: (st & 0x04) !== 0,
             confirmed: (st & 0x08) !== 0,
+            active: (st & 0x0D) !== 0,
         });
     }
     return out;

@@ -32,6 +32,12 @@
  *
  * ⚠️ 不要再逐节点读 22 10 2A 来判状态：那是**写入后的单节点回读校验**，
  *    不是整车状态来源；实车上大量模块对该 DID 不应答，逐节点读会得到假状态。
+ *
+ * SGW（安全网关，节点 startByte=2 / mask 0x01 ↔ 命名项 Byte40）在本车平台
+ * （952/949，PROXI 程序代号 PROXIX1）**没有任何特殊分支**：它就是普通一个节点位，
+ * 读写都走位图。车端对 SGW 唯一的态度是「实际位图里没有它 → 配置位也就没有它」，
+ * 即 bypass 状态下做对齐会把 SGW 的配置位清掉。`sgwBypassRisk()` 只负责把这件事
+ * 在写入前说清楚，**不改写入内容**（改了就和车端口径分叉）。
  */
 
 /** PROXIX 家族（952/949，DATA3=80B） */
@@ -131,6 +137,51 @@ function bytesEq(a, b) {
     return true;
 }
 
+/** 位图里查某节点的某一位（'configured' / 'actual' / 'eol' / 'eolDone'） */
+function bitIn(bitmaps, node, key) {
+    const idx = Number(node && node.startByte) - 1;
+    const mask = nodeMask(node);
+    if (!mask || !bitmaps || idx < 0 || idx >= bitmaps.window) return false;
+    return ((bitmaps[key] || [])[idx] & mask) !== 0;
+}
+
+/**
+ * 写入前的 SGW 保护：这次对齐会不会把 SGW 从**配置位图**里抹掉。
+ *
+ * 场景（实车会遇到）：车上有 SGW，但为了写模块临时拔掉/bypass 了 SGW。
+ * 车身电脑的「实际位图」看不到 SGW → 对齐时 merge 会把 DATA3 的实际位图抄进配置区，
+ * SGW 的配置位由 1 变 0。等 SGW 装回去，车上「有」而配置「没有」→ 又要再对齐一次，
+ * 期间仪表可能继续闪。
+ *
+ * 车端（PROXIX1 家族，952/949）没有为 SGW 做特殊保留：它同样是把实际位图抄进配置区，
+ * 所以这里**不改写入口径**，只在「SGW 配置位将被清除」时把话说清楚、由用户确认。
+ *
+ * @param {Uint8Array|number[]} beforeData1 车身上当前的 DATA1（merge 前）
+ * @param {Uint8Array|number[]} afterData1  即将写入的 DATA1（merge / 编辑后）
+ * @param {Uint8Array|number[]} data3        车身上的 DATA3
+ * @returns {null | {node:object, configuredBefore:boolean, configuredAfter:boolean,
+ *                  actual:boolean, bcmPresent:boolean}}
+ */
+function sgwBypassRisk(beforeData1, afterData1, data3, nodes) {
+    const node = (nodes || []).find((n) => /\(SGW\)/i.test(String(n.name)));
+    if (!node) return null;
+    const before = buildAlignmentBitmaps(beforeData1, data3);
+    const after = buildAlignmentBitmaps(afterData1, data3);
+    if (!before || !after) return null;
+    const cfgBefore = bitIn(before, node, 'configured');
+    const cfgAfter = bitIn(after, node, 'configured');
+    const actual = bitIn(before, node, 'actual');
+    if (!cfgBefore || cfgAfter || actual) return null;   // 只在「原本有、写完没了、车上也没看到」时告警
+    const bcm = (nodes || []).find((n) => /Body Computer|BCM/i.test(String(n.name)));
+    return {
+        node,
+        configuredBefore: cfgBefore,
+        configuredAfter: cfgAfter,
+        actual,
+        bcmPresent: bcm ? bitIn(before, bcm, 'actual') : false,
+    };
+}
+
 /**
  * 整车对齐状态。
  *
@@ -210,5 +261,6 @@ export {
     buildAlignmentBitmaps,
     nodeAlignmentStatus,
     computeAlignment,
+    sgwBypassRisk,
     ALIGN_STATUS_LABEL,
 };

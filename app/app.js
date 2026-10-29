@@ -11,7 +11,7 @@ import { ProxiBlock, CRC_OFFSET, CRC_DIGITS } from '../src/proxi.js';
 import { applyScale, snapshotValue } from '../src/scale.js';
 import { Elm327, hexToBytes } from '../src/elm327.js';
 import { Uds, NRC, isRoutineBusy, DID } from '../src/uds.js';
-import { computeAlignment, ALIGN_STATUS_LABEL } from '../src/alignment.js';
+import { computeAlignment, sgwBypassRisk, ALIGN_STATUS_LABEL } from '../src/alignment.js';
 import { DemoLink } from '../src/demo-link.js';
 import { BridgeClient } from '../src/serial/bridge-client.js';
 import { InterfaceTester } from '../src/serial/detect.js';
@@ -1363,7 +1363,11 @@ function renderAlign() {
       case 'ok': return '<b>✓ 已对齐</b>';
       case 'eol-ok': return '<b>✓ 已对齐</b><br><span class="reason">EOL Ok</span>';
       case 'added': return '<b>＋ 待添加</b><br><span class="reason">车上存在，配置里没有</span>';
-      case 'removed': return '<b>－ 待移除</b><br><span class="reason">配置里有，车上不存在</span>';
+      case 'removed': return '<b>－ 待移除</b><br><span class="reason">'
+        + (/\(SGW\)/i.test(String(row.name))
+          ? '配置里有，车上没读到（若只是 bypass，对齐会清掉该位）'
+          : '配置里有，车上不存在')
+        + '</span>';
       case 'eol-failed': return '<b>⚠ EOL 未完成</b>';
       default: return `<b>${ALIGN_STATUS_LABEL[row.status] || row.status}</b>`;
     }
@@ -1440,6 +1444,12 @@ function renderAlign() {
     verdict.textContent = `⚠ ${c.needs + c.eolFailed} 个节点需要对齐（${parts.join(' / ')}）→ 里程表会闪烁`;
   }
   if (al.sgwPresent) log('检测到 SGW（安全网关）实际在位');
+  else {
+    const sgwRow = al.rows.find((r) => r.listed && /\(SGW\)/i.test(String(r.name)));
+    if (sgwRow && sgwRow.configured) {
+      log('⚠ 配置里有 SGW，但实际位图中没读到 —— 若刚做过 bypass/拔掉，对齐会把 SGW 配置位清掉');
+    }
+  }
 
   forEachNodeEl((el) => el.querySelector('.pick')?.addEventListener('change', updateAlignButtons));
   wrap.querySelectorAll('.toggle-absent').forEach((b) => {
@@ -1618,9 +1628,11 @@ $('btnAlign').addEventListener('click', async () => {
   }
   // —— 对齐前置：merge DATA3 → 重算 CRC ——
   // 映射：PROXIX 家族 DATA1[25..56] = DATA3[32..63]（正序），SGW 在 Byte41 落在该区。
+  let alignData3 = state.data3 || null;
   try {
     stage('正在读取 DATA3 并合并 CAN 配置…');
     const { data3 } = await state.uds.readProxiAll();
+    alignData3 = data3;
     const m = state.block.mergeData3(data3);
     if (m.merged && m.changed > 0) {
       renderEditor();
@@ -1641,6 +1653,30 @@ $('btnAlign').addEventListener('click', async () => {
   // 发 2E 20 23 前无条件重算 CRC（B7–B11）。
   // 手动改字节时 afterByteEdit 已 seal 过，mergeData3 内也会 seal——这里再兜一次底。
   state.block.seal();
+
+  // ===== SGW 保护闸 =====
+  // 车上配置里有 SGW、但实际位图里没有（典型：为了写模块临时拔掉/bypass 了 SGW），
+  // merge 会把实际位图抄进配置区 → 写完之后 SGW 的配置位就没了。
+  // 车端（PROXIX1）同样是这个口径，所以**不改写入内容**，只把后果说清楚再确认。
+  if (alignData3) {
+    const risk = sgwBypassRisk(liveBlock, state.block.bytes, alignData3, state.modules.alignmentNodes);
+    if (risk) {
+      const go = confirm(
+        '⚠ 车上配置里有 SGW（安全网关），但实际位图中没有检测到它。\n\n'
+        + '这次对齐会把 SGW 的配置位（Byte40 bit0）清成「无 SGW」。'
+        + (risk.bcmPresent ? '（车身电脑在位，说明链路正常，SGW 很可能处于 bypass / 被拔掉状态）' : '')
+        + '\n\n如果 SGW 只是临时 bypass：先把它装回去再对齐；或者对齐完成后、'
+        + '装回 SGW 之前再对齐一次，否则装回去时车上「有」而配置「没有」，仪表可能继续闪。\n\n'
+        + '点「确定」= 按当前车上实际状态继续写（SGW 配置位将被清除）\n'
+        + '点「取消」= 中止对齐，先去处理 SGW（推荐）'
+      );
+      if (!go) {
+        stageFail('已中止：本次对齐会把 SGW 从配置位图中清除（疑似 bypass 状态）');
+        return;
+      }
+      log('⚠ 已确认：SGW 配置位将被清除（实际位图无 SGW，疑似 bypass）');
+    }
+  }
 
   // ===== 部分对齐安全闸（2026-16-16）=====
   // 「单独对齐几个模块」要成立，前提是**写下去的块 == 未勾选节点当前持有的块**。

@@ -4,6 +4,7 @@ import {
     computeAlignment,
     buildAlignmentBitmaps,
     nodeAlignmentStatus,
+    sgwBypassRisk,
 } from '../src/alignment.js';
 
 let pass = 0, fail = 0;
@@ -120,6 +121,36 @@ console.log('\nSGW 实际存在标记');
     const b = mk(); putAct(b.d3, sgw);
     const res = computeAlignment(b.d1, b.d3, [sgw]);
     check('SGW 实际位 → sgwPresent', res.sgwPresent === true, String(res.sgwPresent));
+}
+
+console.log('\nSGW bypass 保护：写入会不会把 SGW 配置位清掉');
+{
+    const bcm = mods.alignmentNodes.find((n) => n.startByte === 16 && parseInt(n.bitMask, 16) === 0x01);
+    check('SGW 有独立诊断地址（可写目标）', String(sgw.addr).toUpperCase() === 'CB', String(sgw.addr));
+
+    // 车上有 SGW（配置 1 / 实际 1）→ 无风险
+    let d1 = new Uint8Array(289); let d3 = new Uint8Array(80);
+    putCfg(d1, sgw); putAct(d3, sgw); putAct(d3, bcm);
+    const clean = sgwBypassRisk(d1, d1, d3, mods.alignmentNodes);
+    check('SGW 实际在位 → 不告警', clean === null, JSON.stringify(clean));
+
+    // bypass：配置里有、实际没有；写入块 = merge 后（配置位被抄成 0）→ 必须告警
+    d1 = new Uint8Array(289); d3 = new Uint8Array(80);
+    putCfg(d1, sgw); putAct(d3, bcm);
+    const after = Uint8Array.from(d1);
+    after[41 - sgw.startByte] &= ~maskOf(sgw);        // merge 把 SGW 配置位清掉
+    const risk = sgwBypassRisk(d1, after, d3, mods.alignmentNodes);
+    check('SGW 配置 1→0 且实际无 → 告警', !!risk, JSON.stringify(risk));
+    check('告警带 BCM 在位标记', risk && risk.bcmPresent === true, JSON.stringify(risk));
+    check('告警节点是 SGW', risk && /\(SGW\)/i.test(risk.node.name), risk && risk.node.name);
+
+    // 车上本来就没有 SGW（配置 0）→ 不算 bypass，不告警
+    const d1No = new Uint8Array(289); const d3No = new Uint8Array(80);
+    putAct(d3No, bcm);
+    check('配置本来就没有 SGW → 不告警', sgwBypassRisk(d1No, d1No, d3No, mods.alignmentNodes) === null);
+
+    // 数据不足 → 静默返回 null（不阻断流程）
+    check('DATA3 不足 → null', sgwBypassRisk(d1, after, new Uint8Array(8), mods.alignmentNodes) === null);
 }
 
 console.log('\n数据不足 / 空输入');

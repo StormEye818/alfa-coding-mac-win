@@ -153,7 +153,9 @@ class Uds {
     }
 
     async readDtc() {
-        // 0x19 02 FF = reportDTCByStatusMask（全部）
+        // 0x19 02 FF = reportDTCByStatusMask（全部）。
+        // FF 会把「本周期自检未运行」的定义项（status=0x40）也带回来——健康车一次能回
+        // 200+ 条，**不是故障**；parseDtcList 用 stored 位区分，UI 只展示真正存储过的。
         const resp = assertPositive(await this.link.request(new Uint8Array([0x19, 0x02, 0xff])), '读故障码');
         if (resp[0] !== 0x59 || resp[1] !== 0x02) {
             throw new UdsError(`读故障码响应服务不匹配：${bytesToHex(resp.slice(0, 2))}`);
@@ -359,21 +361,39 @@ function pinToKeyBcd(pin) {
  * active = **当前活跃**（testFailed | pendingDTC）。
  * confirmedDTC 只表示"故障已被确认并存储"，测试已通过后仍会保持置位 ——
  * 它属于「历史/已存储」，不能算当前故障（否则清码前的旧记录会被当成正在发生）。
+ *
+ * ⚠️ 记录长度是 **4 字节/条**（UDS 标准）：`<DTC高> <DTC低> <FTB失败类型字节> <状态>`。
+ * 实车证据（2026-10-29 发动机电脑 IAW 10JA，`19 02 FF` 应答 859 字节）：
+ * `59 02 CF` 之后每 4 字节一条，且按高 16 位查车端定义表逐条命中
+ * （0x1E47=Knock sensor 1、0x0328/0327/0325=Knock sensor、0x2B2F=Electric fan speed 1）。
+ * 此前按 3 字节一条切，错位后把常量填充字节 `00 40` 切成了「P0040 · 状态 0x03」这类
+ * 幽灵故障 —— 健康车也显示 110+ 条（ECU 对 FF 掩码会把全部"本周期自检未运行"的
+ * 定义项带回来，状态 0x40，**不是故障**）。
+ * 兼容：总长不按 4 字节对齐而按 3 字节对齐时（legacy 形态），退回 3 字节解析。
  */
 function parseDtcList(resp) {
-    // 59 02 <statusAvailabilityMask> [ <dtcHi> <dtcLo> <status> ]...
+    // 59 02 <statusAvailabilityMask> [ <dtcHi> <dtcLo> <ftb> <status> ]...（UDS 4 字节/条）
     const out = [];
-    for (let i = 3; i + 2 < resp.length; i += 3) {
-        const hi = resp[i], lo = resp[i + 1], st = resp[i + 2];
+    if (!resp || resp.length < 4) return out;
+    const payload = resp.length - 3;
+    const stride = payload % 4 === 0 ? 4 : payload % 3 === 0 ? 3 : 4;
+    for (let i = 3; i + stride <= resp.length; i += stride) {
+        const hi = resp[i], lo = resp[i + 1];
+        const ftb = stride === 4 ? resp[i + 2] : 0;
+        const st = resp[i + stride - 1];
         if (hi === 0 && lo === 0 && st === 0) continue;
         out.push({
             code: dtcCodeToString(hi, lo),
             raw: [hi, lo],
+            ftb,
             status: st,
             testFailed: (st & 0x01) !== 0,
             pending: (st & 0x04) !== 0,
             confirmed: (st & 0x08) !== 0,
             active: (st & 0x05) !== 0,
+            // stored = 带实际存储含义的位（bit0-3：当前失败/本周期失败过/待定/已确认）。
+            // 只剩 bit4-7 的（如 0x40 = 本周期自检未运行）不是故障，界面不当作故障展示。
+            stored: (st & 0x0f) !== 0,
         });
     }
     return out;

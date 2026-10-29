@@ -157,9 +157,9 @@ class MockAdapter extends Emitter {
         if (svc === 0x10) {                                       // 会话控制
             return [0x50, p[1]];
         }
-        if (svc === 0x19) {                                       // readDtc
+        if (svc === 0x19) {                                       // readDtc（UDS 4字节/条）
             const out = [0x59, 0x02, 0xff];
-            for (const d of this.dtc) out.push(d.raw[0], d.raw[1], d.status);
+            for (const d of this.dtc) out.push(d.raw[0], d.raw[1], d.ftb ?? 0x00, d.status);
             return out;
         }
         if (svc === 0x14) return [0x54];                          // clearDtc

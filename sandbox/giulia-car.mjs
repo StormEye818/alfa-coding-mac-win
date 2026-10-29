@@ -696,13 +696,13 @@ export class GiuliaCar {
         return [0x71, p[1], p[2], p[3], 0x00];
     }
 
-    /** 读故障码 0x19 02 FF：59 02 FF + [码高 码低 状态]…（码值取自 dtc.json） */
+    /** 读故障码 0x19 02 FF：59 02 FF + [码高 码低 FTB 状态]…（UDS 4字节/条，码值取自 dtc.json） */
     #readDtc(ecu, p) {
         const sub = p[1] || 0;
         if (sub === 0x04) return this.#snapshot(ecu);       // 19 04 冻结帧快照
         if (sub !== 0x02 && sub !== 0x01 && sub !== 0x03) return [0x7f, 0x19, 0x12];
         const out = [0x59, sub, 0xff];
-        for (const d of ecu.dtcs) out.push(d.raw[0], d.raw[1], d.status);
+        for (const d of ecu.dtcs) out.push(d.raw[0], d.raw[1], d.ftb ?? 0x00, d.status);
         return out;
     }
 

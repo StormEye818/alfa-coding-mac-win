@@ -79,19 +79,51 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await uds.securityAccess('12345');
     check('安全访问完成', true);
 
-    console.log('\nDTC 状态位：当前故障 vs 历史/已存储');
+    console.log('\nDTC 状态位：当前故障 vs 历史/已存储（UDS 4字节/条）');
     {
         const list = parseDtcList(Uint8Array.from([
             0x59, 0x02, 0xff,
-            0x01, 0x23, 0x01,   // testFailed
-            0x01, 0x24, 0x08,   // 仅 confirmedDTC（已存储）
-            0x01, 0x25, 0x0c,   // pendingDTC + confirmedDTC
-            0x01, 0x26, 0x20,   // 仅 testFailedSinceLastClear（历史）
+            0x01, 0x23, 0x11, 0x01,   // testFailed（FTB 0x11）
+            0x01, 0x24, 0x00, 0x08,   // 仅 confirmedDTC（已存储）
+            0x01, 0x25, 0x00, 0x0c,   // pendingDTC + confirmedDTC
+            0x01, 0x26, 0x00, 0x20,   // 仅 testFailedSinceLastClear（历史）
         ]));
         check('testFailed → 当前故障', list[0].active === true && list[0].testFailed === true);
         check('仅 confirmed → 历史/已存储', list[1].active === false && list[1].confirmed === true);
         check('pending + confirmed → 当前故障', list[2].active === true);
         check('仅 testFailedSinceLastClear → 历史', list[3].active === false);
+        check('FTB 随记录带出', list[0].ftb === 0x11 && list[1].ftb === 0x00, JSON.stringify(list.map((d) => d.ftb)));
+    }
+
+    console.log('\nDTC 实车回归：IAW 10JA 健康车（2026-10-29 日志前 5 条，status 全 0x40）');
+    {
+        // 真车应答字节：59 02 CF 之后每 4 字节一条 = <DTC高> <DTC低> <FTB=00> <状态=0x40>
+        const list = parseDtcList(Uint8Array.from([
+            0x59, 0x02, 0xcf,
+            0x1e, 0x47, 0x00, 0x40,   // P1E47（车端定义表：Knock sensor 1）
+            0x03, 0x28, 0x00, 0x40,   // P0328（Knock sensor）
+            0x03, 0x27, 0x00, 0x40,   // P0327
+            0x03, 0x25, 0x00, 0x40,   // P0325
+            0x11, 0x88, 0x00, 0x40,   // P1188（Intake pressure sensor）
+        ]));
+        check('解析出 5 条记录', list.length === 5, `got ${list.length}`);
+        check('码值正确（P1E47 / P0328…）',
+            list[0].code === 'P1E47' && list[1].code === 'P0328' && list[4].code === 'P1188',
+            JSON.stringify(list.map((d) => d.code)));
+        check('全部不是故障（stored=false，UI 不展示）',
+            list.every((d) => !d.stored && !d.active && d.status === 0x40),
+            JSON.stringify(list.map((d) => d.status)));
+    }
+
+    console.log('\nDTC legacy 兼容：3 字节/条（总长不按 4 对齐时退回）');
+    {
+        const list = parseDtcList(Uint8Array.from([
+            0x59, 0x02, 0xff,
+            0x90, 0x00, 0x08,         // confirmed
+            0xaa, 0x55, 0x04,         // pending
+        ]));
+        check('legacy 3 字节解析出 2 条', list.length === 2, `got ${list.length}`);
+        check('legacy 状态位正确', list[0].confirmed === true && list[1].pending === true);
     }
 
     console.log('\n例程忙 NRC（协议层已剥长度前缀，NRC 在 [2]）');

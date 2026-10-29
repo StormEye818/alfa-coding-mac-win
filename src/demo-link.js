@@ -205,7 +205,8 @@ class DemoLink {
                 this.log('演示 · 返回冻结帧快照（合成数据区 64 字节）');
                 return Uint8Array.from([0x59, 0x04, 0x00, 0x00, 0x00, 0x01, ...data]);
             }
-            return Uint8Array.from([0x59, 0x02, 0xff, 0x00, 0x00, 0x00]);
+            // 演示模式无故障：59 02 <avail>（无记录，UDS 空列表形态）
+            return Uint8Array.from([0x59, 0x02, 0xff, 0x00]);
         }
         if (svc === 0x14) return Uint8Array.from([0x54]);
         if (svc === 0x27) return Uint8Array.from([0x67, payload[1], 0x12, 0x34]);

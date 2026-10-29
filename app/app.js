@@ -2699,9 +2699,13 @@ $('btnReadDtc').addEventListener('click', async () => {
         stageDone('读取完成：无故障码');
         return;
       }
-      // 按状态分组：active = 当前活跃故障（testFailed / pendingDTC / confirmedDTC）
+      // 按状态分组：active = 当前活跃故障（testFailed / pendingDTC）；
+      // history = 已存储但当前不活跃（confirmedDTC / 本周期失败过）；
+      // 其余（如仅 0x40 = 本周期自检未运行）不是故障，不展示 —— 健康车 ECU 会把
+      // 全部定义项按 FF 掩码带回来，全是这种（2026-10-29 实车日志实证）。
       const active = list.filter((d) => d.active);
-      const inactive = list.filter((d) => !d.active);
+      const history = list.filter((d) => !d.active && d.stored);
+      const untested = list.length - active.length - history.length;
       const renderDtc = (d) => {
         const rawHex = d.raw.map((x) => x.toString(16).toUpperCase().padStart(2, '0')).join('');
         const hit = dtcLookup(code, rawHex);
@@ -2718,16 +2722,22 @@ $('btnReadDtc').addEventListener('click', async () => {
       if (active.length) {
         html += `<div style="padding:8px 12px;font-weight:600;color:#e74c3c">⚠ 当前故障（${active.length} 条）</div>`;
         html += active.map(renderDtc).join('');
-      } else {
+      } else if (history.length) {
         html += '<div style="padding:8px 12px;color:#27ae60;font-weight:600">✓ 无当前活跃故障</div>';
+      } else {
+        html += '<div style="padding:8px 12px;color:#27ae60;font-weight:600">✓ 无故障码</div>';
+        if (untested > 0) {
+          html += `<div class="dim" style="padding:0 12px 8px;font-size:12px">另有 ${untested} 项定义的自检本周期尚未运行（状态 0x40），不是故障。</div>`;
+        }
       }
-      if (inactive.length) {
-        html += `<details style="margin-top:8px"><summary style="padding:8px 12px;cursor:pointer;color:#888;font-size:13px">📋 历史/已存储故障（${inactive.length} 条）— 点击展开</summary>`;
-        html += inactive.map(renderDtc).join('');
+      if (history.length) {
+        html += `<details style="margin-top:8px"><summary style="padding:8px 12px;cursor:pointer;color:#888;font-size:13px">📋 历史/已存储故障（${history.length} 条）— 点击展开</summary>`;
+        html += history.map(renderDtc).join('');
         html += '</details>';
       }
       wrap.innerHTML = html;
-      stageDone(`读取完成：${active.length} 条当前故障${inactive.length ? ` / ${inactive.length} 条历史` : ''}`);
+      stageDone(`读取完成：${active.length} 条当前故障${history.length ? ` / ${history.length} 条历史` : '，无历史'}`
+        + (untested ? `（另有 ${untested} 项自检未运行，非故障）` : ''));
     });
   } catch (e) {
     stageFail('读取失败：' + e.message);

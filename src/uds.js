@@ -282,11 +282,21 @@ class Uds {
         // 标准写入序列：Sleep(500) → 2E 20 23 → 22 10 2A → 22 40 AA
         //   Sleep(500) 与 2E 20 23 在 writeDataByIdentifier（写之前）；500ms 已对照块写入口核实（源 36873 Thread.Sleep(500)）
         //   本函数只负责 22 10 2A + 22 40 AA
-        // 车端已验证行为：空/短应答 → Sleep(2000) → 重读一次
+        // 车端已验证行为：空/短应答 → Sleep(2000) → 重读一次。
+        // ⚠️ 半双工串口没有请求标签：超时后迟到的 62 20 23（289 字节）同样 >=12 字节，
+        //    必须校验服务 + DID；**不匹配也要重读一次**，否则一次串帧就被判成节点未对齐。
         let resp = null;
+        let mismatch = '';
         for (let attempt = 0; ; attempt++) {
             try {
                 resp = assertPositive(await this.link.request(new Uint8Array([0x22, 0x10, 0x2A])), '回读校验');
+                if (resp && resp.length >= 12 && resp[0] === 0x62 && resp[1] === 0x10 && resp[2] === 0x2a) {
+                    mismatch = '';
+                    break;
+                }
+                mismatch = resp && resp.length >= 12
+                    ? `回读校验响应不匹配：${bytesToHex(resp.slice(0, 3))}`
+                    : `回读校验应答不完整：${resp ? bytesToHex(resp) : '(空)'}`;
             } catch (e) {
                 if (attempt === 0) {
                     await new Promise((r) => setTimeout(r, 2000));
@@ -294,16 +304,11 @@ class Uds {
                 }
                 throw e;
             }
-            if (resp && resp.length >= 12) {
-                // 迟到的上一条 62 20 23（289 字节）也 >=12，必须校验服务/DID 才能避免假判定
-                if (resp[0] === 0x62 && resp[1] === 0x10 && resp[2] === 0x2a) break;
-                throw new UdsError(`回读校验响应不匹配：${bytesToHex(resp.slice(0, 3))}`);
-            }
             if (attempt === 0) {
                 await new Promise((r) => setTimeout(r, 2000));
                 continue;
             }
-            throw new UdsError(`回读校验应答不完整：${resp ? bytesToHex(resp) : '(空)'}`);
+            throw new UdsError(mismatch);
         }
         const d = resp.slice(3);
         const diffs = [];
@@ -351,8 +356,9 @@ function pinToKeyBcd(pin) {
  *   bit3 confirmedDTC · bit4 testNotCompletedSinceLastClear
  *   bit5 testFailedSinceLastClear · bit6 testNotCompletedThisOperationCycle
  *   bit7 warningIndicatorRequested
- * active = 当前活跃故障（testFailed | pendingDTC | confirmedDTC）；
- * 非 active 的是历史/已存储条目（如仅 testFailedSinceLastClear = 曾经有但现在没了）。
+ * active = **当前活跃**（testFailed | pendingDTC）。
+ * confirmedDTC 只表示"故障已被确认并存储"，测试已通过后仍会保持置位 ——
+ * 它属于「历史/已存储」，不能算当前故障（否则清码前的旧记录会被当成正在发生）。
  */
 function parseDtcList(resp) {
     // 59 02 <statusAvailabilityMask> [ <dtcHi> <dtcLo> <status> ]...
@@ -367,11 +373,25 @@ function parseDtcList(resp) {
             testFailed: (st & 0x01) !== 0,
             pending: (st & 0x04) !== 0,
             confirmed: (st & 0x08) !== 0,
-            active: (st & 0x0D) !== 0,
+            active: (st & 0x05) !== 0,
         });
     }
     return out;
 }
+
+/**
+ * 例程状态轮询：ECU 回「忙」的负响应判定。
+ *
+ * ⚠️ 响应缓冲口径：车端已验证行为的缓冲带 1 字节长度前缀，NRC 在 array[3]
+ *    （`array[1] == 127 && array[3] == 33/35`）。**我们的协议层已剥掉长度前缀**，
+ *    所以 NRC 在 `resp[2]`。此前照搬 array[3] 写成 st[3]，`7F 31 21` 只有 3 字节，
+ *    条件恒 false → 第一次「忙」就停止轮询，长例程（DPF 再生等）被误报为已结束。
+ */
+function isRoutineBusy(resp) {
+    return !!resp && resp.length >= 3 && resp[0] === 0x7f
+        && (resp[2] === 0x21 || resp[2] === 0x23);
+}
+
 
 function dtcCodeToString(hi, lo) {
     const letters = ['P', 'C', 'B', 'U'];
@@ -383,4 +403,4 @@ function dtcCodeToString(hi, lo) {
     return `${letters[a]}${b}${c.toString(16).toUpperCase()}${d.toString(16).toUpperCase()}${e.toString(16).toUpperCase()}`;
 }
 
-export { Uds, UdsError, DID, NRC, pinToKeyBcd, parseDtcList, dtcCodeToString };
+export { Uds, UdsError, DID, NRC, pinToKeyBcd, parseDtcList, dtcCodeToString, isRoutineBusy };

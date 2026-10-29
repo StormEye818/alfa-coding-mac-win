@@ -6,7 +6,7 @@
  * 仿真车的 PROXI 块用一份可配置的初始字节（默认来自实车照片结构 + 全零配置）。
  */
 
-import { ProxiBlock, CRC_OFFSET, CRC_DIGITS } from './proxi.js';
+import { ProxiBlock } from './proxi.js';
 import { Emitter } from './emitter.js';
 
 class MockAdapter extends Emitter {
@@ -176,7 +176,10 @@ class MockAdapter extends Emitter {
             case 0x2023: return Array.from(this.proxi);
             case 0x40A1: return new Array(32).fill(0);
             case 0x40A2: return new Array(32).fill(0);
-            case 0x102A: return Array.from(this.proxi.slice(CRC_OFFSET, CRC_OFFSET + CRC_DIGITS)).map((c) => c - 0x30);
+            // 22 10 2A 的响应数据区固定 9 字节 = 3 组 [标志, 字节号, 异或掩码]；
+            // 全 0 = 与基准块无差异。此前只回 5 字节（CRC 数字）→ verifyProxi 永远
+            // 判「应答不完整」，单测里没法覆盖对齐判定，沙箱负向用例也只是靠"读失败"过关。
+            case 0x102A: return new Array(9).fill(0);
             case 0xF190: return Array.from('ZAR95200001234567').map((c) => c.charCodeAt(0));
             case 0xF1A5: return [0x01, 0x02, 0x03, 0x04, 0x05];
             default: return null;

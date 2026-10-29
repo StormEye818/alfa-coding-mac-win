@@ -25,11 +25,30 @@ class DemoLink {
     constructor(opts = {}) {
         this.log = opts.log || (() => {});
         this.addr = null;
+        this.cables = opts.cables || null;   // 地址 → 模块代号（对齐逐节点连接时只有地址）
+        this.nodes = opts.nodes || [];       // 对齐节点表（用于生成 DATA1/DATA3 位图）
         this.frames = [];            // 记录已下发的载荷，便于展示
-        this.proxi = opts.proxi ? Uint8Array.from(opts.proxi) : DemoLink.demoProxi();
+        this.proxi = opts.proxi ? Uint8Array.from(opts.proxi)
+            : DemoLink.demoProxi(this.nodes, opts.extraActual || 'Electric Steering');
+        /** 演示用 DATA3（80B）：实际位图 = 配置位图，另把 EPS 设成“只在车上存在” */
+        this.data3 = opts.data3 ? Uint8Array.from(opts.data3)
+            : DemoLink.demoData3(this.proxi, this.nodes, opts.extraActual || 'Electric Steering');
         /** 各模块的 PROXI 写入计数器（演示值）。与车身电脑一致 = 已对齐 */
         this.counters = { BODY33: 12, BODY30: 12 };
-        this.misaligned = new Set(opts.misaligned || ['EPSZFX1']);   // 演示：默认一个模块未对齐
+        this.misaligned = new Set(opts.misaligned || []);   // 写后 22 10 2A 回读演示（默认全部一致）
+    }
+
+    /** 连接的模块代号：ensureModule 传代号，connectNode 只传节点地址 → 按 tx+baud 反查 */
+    #resolveCode(code, tx, baud) {
+        const known = this.cables && this.cables.modules;
+        if (known) {
+            if (code && known[code]) return code;
+            const hex = (tx & 0xff).toString(16).toUpperCase().padStart(2, '0');
+            for (const [c, m] of Object.entries(known)) {
+                if (String(m.tx).toUpperCase() === hex && (!baud || m.baud === baud)) return c;
+            }
+        }
+        return code || null;
     }
 
     /** 该模块当前的 PROXI 写入计数器 */
@@ -39,20 +58,50 @@ class DemoLink {
         return ref;
     }
 
-    /** 演示用配置块：结构与实车一致（ASCII 头 + 配置位 + 校验），取值为示意 */
-    static demoProxi() {
+    /**
+     * 演示用配置块：结构与实车一致（ASCII 头 + 配置位图 + 校验）。
+     * 在场位图在 DATA1[25..40]，**反序**：节点 startByte=1 → 索引 40，startByte=16 → 索引 25。
+     * （与 src/alignment.js 同口径；SGW startByte=2 ↔ Byte40 已交叉验证）
+     */
+    static demoProxi(nodes = [], excludeName = '') {
         const b = new Uint8Array(289);
         const head = '406200000001OUTPUT-SIT %';
         for (let i = 0; i < 24; i++) b[i] = head.charCodeAt(i);
+        for (const n of nodes) {
+            if (!n || n.excluded) continue;
+            if (excludeName && String(n.name).includes(excludeName)) continue;  // 演示“只在车上、不在配置里”
+            const sb = Number(n.startByte);
+            const mask = parseInt(n.bitMask || (n.presence || '').slice(0, 2) || '0', 16) & 0xff;
+            if (!mask || sb < 1 || sb > 16) continue;
+            b[41 - sb] |= mask;
+        }
         // 常见配置位示意值（仅用于界面展示，非实车数据）
-        // ⚠️ 这里是 **0-based 内部索引**，社区字节号 = 索引+1（Race Type 在 Byte88 = 索引 87）。
-        //    此前写成 b[88]/b[115]… 整体偏了 1 字节，演示模式下「当前值」与沙箱对不上。
         b[57] = 0x00; b[58] = 0x00; b[65] = 0x00; b[87] = 0xAC;
         b[114] = 0x14; b[148] = 0x04; b[155] = 0x10; b[158] = 0x00;
         b[165] = 0x04; b[176] = 0x00; b[201] = 0x00;
         const blk = new ProxiBlock(b);
         blk.seal();
         return blk.bytes;
+    }
+
+    /**
+     * 演示用 DATA3（80B，PROXIX 家族）：
+     *   [32..47] 实际位图 = DATA1[25..40] 配置位图的同向拷贝（两者都是反序窗口）
+     *   [48..63]/[64..79] EOL 位默认 0（状态为 Ok）
+     * 另把 extraActualName 指定的节点补进实际位图 → 演示「待添加」。
+     */
+    static demoData3(proxi, nodes = [], extraActualName = '') {
+        const d3 = new Uint8Array(80);
+        for (let i = 0; i < 16; i++) d3[32 + i] = proxi[25 + i] ?? 0;
+        const n = extraActualName
+            ? nodes.find((x) => x && String(x.name).includes(extraActualName))
+            : null;
+        if (n) {
+            const sb = Number(n.startByte);
+            const mask = parseInt(n.bitMask || '0', 16) & 0xff;
+            if (mask && sb >= 1 && sb <= 16) d3[48 - sb] |= mask;
+        }
+        return d3;
     }
 
     get autoSwitchesBus() { return false; }   // 演示换适配线提示
@@ -68,11 +117,11 @@ class DemoLink {
         this.log('演示 · 适配器初始化完成（ISO 15765-4 CAN 29 位 500kbit/s）');
     }
 
-    async setAddress({ tx, rx, code }) {
+    async setAddress({ tx, rx, baud, code }) {
         const t = typeof tx === 'number' ? tx : parseInt(tx, 16);
         const r = typeof rx === 'number' ? rx : parseInt(rx, 16);
         this.addr = { tx: t, rx: r };
-        this.currentCode = code || null;
+        this.currentCode = this.#resolveCode(code, t, baud);
         const reqId = 0x18DA0000 | (t << 8) | r;
         this.log(`演示 · 发送 ATSH${reqId.toString(16).toUpperCase()}  ATCRA${(0x18DA0000 | (r << 8) | t).toString(16).toUpperCase()}`);
     }
@@ -96,10 +145,13 @@ class DemoLink {
                 return Uint8Array.from([0x62, payload[1], payload[2], ...this.proxi]);
             }
             if (did === 0x102A) {
-                // 按节点回读校验：13 字节，含最多 3 组 (字节号, 异或掩码)；全 0 = 无差异
-                const d = new Array(10).fill(0);
+                // 按节点回读校验：12 字节 = 62 10 2A + 9 字节数据；数据区三组
+                // [标志, 字节号, 异或掩码]，差异组为 (字节号, 掩码) 在 [1,2]/[4,5]/[7,8]。
+                // 全 0 = 无差异。此前把 Byte88 写进了 d[5]/d[6]（应为 d[4]/d[5]），
+                // 差异组落在"字节号=0"上被解析器跳过 → 演示模式永远显示已对齐。
+                const d = new Array(9).fill(0);
                 if (this.currentCode && this.misaligned.has(this.currentCode)) {
-                    d[5] = 88; d[6] = 0x02;          // 示例：Byte88 不符
+                    d[4] = 88; d[5] = 0x02;          // 示例：Byte88 与基准块不符
                     this.log('演示 · 回读校验发现差异：Byte88');
                 }
                 return Uint8Array.from([0x62, payload[1], payload[2], ...d]);
@@ -107,6 +159,13 @@ class DemoLink {
             if (did === 0x292E) {
                 // PROXI 写入计数器
                 return Uint8Array.from([0x62, payload[1], payload[2], this.counterFor(this.currentCode || 'BODY33')]);
+            }
+            if (did === 0x40A1) {
+                return Uint8Array.from([0x62, payload[1], payload[2], ...new Array(32).fill(0)]);
+            }
+            if (did === 0x40A2) {
+                // CAN 配置块（80B）：对齐状态的实际位图来源
+                return Uint8Array.from([0x62, payload[1], payload[2], ...this.data3]);
             }
             return Uint8Array.from([0x62, payload[1], payload[2], 0x01, 0x02, 0x03, 0x04, 0x05]);
         }

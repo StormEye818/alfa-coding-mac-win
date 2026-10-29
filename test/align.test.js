@@ -36,7 +36,7 @@ check('多位掩码取并集 0x3C', multi.mask === 0x3c, `got 0x${multi.mask.toS
 
 console.log('\n对齐状态比对（PROXI 写入计数器 DID 0x292E）');
 {
-  const link = new DemoLink({ log: () => {}, misaligned: ['EPSZFX1'] });
+  const link = new DemoLink({ log: () => {}, misaligned: ['EPSZFX1'], cables });
   const uds = new Uds(link);
   const ses = new Session(link, { cables, platform: '952' });
   ses.on('cableRequired', (e) => ses.confirmCable());
@@ -56,6 +56,30 @@ console.log('\n对齐状态比对（PROXI 写入计数器 DID 0x292E）');
   await ses.ensureModule('EPSZFX1');
   const after = await uds.readProxiWriteCounter();
   check('单独对齐后计数追平', after === ref, `${after} vs ${ref}`);
+}
+
+console.log('\n演示链路：22 10 2A 差异组（数据区 [1,2]/[4,5]/[7,8]）');
+{
+  const link = new DemoLink({ log: () => {}, misaligned: ['EPSZFX1'], cables });
+  const uds = new Uds(link);
+  const ses = new Session(link, { cables, platform: '952' });
+  ses.on('cableRequired', (e) => ses.confirmCable());
+
+  await ses.ensureModule('EPSZFX1');
+  const bad = await uds.verifyProxi(link.proxi);
+  check('未对齐节点报 Byte88 差异', !bad.ok && bad.diffs.some((d) => d.byte === 88),
+    JSON.stringify(bad.diffs));
+
+  await ses.ensureModule('ABSMMKC1');
+  const good = await uds.verifyProxi(link.proxi);
+  check('已对齐节点无差异', good.ok && good.diffs.length === 0, JSON.stringify(good.diffs));
+
+  // 对齐扫描走 connectNode：只传节点地址（0x30），没有模块代号 —— 演示层必须能反查
+  await ses.connectNode({ name: 'EPS', addr: '30', baud: 500, swapCable: true });
+  check('按地址连接能反查模块代号', link.currentCode === 'EPSZFX1', String(link.currentCode));
+  const viaAddr = await uds.verifyProxi(link.proxi);
+  check('按地址连接时差异仍生效', !viaAddr.ok && viaAddr.diffs.some((d) => d.byte === 88),
+    JSON.stringify(viaAddr.diffs));
 }
 
 console.log('\n节点地址 → 模块映射');

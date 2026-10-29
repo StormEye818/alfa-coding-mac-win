@@ -41,11 +41,14 @@ class Elm327Error extends Error {
     constructor(msg, code) { super(msg); this.code = code; }
 }
 
-/** 解析 ELM327 的一行响应（去掉回车/提示符，识别 '?' 与 'NO DATA' 等） */
+/**
+ * 解析 ELM327 的一行响应（去掉回车/提示符，识别 '?' 与 'NO DATA' 等）。
+ * ⚠️ 真车 ELM 用 **\r** 分隔帧、以 `\r\r>` 结尾（无 \n）；沙箱/部分适配器用 \r\n。
+ *    只按 '\n' 切会把整段应答当成一行，多帧的后续行（含流控帧）全被拼在一起。
+ */
 function cleanLines(buf) {
     return String(buf)
-        .replace(/\r/g, '')
-        .split('\n')
+        .split(/[\r\n]+/)
         .map((s) => s.trim())
         .filter((s) => s.length > 0 && s !== '>');
 }
@@ -208,7 +211,10 @@ class Elm327 {
             const w = this.waiters.shift();
             this.#log('<< ' + one.trim());
             if (w) w.resolve(one);
-            else this.segQueue.push(one);   // 无等待者先存队列（假提示符/错位余量）
+            // 无等待者先存队列（假提示符/错位余量）。**带到达时间**：
+            // 半双工串口没有请求标签，超时后迟到的应答会留在队列里；
+            // 下一条命令必须能把「早于自己发出时间」的残留段丢掉，否则会拿上一条的应答。
+            else this.segQueue.push({ text: one, at: Date.now() });
             s = rest;
             if (!s.includes('>')) break;
         }
@@ -236,10 +242,11 @@ class Elm327 {
     #send(cmd, timeoutMs = ELM_TIMEOUT_MS) {
         this.log('>> ' + cmd);
         this.#log('>> ' + cmd);
+        const sentAt = Date.now();
         try { this.port.write(cmd + '\r'); } catch (e) {
             return Promise.reject(new Elm327Error('写失败：' + e.message, 'WRITE'));
         }
-        return this.#nextSeg(timeoutMs, cmd).catch(async (e) => {
+        return this.#nextSeg(timeoutMs, cmd, sentAt).catch(async (e) => {
             // 超时后不能把「迟到的上一条应答」留给下一条命令消费：
             // 串口半双工没有请求标签，唯一安全的做法是等一个短排空窗口后清空接收。
             // （实测：50ms 超时 + 120ms 迟到应答，下一条 22 10 2A 会读到上一条 62 20 23）
@@ -251,10 +258,17 @@ class Elm327 {
         });
     }
 
-    /** 取一段应答（到下一个 '>' 为止）；先消费积压队列，FIFO 保序 */
-    #nextSeg(timeoutMs, cmd = '等待响应') {
+    /**
+     * 取一段应答（到下一个 '>' 为止）；先消费积压队列，FIFO 保序。
+     * @param {number} timeoutMs
+     * @param {string} cmd 仅用于错误文案
+     * @param {number} since 本条命令的发出时间；早于它的残留段一律丢弃
+     */
+    #nextSeg(timeoutMs, cmd = '等待响应', since = 0) {
         return new Promise((resolve, reject) => {
-            if (this.segQueue.length) return resolve(this.segQueue.shift());
+            // 丢弃「命令发出前就到达」的残留段（上一条超时后迟到、或 AT 的 OK 余量）
+            while (this.segQueue.length && this.segQueue[0].at < since) this.segQueue.shift();
+            if (this.segQueue.length) return resolve(this.segQueue.shift().text);
             const timer = setTimeout(() => {
                 const i = this.waiters.findIndex((w) => w.resolve === done);
                 if (i >= 0) this.waiters.splice(i, 1);
@@ -468,7 +482,7 @@ class Elm327 {
 
     async #requestOnce(payload, timeoutMs) {
         this.fcSent = false;
-        const t0 = Date.now();
+        const t0 = Date.now();      // 同时作为「本次请求的发出时间」，续传只认这之后的段
         let raw = payload.length > 7
             ? await this.#sendMulti(payload, timeoutMs)
             : await this.#send(bytesToHex(this.#singleFrame(payload)), timeoutMs);
@@ -478,7 +492,7 @@ class Elm327 {
             // 7F <svc> 78 = 响应挂起（pending）：ECU 还在处理，跳过它继续等真实响应
             const real = msgs.filter((m) => !(m.length >= 3 && m[0] === 0x7f && m[2] === 0x78));
             if (real.length > 0) return real[0];
-            const flat = raw.replace(/\s+/g, '');
+            const flat = raw.replace(/[\s>]+/g, '');
             const remain = timeoutMs - (Date.now() - t0);
             // ⚠️ 必须**大小写不敏感**：`respId.toString(16)` 是小写（18daf140），
             //    ELM 输出的 CAN ID 是大写（18DAF140），`String.includes` 区分大小写
@@ -487,8 +501,16 @@ class Elm327 {
             //    （2026-10-16 复查 A2，已复现）
             const respHex = this.respId ? this.respId.toString(16) : '';
             const sawResp = respHex && flat.toUpperCase().includes(respHex.toUpperCase());
-            if (!sawResp || remain <= 200) break;
-            raw += await this.#nextSeg(Math.min(remain, 3000), '应答续传');
+            // 适配器只回 "OK"（帧已发出、ECU 应答还没到）——不能立刻判 BAD_FRAME。
+            // 真车 ELM 在 CAF0 下发完帧后常先回 OK，UDS 应答晚一个段到。
+            // 只对「写/例程/IO 控制」给这段宽限：读类若回 OK 就是真没应答，
+            // 再等会把模块扫描（逐模块 testerPresent）拖慢一倍。
+            const slowSvc = payload[0] === 0x2e || payload[0] === 0x27
+                || payload[0] === 0x31 || payload[0] === 0x2f;
+            const ackOnly = slowSvc && /^OK$/i.test(flat);
+            if ((!sawResp && !ackOnly) || remain <= 200) break;
+            // 只回 OK 时最多再等 2s（正常应答在 ATST99=396ms 内就该到）
+            raw += await this.#nextSeg(Math.min(remain, ackOnly ? 2000 : 3000), '应答续传', t0);
         }
         if (/NO DATA|UNABLE|ERROR|STOPPED/i.test(raw)) {
             throw new Elm327Error('ECU 无响应：' + raw.trim(), 'NO_DATA');

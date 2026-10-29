@@ -20,7 +20,16 @@ import net from 'net';
 import { SerialPort } from 'serialport';
 
 const PORT = Number(process.env.BRIDGE_PORT || 8850);
-const wss = new WebSocketServer({ port: PORT });
+// ⚠️ 只监听回环地址：这个桥能把任意字节写进车辆的 CAN 总线。
+//    默认监听 0.0.0.0 时，同一局域网内的任何人都能连上 8850 并向车上发帧。
+//    客户端（桌面界面 / 本机脚本）都走 ws://127.0.0.1:8850，不需要对外可达。
+const wss = new WebSocketServer({ port: PORT, host: '127.0.0.1' });
+
+// 端口被占（常见：开发时已跑着一个 node bridge/server.js）不能让进程直接崩：
+// WebSocketServer 的 'error' 事件没有监听者时，Node 会把它抛成未捕获异常。
+wss.on('error', (e) => {
+  console.error(`[bridge] WebSocket 服务启动失败（${PORT}）：${e.message}`);
+});
 
 function send(ws, obj) {
   // ⚠️ 接收/发送都是事件驱动：串口还在刷数据时用户拔线（ws 已 close），
@@ -161,4 +170,6 @@ wss.on('connection', (ws) => {
   });
 });
 
-console.log(`[bridge] 串口/TCP 桥已启动  ws://127.0.0.1:${PORT}`);
+wss.on('listening', () => {
+  console.log(`[bridge] 串口/TCP 桥已启动  ws://127.0.0.1:${PORT}`);
+});

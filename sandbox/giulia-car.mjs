@@ -220,18 +220,16 @@ export class GiuliaCar {
             this.installed.set(n.name, want);
         }
 
-        // ---- 2) 构造 DATA1：在场位 + CRC 研磨 ----
+        // ---- 2) 构造 DATA1：配置位图 DATA1[25..40]（反序：startByte=1 → 索引 40） ----
         const bytes = new Uint8Array(PROXI_LENGTH);
         for (const n of nodes) {
-            const idx = n.startByte - 1;                 // 社区编号（1-based） → 内部索引
-            if (idx >= 6 && idx <= 10) continue;         // CRC ASCII 区（内部 6..10 = Byte7..11），稍后由数字位决定
-            const { mask, presentVal, absentVal } = presenceInfo(n);
-            if (!mask || presentVal === null) continue;
-            const on = this.installed.get(n.name);
-            const bits = on ? presentVal : ((absentVal !== null && absentVal !== presentVal) ? absentVal : 0);
-            bytes[idx] = (bytes[idx] & ~mask) | bits;
+            if (n.excluded || !this.installed.get(n.name)) continue;
+            const sb = Number(n.startByte);
+            const mask = parseInt(n.bitMask || '0', 16) & 0xff;
+            if (!mask || sb < 1 || sb > 16) continue;
+            bytes[41 - sb] |= mask;
         }
-        // CRC 区先放目标数字，再研磨数据尾部使计算值等于目标
+        // CRC 区先放目标数字，再研磨数据尾部使计算值等于目标（研磨只动最后 3 字节，不影响位图）
         const digits = String(CRC_TARGET).padStart(5, '0');
         for (let i = 0; i < 5; i++) bytes[6 + i] = digits.charCodeAt(i);
         // 数据区给一点“出厂”示意值（与 demo-link 同位置，便于肉眼核对）
@@ -247,28 +245,19 @@ export class GiuliaCar {
         if (!blk.verify().ok) throw new Error('PROXI 初始块 CRC 校验未通过');
         this.bodyProxi = Uint8Array.from(blk.bytes);
 
-        // ---- 3) 以块内实际位为准回读在场位（内部 6..10 由 CRC 数字位决定） ----
+        // ---- 3) 以配置位图为准回读 installed（位图索引不是字节号） ----
         for (const n of nodes) {
-            const { mask, presentVal } = presenceInfo(n);
-            if (!mask || presentVal === null) continue;
-            const on = ((this.bodyProxi[n.startByte - 1] & mask) === presentVal) && !n.excluded;
+            const sb = Number(n.startByte);
+            const mask = parseInt(n.bitMask || '0', 16) & 0xff;
+            const on = !n.excluded && mask > 0 && sb >= 1 && sb <= 16
+                && (this.bodyProxi[41 - sb] & mask) !== 0;
             this.installed.set(n.name, on);
         }
-        // 断言：CRC 区节点的数字位在场位必须与 ABSENT_NODES 意图一致。
-        // 不一致 = CRC_TARGET 与清单配错（或字节号口径又错位），直接起不来，别拖到对齐测试才炸。
-        for (const n of nodes) {
-            const idx = n.startByte - 1;
-            if (idx < 6 || idx > 10) continue;
-            const want = !n.excluded && !ABSENT_NODES.has(n.name);
-            const got = !!this.installed.get(n.name);
-            if (want !== got) {
-                throw new Error(
-                    `CRC 数字位与未安装清单冲突：${n.name}（Byte${n.startByte}）`
-                    + ` 清单=${want ? '已安装' : '未安装'} 数字位=${got ? '已安装' : '未安装'}`
-                    + `——请调整 CRC_TARGET（当前 ${CRC_TARGET}）或 ABSENT_NODES`
-                );
-            }
-        }
+
+        // ---- 3b) DATA3（80B）：实际位图 = 初始配置位图；EOL 位保持 0 ----
+        // 位图窗口同为反序，直接按字节同向拷贝：DATA3[32..47] = DATA1[25..40]
+        this.canConfig = new Uint8Array(80);
+        for (let i = 0; i < 16; i++) this.canConfig[32 + i] = this.bodyProxi[25 + i];
 
         // ---- 4) 建立 ECU（模块 tx + 对齐节点 addr 全部可寻址） ----
         for (const m of this.modulesData.modules) {
@@ -501,8 +490,12 @@ export class GiuliaCar {
         if (did === 0x2023) return [0x62, 0x20, 0x23, ...ecu.proxiStored];
         if (did === 0x102A) return this.#verifyProxi(ecu);
         if (did === 0x292E) return [0x62, 0x29, 0x2e, ecu.writeCounter & 0xff];
-        if (did === 0x40A1 || did === 0x40A2) {
+        if (did === 0x40A1) {
             return [0x62, p[1], p[2], ...new Array(32).fill(0)];
+        }
+        if (did === 0x40A2) {
+            // CAN 配置块（80B）：实际位图在 [32..47]，对齐状态与 DATA1 配置位图比对
+            return [0x62, p[1], p[2], ...this.canConfig];
         }
 
         const entry = ecu.paramIndex.get(did);

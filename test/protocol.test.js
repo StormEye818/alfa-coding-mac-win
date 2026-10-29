@@ -1,6 +1,6 @@
 /** 协议层端到端自测（走模拟适配器，离车可跑）：node test/protocol.test.js */
 import { Elm327, reassembleIsoTp, parseFrames, hexToBytes, bytesToHex } from '../src/elm327.js';
-import { Uds, DID, pinToKeyBcd, parseDtcList, dtcCodeToString } from '../src/uds.js';
+import { Uds, DID, pinToKeyBcd, parseDtcList, dtcCodeToString, isRoutineBusy } from '../src/uds.js';
 import { MockAdapter } from '../src/mock-adapter.js';
 import { ProxiBlock } from '../src/proxi.js';
 
@@ -52,6 +52,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     check('块头部是实车样例 ASCII 066390...', blk.headerAscii().startsWith('066390'), blk.headerAscii().slice(0, 12));
     check('未改动时 CRC 自洽', blk.verify().ok, JSON.stringify(blk.verify()));
 
+    // 22 10 2A 的响应数据区固定 9 字节（3 组 标志/字节号/异或掩码）；模拟车全 0 = 无差异
+    const vOk = await uds.verifyProxi(blk.bytes);
+    check('22 10 2A 无差异 → ok', vOk.ok === true && vOk.diffs.length === 0, JSON.stringify(vOk));
+
     console.log('\n改一个功能 → 封缄 → 写入 → 再读回');
     blk.setBit(58, 1, 1);
     const sealed = blk.seal();
@@ -74,6 +78,47 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     check('非法 PIN 报错', threw);
     await uds.securityAccess('12345');
     check('安全访问完成', true);
+
+    console.log('\nDTC 状态位：当前故障 vs 历史/已存储');
+    {
+        const list = parseDtcList(Uint8Array.from([
+            0x59, 0x02, 0xff,
+            0x01, 0x23, 0x01,   // testFailed
+            0x01, 0x24, 0x08,   // 仅 confirmedDTC（已存储）
+            0x01, 0x25, 0x0c,   // pendingDTC + confirmedDTC
+            0x01, 0x26, 0x20,   // 仅 testFailedSinceLastClear（历史）
+        ]));
+        check('testFailed → 当前故障', list[0].active === true && list[0].testFailed === true);
+        check('仅 confirmed → 历史/已存储', list[1].active === false && list[1].confirmed === true);
+        check('pending + confirmed → 当前故障', list[2].active === true);
+        check('仅 testFailedSinceLastClear → 历史', list[3].active === false);
+    }
+
+    console.log('\n例程忙 NRC（协议层已剥长度前缀，NRC 在 [2]）');
+    check('7F 31 21 → 忙', isRoutineBusy(Uint8Array.from([0x7f, 0x31, 0x21])) === true);
+    check('7F 31 23 → 忙', isRoutineBusy(Uint8Array.from([0x7f, 0x31, 0x23])) === true);
+    check('71 03 … → 非忙', isRoutineBusy(Uint8Array.from([0x71, 0x03, 0x02, 0x04])) === false);
+    check('短帧 7F 31 → 非忙（不崩）', isRoutineBusy(Uint8Array.from([0x7f, 0x31])) === false);
+
+    console.log('\n22 10 2A 错帧（串到上一条 62 20 23）→ 重读一次');
+    {
+        let calls = 0;
+        const fakeLink = {
+            async request(p) {
+                if (p[0] === 0x22 && p[1] === 0x10 && p[2] === 0x2a) {
+                    calls++;
+                    // 第一次：迟到的 62 20 23（289 字节块的首 9 字节），长度也 >= 12
+                    return calls === 1
+                        ? Uint8Array.from([0x62, 0x20, 0x23, ...new Array(9).fill(0)])
+                        : Uint8Array.from([0x62, 0x10, 0x2a, ...new Array(9).fill(0)]);
+                }
+                return Uint8Array.from([0x62, 0x40, 0xaa]);
+            },
+        };
+        const u2 = new Uds(fakeLink);
+        const v2 = await u2.verifyProxi(new Uint8Array(289));
+        check('错帧后重读并判定 ok', v2.ok === true && calls === 2, `ok=${v2.ok} calls=${calls}`);
+    }
 
     console.log('\n模拟器快照可用于 UI');
     check('snapshot 输出 hex 文本', port.snapshot().split('\n').length > 1);
@@ -134,6 +179,48 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         check('超时排空后不消费上一条迟到应答',
             code === 'TIMEOUT' && bytesToHex(r).startsWith('62102A'),
             `first=${code} second=${bytesToHex(r)}`);
+    }
+
+    console.log('\n适配器先回 OK、UDS 应答晚一段');
+    {
+        // 真车 ELM 在 CAF0 下发完帧后常先回 "OK"，ECU 的 6E/62 应答晚一个段到。
+        // 旧实现见不到响应 ID 就 break → BAD_FRAME，把成功的写入判成失败。
+        let cb = null;
+        const fake = {
+            on(ev, fn) { if (ev === 'data') cb = fn; },
+            write() {
+                setTimeout(() => cb && cb('OK\r\r>'), 5);
+                setTimeout(() => cb && cb('18DAF140036E2023\r\r>'), 80);
+            },
+        };
+        const l5 = new Elm327(fake, { adapter: 'elm327', log: () => {} });
+        l5.protocol = 7;
+        l5.respId = 0x18daf140;
+        const r = await l5.request(Uint8Array.from([0x2e, 0x20, 0x23]), { timeoutMs: 1000 });
+        check('OK 后继续等，拿到 6E 20 23', bytesToHex(r) === '6E2023', bytesToHex(r));
+    }
+
+    console.log('\n无等待者时的残留段不能给下一条命令');
+    {
+        // 上一条命令超时后很久才到（已过 120ms 排空窗口）→ 进入 segQueue。
+        // 旧实现里下一条命令会立刻把这段当成自己的应答；现在按「到达时间 < 发出时间」丢弃。
+        let cb = null;
+        const fake = {
+            on(ev, fn) { if (ev === 'data') cb = fn; },
+            write(d) {
+                const cmd = String(d).replace(/\r$/, '');
+                if (/^0322102A/i.test(cmd)) {
+                    setTimeout(() => cb && cb('18DAF1400C62102A000000000000000000\r\r>'), 5);
+                }
+            },
+        };
+        const l4 = new Elm327(fake, { adapter: 'elm327', log: () => {} });
+        l4.protocol = 7;
+        l4.respId = 0x18daf140;
+        cb('18DAF14003622023\r\r>');          // 迟到、无人认领 → 入队
+        await sleep(5);
+        const r = await l4.request(Uint8Array.from([0x22, 0x10, 0x2a]), { timeoutMs: 500 });
+        check('残留段被丢弃，返回本条 62 10 2A', bytesToHex(r).startsWith('62102A'), bytesToHex(r));
     }
 
     console.log(`\n结果：${pass} 通过 / ${fail} 失败`);

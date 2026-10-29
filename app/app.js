@@ -10,7 +10,8 @@
 import { ProxiBlock, CRC_OFFSET, CRC_DIGITS } from '../src/proxi.js';
 import { applyScale, snapshotValue } from '../src/scale.js';
 import { Elm327, hexToBytes } from '../src/elm327.js';
-import { Uds, NRC } from '../src/uds.js';
+import { Uds, NRC, isRoutineBusy, DID } from '../src/uds.js';
+import { computeAlignment, ALIGN_STATUS_LABEL } from '../src/alignment.js';
 import { DemoLink } from '../src/demo-link.js';
 import { BridgeClient } from '../src/serial/bridge-client.js';
 import { InterfaceTester } from '../src/serial/detect.js';
@@ -50,7 +51,9 @@ const state = {
   writeState: new Map(),        // 'named:X' / 'feat:Y' -> 'pending'|'written'|'failed'
   link: null, uds: null, session: null,
   connected: false, readDone: false, simMode: false,
-  vin: null,                    // 车身电脑 VIN（在场位基线按 VIN 隔离，换车自动重算）
+  vin: null,                    // 车身电脑 VIN（仅日志/诊断用）
+  data3: null,                  // DID 0x40A2（对齐状态位图来源）
+  alignment: null,              // computeAlignment() 结果
   aligning: false,
   busy: null,                   // 长任务（对齐状态扫描等）并发闸：非 null = 正在跑的任务名
   bitEditIndex: null,
@@ -241,7 +244,8 @@ window.__apxDisconnect = async () => {
   state.connected = false;
   state.readDone = false;
   state.vin = null;
-  state.presenceMap = null;
+  state.data3 = null;
+  state.alignment = null;
   if (state.session) state.session.resetLink();
   // 模块会话必须一起复位：否则「进入模块」被拦（提示先退出），而退出按钮又是隐藏态 → 卡死
   modSess.code = null;
@@ -475,7 +479,11 @@ async function connect(forceSim) {
     $('connState').className = 'pill busy';
     if (!spec) {
       // 演示链路：与真实适配器同接口，不与车辆收发，只记录本应下发的帧
-      state.link = new DemoLink({ log: (m) => log(m) });
+      state.link = new DemoLink({
+        log: (m) => log(m),
+        cables: state.cables,
+        nodes: state.modules ? state.modules.alignmentNodes : [],
+      });
     } else {
       // 真实适配器：经串口桥打开端口，用同一套 ELM327 协议层
       await ensureBridge();
@@ -518,7 +526,8 @@ async function connect(forceSim) {
     // 新连接 = 新会话：清掉上一台车/上一个适配器留下的块与在场位基线
     // （此前只改 connected，块、基线、VIN、模块会话都会跨会话残留 —— 2026-10-18 审查 L11）
     state.vin = null;
-    state.presenceMap = null;
+    state.data3 = null;
+    state.alignment = null;
     state.readDone = false;
     state.block = null;
     state.baseline = null;
@@ -563,19 +572,27 @@ async function readConfig() {
     await stageWait(520);
     await state.session.ensureModule(state.session.bodyModule);
     stage(`已连接 ${bodyName}，正在读取车辆配置…`);
-    // VIN 用于隔离在场位基线（换车不能沿用上一台的装/卸判定）。读不到不致命。
+    // VIN 仅用于日志/诊断；对齐状态不再依赖“在场位基线”
     if (!state.vin) {
       try {
         const rawVin = await state.uds.readDataByIdentifier(0xf190);
         const s = Array.from(rawVin).filter((b) => b >= 32 && b < 127).map((b) => String.fromCharCode(b)).join('').trim();
         if (s.length >= 11) { state.vin = s; log('VIN：' + s); }
-      } catch (e) { log('VIN 读取失败（在场位基线按平台共享）：' + e.message); }
+      } catch (e) { log('VIN 读取失败：' + e.message); }
     }
     const d1 = await state.uds.readProxi();
+    // DATA3 = CAN 配置块（80B）：对齐状态的“实际位图”来源，与 DATA1 配置位图比对
+    let data3 = null;
+    try {
+      data3 = await state.uds.readDataByIdentifier(DID.DATA3);
+    } catch (e) {
+      log('DATA3 读取失败（对齐状态不可用）：' + e.message);
+    }
+    state.data3 = data3;
     state.block = new ProxiBlock(d1);
     state.baseline = state.block.clone();
-    freezePresenceBaseline(state.block);      // 首读冻结在场位基线（P1-1：防 CRC 区漂移）
-    renderAlign();                            // 按车上在场位重渲染（只跳过 presence=0）
+    applyAlignment(d1, data3, { log: true });
+    renderAlign();                            // 按位图状态渲染（已对齐/待添加/待移除/未安装）
     state.readDone = true;
     state.namedPicks.clear();
     state.selected.clear();
@@ -583,7 +600,11 @@ async function readConfig() {
     state.bitEditIndex = null;
     $('readState').textContent = `已读取 ${d1.length} 字节`;
     $('readState').className = 'pill online';
-    stageDone(`配置读取完成：${d1.length} 字节，校验${state.block.verify().ok ? '自洽' : '异常'}`);
+    const al = state.alignment;
+    const statusNote = al && al.ok
+      ? ` · 需对齐 ${al.counts.needs} 个（新增 ${al.counts.added} / 移除 ${al.counts.removed}）`
+      : ' · 对齐状态不可用';
+    stageDone(`配置读取完成：${d1.length} 字节，校验${state.block.verify().ok ? '自洽' : '异常'}${statusNote}`);
     renderNamed(); renderFeatures(); renderEditor();
   } catch (e) {
     stageFail('读取失败：' + e.message);
@@ -622,10 +643,11 @@ window.addEventListener('keydown', (e) => {
   }
 });
 $('platform').addEventListener('change', async () => {
-  // 车型决定车身电脑（BODY33/BODY30）与在场位基线 key；已连接时切车型必须重连，
+  // 车型决定车身电脑（BODY33/BODY30）；已连接时切车型必须重连，
   // 否则 Session 仍停在旧车型的车身电脑上，界面却显示新车型。
-  state.presenceMap = null;
   state.vin = null;
+  state.data3 = null;
+  state.alignment = null;
   if (!state.connected) { if (state.modules) renderAlign(); return; }
   await window.__apxDisconnect();
   alert('已切换车型并断开连接，请重新点「连接」。');
@@ -666,7 +688,7 @@ function renderNamed() {
     const div = document.createElement('div');
     div.className = 'named' + stateClass(stt) + (state.readDone ? '' : ' unsupported');
     const curOpt = cur === null ? null : st.options.find((o) => o.value === cur);
-    const curLabel = cur === null ? '未读取' : (curOpt ? t(curOpt.label) : `未知值 ${hex16(cur)}`);
+    const curLabel = cur === null ? '未读取' : (curOpt ? t(curOpt.label) : `未知值 ${hex8(cur)}`);
     const opts = st.options.map((o) => {
       const active = picked ? picked.value === o.value : cur === o.value;
       return `<option value="${o.value}"${active ? ' selected' : ''}>${t(o.label)}</option>`;
@@ -925,7 +947,8 @@ $('btnApply').addEventListener('click', async () => {
   for (const k of namedPicks.keys()) setWriteState('named:' + k, 'pending');
   for (const k of state.selected.keys()) setWriteState('feat:' + k, 'pending');
   stageDone(`已应用 ${n} 项配置：${changes.length} 处字节变更，校验已重算`);
-  renderNamed(); renderFeatures(); renderEditor(); detectConflicts();
+  if (state.data3) applyAlignment(state.block.bytes, state.data3);
+  renderNamed(); renderFeatures(); renderEditor(); detectConflicts(); renderAlign();
   alert(`已应用 ${n} 项配置（命名配置 ${namedPicks.size} 项 / 扩展配置 ${state.selected.size} 项）\n共变更 ${changes.length} 处字节\n\n请在「字节编辑器」核对后写入。`);
 });
 
@@ -948,6 +971,12 @@ $('restoreFile').addEventListener('change', async (e) => {
     return alert('导入失败：不是有效的配置备份（' + err.message + '）');
   }
   if (blk.length < 32) return alert('导入失败：备份太短（' + blk.length + ' 字节），疑似文件不对');
+  // 长度必须与车上读到的块一致：PROXI 是定长块，短块写下去会被 ECU 拒写（NRC 0x13），
+  // 个别 ECU 还可能按请求长度截断存储 —— 直接拦在导入这一步，别等到写入/对齐时才发现
+  if (state.baseline && blk.length !== state.baseline.length) {
+    return alert(`导入失败：备份 ${blk.length} 字节，与车上读取的 ${state.baseline.length} 字节不一致。\n\n`
+      + 'PROXI 配置块是定长的，长度不符的备份不能写入。请确认导出/导入的是同一车型的完整备份。');
+  }
   // 基线保持车上读取值，这样编辑器能看出「备份 vs 车上」的差异；没读过车就以备份为基线
   if (!state.baseline) state.baseline = blk.clone();
   state.block = blk;
@@ -965,7 +994,8 @@ $('restoreFile').addEventListener('change', async (e) => {
     v = blk.verify();
     sealNote = '；备份校验值与内容不符，已自动重算 CRC';
   }
-  renderEditor(); renderNamed(); renderFeatures(); detectConflicts();
+  if (state.data3) applyAlignment(state.block.bytes, state.data3);
+  renderEditor(); renderNamed(); renderFeatures(); detectConflicts(); renderAlign();
   const msg = `已载入备份：${blk.length} 字节，校验${v.ok ? '自洽' : '仍异常'}，与车上基线差异 ${diffs} 处${sealNote}`;
   log(msg);
   alert(msg + '\n\n已在字节编辑器载入（未写车）。核对后点「写入 ECU」才会真正刷写。');
@@ -1064,6 +1094,7 @@ function renderBitPanel() {
 
 function afterByteEdit() {
   state.block.seal();
+  if (state.data3) applyAlignment(state.block.bytes, state.data3);   // 静默重算，不重建对齐页 DOM（避免勾选被重置）
   renderEditor();
   renderNamed();
   renderFeatures();
@@ -1082,12 +1113,18 @@ $('btnRevert').addEventListener('click', () => {
   state.selected.clear();
   state.writeState.clear();
   state.bitEditIndex = null;
-  renderEditor(); renderNamed(); renderFeatures(); detectConflicts();
+  if (state.data3) applyAlignment(state.block.bytes, state.data3);
+  renderEditor(); renderNamed(); renderFeatures(); detectConflicts(); renderAlign();
   log('已放弃全部改动');
 });
 async function writeToEcu() {
   if (!(await ensureRead())) return;
   if (operationBlocked()) return;
+  // 定长块保护：导入的备份若与车上块长度不同，2E 请求长度就不对，必须拦在写之前
+  if (state.baseline && state.block.length !== state.baseline.length) {
+    return alert(`当前配置块 ${state.block.length} 字节，与车上读取的 ${state.baseline.length} 字节不一致。\n\n`
+      + '已阻止写入。请重新「读取车辆配置」，或导入与本车一致的完整备份。');
+  }
   if (!confirm('确认写入 ECU？写入前请确认已导出备份。')) return;
   stopLiveForOperation('写入配置');
   if (state.session) state.session.resetCableAbort();
@@ -1130,8 +1167,11 @@ async function writeToEcu() {
     }
     state.baseline = back.clone();
     state.block = back;
-    // 写入后按新块刷新「非 CRC 区」的在场位：改过在场位配置（如打开 SGW）能立刻进入对齐范围
-    if (ok) freezePresenceBaseline(state.block);
+    // 写入后按新块重算对齐状态（DATA1 变了、DATA3 不变 → 新增/移除状态立即更新）
+    if (ok) {
+      applyAlignment(state.block.bytes, state.data3, { log: true });
+      renderAlign();
+    }
     // 清空待写选择，但保留状态徽标供查看
     state.namedPicks.clear();
     state.selected.clear();
@@ -1169,131 +1209,82 @@ function nodeGroupOf(n) {
   return n.swapCable ? 'swap' : (n.baud === 125 ? 'comfort' : 'plain');
 }
 
-/** 解析 诊断数据的在场位编码，如 "0101Present|0100Not present" → 掩码 0x01，安装=1 */
-function presenceInfo(node) {
-  let mask = 0, presentVal = null, absentVal = null;
-  for (const part of String(node.presence || '').split('|')) {
-    const m = /^([0-9A-Fa-f]{4})(.*)$/.exec(part.trim());
-    if (!m) continue;
-    const maskByte = parseInt(m[1].slice(0, 2), 16);
-    const val = parseInt(m[1].slice(2, 4), 16);
-    mask |= maskByte;
-    const label = m[2].trim();
-    if (/^not\s/i.test(label)) absentVal = val; else presentVal = val;
-  }
-  return { mask, presentVal, absentVal };
-}
-
 /**
- * 在场位与 CRC 校验区（DATA1[6..10]）重叠的节点：
- * seal() 每次重算 CRC 都会改写这几个字节，按当前块动态判装/卸会随 CRC 漂移。
- * 这些节点的判定一律以「在场位基线」为准，并在界面上明确标注。
+ * 对齐状态（位图口径，2026-10-29 按实车行为重写）。
+ *
+ * 状态**不是**逐节点读 22 10 2A（那只是写入后的单节点回读校验，实车大量模块不应答），
+ * 而是车身电脑的 DATA1/DATA3 位图比对：
+ *   DATA1[25..40] = 配置位图（PROXI 里应该有哪些节点）
+ *   DATA3[32..47] = 实际位图（车上实际有哪些节点）
+ *   DATA3[48..63] / [64..79] = EOL 期望/完成位图
+ * 节点 startByte 是位图索引（1..16），不是 PROXI 字节号 —— SGW 节点 startByte=2
+ * 对应命名项「SGW」Byte40 已交叉验证。判定集中在 src/alignment.js。
  */
-function presenceOverlapsCrc(node) {
-  // ⚠️ 字节号是 **1-based 社区口径**，CRC 区是 **0-based [6..10] = 社区 Byte7..11**。
-  //    三方互证（2026-10-16 审计 ★1）：proxi.js `#toIdx(no)=no-1`、
-  //    白名单「写 DATA1[6..10]」、实车照片头部 `406200232331OUTPUT-SIT %` 逐段咬合。
-  //    此前判 6..10 差一位：startByte=6 假阳性、startByte=11 的 AMP/CDM/RLCM/SRM/SCRM/VPAM 漏标。
-  return node.startByte >= 7 && node.startByte <= 11;
+function nodeRow(node) {
+  return (state.alignment && state.alignment.byName.get(node.name)) || null;
 }
 
-/**
- * 在场位基线（localStorage 跨会话保持）。
- *
- * 为什么需要基线：部分节点的在场位字节落在 CRC 校验区（DATA1[6..10]），
- * `seal()` 每次重算 CRC 都会改写这些字节，按块动态判装/卸会随 CRC 漂移。
- *
- * ⚠️ 2026-10-18 审查 H5：旧实现有两个坑 ——
- *   ① key 只有 952/949，不含 VIN：换一台同平台的车会沿用上一台车的在场位，
- *      对齐范围错位；② 冻结后**永不刷新**（`state.presenceMap` 一存在就直接 return），
- *      用户通过「隐藏功能」把 SGW 在场位改成 Present 后，这个节点永远进不了对齐。
- *  现在：key 带 VIN；每次读配置按车上块重算**非 CRC 区**的在场位（CRC 区仍冻结）；
- *  另给「重算在场位」按钮做全量重算。
- */
-function presenceBaselineKey() {
-  const platform = (document.getElementById('platform') || {}).value || '952';
-  const vin = state.vin || 'unknown';
-  return `alfaproxi.presenceBaseline.v2.${platform}.${vin}`;
-}
-/** @returns {{vin?:string,savedAt?:number,map?:object}|null} 旧版（v1，纯 map）会被识别并迁到当前 VIN 下 */
-function loadPresenceBaseline() {
-  try {
-    const raw = JSON.parse(localStorage.getItem(presenceBaselineKey()) || 'null');
-    if (!raw || typeof raw !== 'object') return null;
-    // 新版：{vin, savedAt, map}；旧版：{节点名: bool}
-    const isNew = raw.map && typeof raw.map === 'object';
-    return { vin: raw.vin || null, savedAt: raw.savedAt || 0, map: isNew ? raw.map : raw };
-  } catch { return null; }
-}
-function savePresenceBaseline(map) {
-  try {
-    localStorage.setItem(presenceBaselineKey(),
-      JSON.stringify({ vin: state.vin || null, savedAt: Date.now(), map }));
-  } catch { /* 隐私模式等忽略 */ }
-}
-
-/** 该节点是否安装；未读取时返回 null。以基线为准，不再随 CRC 字符漂移 */
+/** 该节点物理上是否在车上（实际位图）；未读 DATA3 时返回 null */
 function nodePresent(node) {
-  if (state.presenceMap && node.name in state.presenceMap) return state.presenceMap[node.name];
-  if (!state.block) return null;
-  const { mask, presentVal } = presenceInfo(node);
-  if (presentVal === null || mask === 0) return null;
-  return (state.block.getByte(node.startByte) & mask) === presentVal;
+  const row = nodeRow(node);
+  return row ? row.actual : null;
 }
 
 /**
- * 读取配置后刷新在场位基线。
- *  · 非 CRC 区节点：**每次都以车上块为准**（用户改过在场位配置能立刻生效）
- *  · CRC 区节点：沿用已冻结值（或磁盘上的值），否则 CRC 数字位会让装/卸状态乱跳
- *  · 换了车（VIN 不同）：磁盘基线作废，全部按当前块重算
+ * 该节点是否可写入对齐。
+ * 只有「实际位图置位 + 有独立诊断地址」的节点才允许勾选/写入：
+ * 待移除（配置里有、车上没有）与未安装节点都没有写入目标。
  */
-function freezePresenceBaseline(block) {
-  const saved = loadPresenceBaseline();
-  const stored = saved && saved.map ? saved.map : null;
-  const map = state.presenceMap || {};
-  let carried = 0, computed = 0;
-  for (const n of state.modules.alignmentNodes) {
-    const { mask, presentVal } = presenceInfo(n);
-    if (presentVal === null || mask === 0) { map[n.name] = null; continue; }
-    if (presenceOverlapsCrc(n)) {
-      if (n.name in map && map[n.name] !== null) { carried++; continue; }        // 本会话已冻结
-      if (stored && n.name in stored && stored[n.name] !== null) {
-        map[n.name] = stored[n.name]; carried++; continue;                       // 磁盘冻结值
-      }
+function nodeAlignable(node) {
+  return !!node && nodePresent(node) === true && nodeAddressable(node);
+}
+
+/** 该节点是否出现在配置或实际位图中（对齐页展示范围） */
+function nodeListed(node) {
+  const row = nodeRow(node);
+  return row ? row.listed : null;
+}
+
+/** 用 DATA1/DATA3 重算对齐状态（纯计算，不写车） */
+function applyAlignment(data1, data3, opts = {}) {
+  const nodes = state.modules ? state.modules.alignmentNodes : [];
+  state.alignment = computeAlignment(data1, data3, nodes);
+  if (opts.log) {
+    const c = state.alignment.counts;
+    if (state.alignment.ok) {
+      log(`对齐状态：${c.listed} 个节点 · 需对齐 ${c.needs} 个`
+        + `（新增 ${c.added} / 移除 ${c.removed}）`
+        + (c.eolFailed ? ` · EOL 未完成 ${c.eolFailed}` : ''));
+    } else {
+      log('对齐状态不可用：' + state.alignment.reason);
     }
-    map[n.name] = (block.getByte(n.startByte) & mask) === presentVal;
-    computed++;
   }
-  state.presenceMap = map;
-  savePresenceBaseline(map);
-  if (saved && saved.vin && state.vin && saved.vin !== state.vin) {
-    log(`在场位基线：VIN 变了（${saved.vin} → ${state.vin}），已按当前车重算`);
-  } else if (computed || carried) {
-    log(`在场位基线：按车上块重算 ${computed} 个节点（CRC 区沿用冻结值 ${carried} 个）`);
-  }
+  return state.alignment;
 }
 
-/** 按车上当前块**全量**重算在场位（含 CRC 区），并落盘 */
-function resetPresenceBaseline() {
-  state.presenceMap = null;
-  try { localStorage.removeItem(presenceBaselineKey()); } catch { /* 忽略 */ }
-  if (state.block) freezePresenceBaseline(state.block);
-  if (state.modules) {
-    renderAlign();
-  }
-}
-
-/** 对齐写入结果反哺基线：车上拒写「无已安装节点」→ 学到未安装 */
-function learnPresence(node, installed) {
-  if (!state.presenceMap || state.presenceMap[node.name] === installed) return;
-  state.presenceMap[node.name] = installed;
-  savePresenceBaseline(state.presenceMap);
+/**
+ * 读车身 DATA1 + DATA3 并重算对齐状态（只读，不写车）。
+ * 「读取对齐状态」与对齐结束后的复检共用这一条链路。
+ */
+async function refreshAlignment(opts = {}) {
+  await state.session.ensureModule(state.session.bodyModule);
+  const d1a = await state.uds.readProxi();
+  const data3 = await state.uds.readDataByIdentifier(DID.DATA3);
+  // 双读一致性（车端流程同样会重读比对）：连续两次 DATA1 不一致 = 总线抖动，不用脏数据判状态
+  const d1b = await state.uds.readProxi();
+  const same = d1a.length === d1b.length && d1a.every((b, i) => b === d1b[i]);
+  if (!same) throw new Error('连续两次读取 DATA1 不一致（总线抖动），请重试');
+  state.data3 = data3;
+  return applyAlignment(d1a, data3, { log: opts.log !== false });
 }
 
 /** 当前勾选的节点（按 DOM 顺序） */
 function selectedNodes() {
   return [...document.querySelectorAll('.node')]
-    .filter((el) => el.querySelector('.pick')?.checked)
+    .filter((el) => {
+      const cb = el.querySelector('.pick');
+      return cb && cb.checked && !cb.disabled;   // 「待移除」节点不可写，勾选也应无效
+    })
     .map((el) => state.modules.alignmentNodes[Number(el.dataset.idx)]);
 }
 function forEachNodeEl(fn) {
@@ -1347,54 +1338,109 @@ function removeNonParticipating() {
 function renderAlign() {
   const wrap = $('alignGroups');
   wrap.innerHTML = '';
-  if (!state.block) {
-    // 还没有读 PROXI 块：不知道在场位，先不渲染节点
-    wrap.innerHTML = '<div class="dim" style="padding:16px">请先读取车辆配置；对齐节点会按在场位和可写地址自动过滤。</div>';
+  const al = state.alignment;
+  if (!state.block || !al || !al.ok) {
+    const why = !state.block ? '请先读取车辆配置'
+      : (al && al.reason ? al.reason : '对齐状态不可用');
+    wrap.innerHTML = `<div class="dim" style="padding:16px">${why}；状态由车身电脑 DATA1/DATA3 位图比对得出。</div>`;
     ['stTotal', 'stDone', 'stFail', 'stPending'].forEach((id) => { if ($(id)) $(id).textContent = '0'; });
     if ($('stPresent')) $('stPresent').textContent = '—';
     if ($('stAligned')) $('stAligned').textContent = '—';
     if ($('stMisaligned')) $('stMisaligned').textContent = '—';
+    $('alignVerdict').classList.add('hidden');
     return;
   }
   state.modules.alignmentNodes.forEach((n, i) => { n._idx = i; });
   const groups = { plain: [], comfort: [], swap: [] };
   for (const n of state.modules.alignmentNodes) {
     if (n.excluded || !nodeAddressable(n)) continue;   // addr=00 无独立读写命令，直接忽略
-    if (nodePresent(n) === false) continue;
     groups[nodeGroupOf(n)].push(n);
   }
 
+  const statusHtml = (row) => {
+    if (!row || !row.listed) return '<b>未安装</b>';
+    switch (row.status) {
+      case 'ok': return '<b>✓ 已对齐</b>';
+      case 'eol-ok': return '<b>✓ 已对齐</b><br><span class="reason">EOL Ok</span>';
+      case 'added': return '<b>＋ 待添加</b><br><span class="reason">车上存在，配置里没有</span>';
+      case 'removed': return '<b>－ 待移除</b><br><span class="reason">配置里有，车上不存在</span>';
+      case 'eol-failed': return '<b>⚠ EOL 未完成</b>';
+      default: return `<b>${ALIGN_STATUS_LABEL[row.status] || row.status}</b>`;
+    }
+  };
+  const dataSt = (row) => {
+    if (!row || !row.listed) return 'absent';
+    if (row.status === 'ok' || row.status === 'eol-ok') return 'aligned';
+    if (row.status === 'eol-only') return 'absent';   // 只在 EOL 位图里出现，车上没有 → 不计入需对齐
+    return 'misaligned';
+  };
+
+  const c0 = al.counts;
   for (const key of ['plain', 'comfort', 'swap']) {
     const list = groups[key];
     if (!list.length) continue;
+    const actualCount = list.filter((n) => nodePresent(n) === true).length;
+    const listedCount = list.filter((n) => nodeListed(n)).length;
+    const absentCount = list.length - listedCount;
+    const removedCount = list.filter((n) => nodeRow(n)?.status === 'removed').length;
+    // EOL 期望位图有数据时才标注「不在 EOL 位图」——量产车 E 可能全 0（无 EOL 数据），
+    // 那时给每个节点都挂个标签纯属噪音。
+    const eolKnown = c0.eolExpected > 0;
     const div = document.createElement('div');
     div.className = 'group collapsed-absent';
     div.innerHTML = `
       <header>
         <h3>${state.modules.busGroups[key].label}</h3>
-        <span class="meta">${list.length} 个节点 · ${state.modules.busGroups[key].baud}kbit/s · ${
+        <span class="meta">${actualCount} 个在位可对齐${removedCount ? ` · ${removedCount} 个仅配置（不可写）` : ''}${absentCount ? ` · ${absentCount} 个未安装` : ''} · ${state.modules.busGroups[key].baud}kbit/s · ${
           state.modules.busGroups[key].cable === 'none' ? '无需换线' : state.modules.busGroups[key].cable
         }</span>
-        <button class="toggle-absent" data-group="${key}">显示未安装节点</button>
+        ${absentCount ? `<button class="toggle-absent" data-group="${key}">显示未安装节点</button>` : ''}
       </header>
-      <div class="nodes">${list.map((n) => `
-        <div class="node" data-st="wait" data-group="${key}" data-idx="${n._idx}">
-          <input type="checkbox" class="pick" checked>
-          <div class="nm">${tSpan(n.name)}${presenceOverlapsCrc(n) ? '<span class="tiny" title="该节点在场位字节落在 CRC 校验区（DATA1[6..10]）内，装/卸判定以首次读取的在场位基线为准，不随 CRC 重算漂移"> 在场位与 CRC 区重叠</span>' : ''}</div>
+      <div class="nodes">${list.map((n) => {
+        const row = nodeRow(n);
+        const listed = !!(row && row.listed);
+        const actual = !!(row && row.actual);
+        const st = dataSt(row);
+        const eolTag = (eolKnown && actual && row && !row.eol)
+          ? ' <span class="tiny" title="该节点在实际位图中在位，但 EOL 期望位未置位。车端全量对齐按 EOL 位图取节点，通常不写它（多见于后加装件）；写入前会单独确认">EOL 位未置</span>'
+          : '';
+        return `
+        <div class="node${listed ? '' : ' absent'}${row && row.status === 'removed' ? ' removed' : ''}" data-st="${st}" data-group="${key}" data-idx="${n._idx}">
+          <input type="checkbox" class="pick"${actual ? ' checked' : ' disabled'}>
+          <div class="nm">${tSpan(n.name)}${eolTag}</div>
           <div class="ad">地址 0x${n.addr} · ${n.baud}k</div>
-          <div class="st">○ 待检查</div>
-        </div>`).join('')}</div>`;
+          <div class="st">${statusHtml(row)}</div>
+        </div>`;
+      }).join('')}</div>`;
     wrap.appendChild(div);
   }
-  const alignable = state.modules.alignmentNodes.filter((n) => nodeAddressable(n) && nodePresent(n) !== false).length;
-  $('stTotal').textContent = alignable;
+
+  const c = al.counts;
+  $('stTotal').textContent = c.listed;
+  $('stPresent').textContent = c.present;
+  $('stAligned').textContent = c.ok + c.eolOk;
+  $('stMisaligned').textContent = c.added + c.removed + c.eolFailed;
   $('stDone').textContent = 0;
   $('stFail').textContent = 0;
-  $('stPending').textContent = alignable;
-  $('stPresent').textContent = '—';
-  $('stAligned').textContent = '—';
-  $('stMisaligned').textContent = '—';
-  $('alignVerdict').classList.add('hidden');
+  $('stPending').textContent = 0;
+
+  const verdict = $('alignVerdict');
+  verdict.classList.remove('hidden', 'ok', 'bad');
+  if (c.needs === 0 && c.eolFailed === 0) {
+    verdict.classList.add('ok');
+    // ⚠️ 位图只能证明「配置 ↔ 实际」一致，证明不了每个模块存储块都等于车身块。
+    //    换过模块（存储块是旧的、位图却正常）时里程表照样闪，所以别把话说满。
+    verdict.textContent = `✓ 配置位图一致（${c.present} 个在位节点，无新增/移除）；若里程表仍闪，点「全部对齐」重写全部在位节点`;
+  } else {
+    verdict.classList.add('bad');
+    const parts = [];
+    if (c.added) parts.push(`新增 ${c.added}`);
+    if (c.removed) parts.push(`移除 ${c.removed}`);
+    if (c.eolFailed) parts.push(`EOL 未完成 ${c.eolFailed}`);
+    verdict.textContent = `⚠ ${c.needs + c.eolFailed} 个节点需要对齐（${parts.join(' / ')}）→ 里程表会闪烁`;
+  }
+  if (al.sgwPresent) log('检测到 SGW（安全网关）实际在位');
+
   forEachNodeEl((el) => el.querySelector('.pick')?.addEventListener('change', updateAlignButtons));
   wrap.querySelectorAll('.toggle-absent').forEach((b) => {
     b.addEventListener('click', () => {
@@ -1437,88 +1483,35 @@ function bindStatFilter(boxId, pred) {
 }
 
 /**
- * 读取对齐状态 —— 车身模块一体读取（快速模式）。
+ * 读取对齐状态 —— 与车端已验证流程同口径：只进车身电脑，读 DATA1 + DATA3 位图比对。
  *
- * 与标准流程一致：只进车身模块，读 22 20 23（PROXI 块 + 在场位）和 22 10 2A（车身级校验），
- * 在场位位图给出各节点装/卸状态，车身 22 10 2A 给出整车对齐判定。
- * 不再逐模块进入（旧逐节点回读是写入验证路径的复用，大量模块 NO DATA 导致误判）。
+ * ⚠️ **不再逐节点读 22 10 2A**：那是写入后的单节点回读校验；实车上大量模块对该 DID
+ *    不应答，逐节点读会得到「全都读不到 / 未对齐」的假状态（2026-10-29 实车定论）。
+ *    整车状态由 DATA1[25..40]（配置位图）与 DATA3[32..47]（实际位图）比对得出：
+ *      只在实际 → 待添加；只在配置 → 待移除；两者都有 → 已对齐（EOL 位另判）。
+ * 进入车身模块后一次读取即可，秒级完成，不需要换线，也不需要取消按钮。
  */
 $('btnCheckAlign').addEventListener('click', async () => {
   if (!(await ensureRead())) return;
   if (state.aligning) return alert('正在执行 PROXI 对齐，请等它结束再读取状态。');
   if (state.busy) return alert(`正在执行「${state.busy}」，请等它结束。`);
   stopLiveForOperation('读取对齐状态');
+  if (state.session) state.session.resetCableAbort();
   state.busy = '读取对齐状态';
   $('btnCheckAlign').disabled = true;
   try {
-  const nodes = [...document.querySelectorAll('.node')];
-  const total = nodes.length;
-  let present = 0, aligned = 0, mis = 0, skipped = 0;
-  $('stDone').textContent = '0';
-  $('stFail').textContent = '0';
-  $('stPending').textContent = total;
-  stage('正在读取车身模块对齐状态…');
-
-  // 1) 车身电脑为基准：PROXI 块（含在场位）+ 写入计数
-  await state.session.ensureModule(state.session.bodyModule);
-  const refBytes = await state.uds.readProxi();
-  const ref = await state.uds.readProxiWriteCounter();
-  stage(`基准：${modLabel(state.session.bodyModule)} PROXI 块 ${refBytes.length} 字节 · 写入计数 ${ref}`);
-
-  // 2) 车身模块 22 10 2A —— 整车对齐判定
-  stage('正在读取车身模块 22 10 2A 对齐校验…');
-  const v = await state.uds.verifyProxi(refBytes);
-
-  // 3) 用在场位位图 + 车身级判定显示所有节点
-  for (const el of nodes) {
-    const n = state.modules.alignmentNodes[Number(el.dataset.idx)];
-    const inst = nodePresent(n);
-
-    if (inst === false) {
-      el.dataset.st = 'absent';
-      el.classList.add('absent');
-      el.querySelector('.st').innerHTML = '<b>未安装</b>';
-      el.querySelector('.pick').checked = false;
-      skipped++;
-      continue;
-    }
-    present++;
-
-    if (v.ok) {
-      el.dataset.st = 'aligned';
-      el.classList.remove('absent');
-      el.querySelector('.st').innerHTML = '<b>✓ 已对齐</b>';
-      aligned++;
+    stage('正在读取车身电脑 DATA1 / DATA3…');
+    const res = await refreshAlignment({ log: true });
+    if (!res.ok) throw new Error(res.reason || 'DATA1/DATA3 位图不足');
+    renderAlign();
+    const c = res.counts;
+    if (c.needs === 0 && c.eolFailed === 0) {
+      stageDone(`配置位图一致：${c.present} 个在位节点，无新增/移除`);
     } else {
-      // 车身块有差异 —— 先标为待确认（车身级问题，非单节点问题）
-      el.dataset.st = 'misaligned';
-      el.classList.remove('absent');
-      const diffInfo = v.diffs.map((d) => `Byte${d.byte}`).join('、');
-      el.querySelector('.st').innerHTML = `<b>⚠ 待确认</b><br><span class="reason">车身块差异 ${diffInfo}</span>`;
-      mis++;
+      stageFail(`对齐状态：${c.listed} 个节点，需对齐 ${c.needs} 个`
+        + `（新增 ${c.added} / 移除 ${c.removed}）`
+        + (c.eolFailed ? ` / EOL 未完成 ${c.eolFailed}` : ''));
     }
-  }
-
-  $('stPresent').textContent = present;
-  $('stAligned').textContent = aligned;
-  $('stMisaligned').textContent = mis;
-  $('stPending').textContent = 0;
-
-  const verdict = $('alignVerdict');
-  verdict.classList.remove('hidden', 'ok', 'bad');
-  if (mis === 0 && present > 0) {
-    verdict.classList.add('ok');
-    verdict.textContent = `✓ 整车对齐正常（${present} 个在场节点），无里程表闪烁`;
-    stageDone(`对齐状态检查完成：${aligned} 个已对齐`);
-  } else if (present === 0) {
-    verdict.classList.add('bad');
-    verdict.textContent = '⚠ 未检测到在场节点';
-    stageFail('对齐状态检查完成：无在场节点');
-  } else {
-    verdict.classList.add('bad');
-    verdict.textContent = `⚠ 车身块有 ${v.diffs.length} 处差异 → 里程表会闪烁`;
-    stageFail(`对齐状态检查完成：${aligned} 已对齐 / ${mis} 待确认`);
-  }
   } catch (e) {
     stageFail('读取对齐状态失败：' + e.message);
     alert('读取对齐状态失败：' + e.message + (e.nrcText ? '（' + e.nrcText + '）' : ''));
@@ -1529,21 +1522,25 @@ $('btnCheckAlign').addEventListener('click', async () => {
 });
 
 $('btnAlignAll').addEventListener('click', () => {
-  setSelection((el) => !el.classList.contains('absent'));
+  // 全部对齐 = **只勾选实际在位（DATA3 实际位图）的节点**，待移除/未安装一律不可写
+  setSelection((el, n) => nodeAlignable(n));
   $('btnAlign').click();
 });
-// 「重算在场位」：按车上当前块重新判定装/卸（换车、增删模块、改过在场位配置后使用）
+// 「重算对齐状态」：按当前块与 DATA3 重新比对位图（改过在场位配置后使用）
 $('btnPresenceReset').addEventListener('click', () => {
   if (!state.block) return alert('请先读取车辆配置');
-  if (!confirm('按车上当前配置重新判定「节点是否安装」？\n\n用于：换了一台车 / 增删过模块 / 改过在场位配置。\n只影响对齐范围，不会写车。')) return;
-  resetPresenceBaseline();
-  const presentN = Object.values(state.presenceMap || {}).filter((v) => v === true).length;
-  stageDone(`在场位已按当前配置重算：${presentN} 个节点判定为已安装`);
+  if (!state.data3) return alert('还没有读到 DATA3（CAN 配置块）。\n请重新「读取车辆配置」后再重算。');
+  if (!confirm('按当前配置块重新比对 DATA1 / DATA3 位图？\n\n用于：改过在场位配置 / 换过车 / 增删过模块。\n只重算状态，不会写车。')) return;
+  const res = applyAlignment(state.block.bytes, state.data3, { log: true });
+  renderAlign();
+  if (!res.ok) return alert('重算失败：' + res.reason);
+  stageDone(`对齐状态已重算：需对齐 ${res.counts.needs} 个`
+    + `（新增 ${res.counts.added} / 移除 ${res.counts.removed}）`);
 });
 bindStatFilter('stMisalignedBox', (el) => el.dataset.st === 'misaligned');
 bindStatFilter('stFailBox', (el) => el.dataset.st === 'fail');
 bindStatFilter('stAlignedBox', (el) => el.dataset.st === 'aligned');
-$('btnSelAll').addEventListener('click', () => setSelection((el) => !el.classList.contains('absent')));
+$('btnSelAll').addEventListener('click', () => setSelection((el, n) => nodeAlignable(n)));
 $('btnSelNone').addEventListener('click', () => setSelection(() => false));
 $('btnSelFail').addEventListener('click', () =>
   setSelection((el) => el.dataset.st === 'fail' || el.dataset.st === 'misaligned'));
@@ -1564,6 +1561,21 @@ $('btnAlign').addEventListener('click', async () => {
   if (!confirm(warn)) return;
   const chosen = selectedNodes();
   if (!chosen.length) return alert('请先勾选要对齐的节点');
+  // —— 硬闸：只允许写「实际在位（DATA3 实际位图）」的节点 ——
+  // 正常路径下复选框已经 disabled，但状态可能刚被「重算」过、DOM 还留着旧勾选，
+  // 写入前再按位图核一遍，避免把 2E 20 23 发给不存在的模块（逐节点超时，整轮白跑）。
+  if (!state.alignment || !state.alignment.ok) {
+    stageFail('对齐状态不可用，已中止');
+    return alert('还没有可用的对齐状态（DATA1/DATA3 位图）。\n请先点「读取对齐状态」，确认哪些节点实际在位后再对齐。');
+  }
+  const notPresent = chosen.filter((n) => nodePresent(n) !== true);
+  if (notPresent.length) {
+    stageFail(`有 ${notPresent.length} 个节点不在实际位图中，已中止`);
+    return alert(`以下 ${notPresent.length} 个节点不在 DATA3 实际位图中（车上没有），不能写入：\n\n`
+      + notPresent.slice(0, 10).map((n) => '· ' + String(n.name)).join('\n')
+      + (notPresent.length > 10 ? '\n…' : '')
+      + '\n\n请重新「读取对齐状态」后再选。');
+  }
   // —— 写前双重读一致性（标准流程）：连续两次读车身块必须一致，防读链路抖动把脏数据写下去 ——
   // ⚠️ 必须先切回车身电脑：用户可能刚从「实时数据/诊断」退出，session 还停在 ABS/EPS 上，
   //    那些模块也有一份 289 字节 PROXI 块，会返回"格式合法但内容不是车身电脑"的数据，
@@ -1582,6 +1594,13 @@ $('btnAlign').addEventListener('click', async () => {
       return;
     }
     liveBlock = r1;
+    // 定长块保护：写入的块必须与车身电脑当前块等长，否则 2E 长度不符（拒写/截断）
+    if (state.block.length !== liveBlock.length) {
+      stageFail(`配置块长度 ${state.block.length} 与车身电脑 ${liveBlock.length} 不一致，已中止对齐`);
+      alert(`配置块长度不一致：待写 ${state.block.length} 字节 / 车上 ${liveBlock.length} 字节。\n\n`
+        + 'PROXI 是定长块，长度不符不能写入。请重新读取车辆配置，或导入正确备份。对齐已中止。');
+      return;
+    }
     log('写前一致性校验通过（两次读取一致）');
   } catch (e) {
     stageFail('写前校验失败：' + e.message);
@@ -1631,10 +1650,7 @@ $('btnAlign').addEventListener('click', async () => {
   const bytesEq = (a, b) => !!a && !!b && a.length === b.length && a.every((x, i) => x === b[i]);
   const blockDrifted = !bytesEq(state.block.bytes, liveBlock);
   const presentEls = [...document.querySelectorAll('.node')]
-    .filter((el) => {
-      const n = state.modules.alignmentNodes[Number(el.dataset.idx)];
-      return nodeAddressable(n) && nodePresent(n) !== false;
-    });
+    .filter((el) => nodeAlignable(state.modules.alignmentNodes[Number(el.dataset.idx)]));
   const allIdx = new Set(presentEls.map((el) => Number(el.dataset.idx)));
   const chosenIdx = new Set(chosen.map((n) => n._idx));
   const isSubset = chosen.length > 0 && chosen.length < allIdx.size;
@@ -1670,8 +1686,10 @@ $('btnAlign').addEventListener('click', async () => {
   {
     const leftover = [...document.querySelectorAll('.node')]
       .filter((el) => {
+        const cb = el.querySelector('.pick');
         const st = el.dataset.st;
-        return (st === 'misaligned' || st === 'fail') && !chosenIdx.has(Number(el.dataset.idx));
+        return cb && !cb.disabled && (st === 'misaligned' || st === 'fail')
+          && !chosenIdx.has(Number(el.dataset.idx));
       });
     if (leftover.length) {
       const names = leftover.slice(0, 8).map((el) => {
@@ -1692,7 +1710,8 @@ $('btnAlign').addEventListener('click', async () => {
         chosenIdx.clear();
         for (const i of allIdx) {
           const el = [...document.querySelectorAll('.node')].find((x) => Number(x.dataset.idx) === i);
-          if (el && el.querySelector('.pick')?.checked) chosenIdx.add(i);
+          const cb = el && el.querySelector('.pick');
+          if (cb && cb.checked && !cb.disabled) chosenIdx.add(i);
         }
         log(`已补选 ${leftover.length} 个未对齐节点`);
       } else {
@@ -1701,12 +1720,74 @@ $('btnAlign').addEventListener('click', async () => {
     }
   }
 
-  const chosenNodes = [...document.querySelectorAll('.node')]
+  let chosenNodes = [...document.querySelectorAll('.node')]
     .filter((el) => chosenIdx.has(Number(el.dataset.idx)));
+
+  // —— 与车端全量口径核对 ——
+  // 车端写入循环对每个节点先查 EOL 期望位图（DATA3[48..63]），位为 0 直接跳过
+  // 车端全量写入循环里就有这道过滤。量产车该位图可能全 0（无 EOL 数据），那时等价于不过滤；
+  // 只有它确实有数据时，才把「实际在位但不在 EOL 位图」的节点单独确认，
+  // 避免与官方全量口径悄悄分叉（多见于后加装件）。
+  const eolKnown = state.alignment.counts.eolExpected > 0;
+  if (eolKnown) {
+    const extra = chosenNodes.filter((el) => {
+      const row = nodeRow(state.modules.alignmentNodes[Number(el.dataset.idx)]);
+      return !!(row && row.actual && !row.eol);
+    });
+    if (extra.length) {
+      const names = extra.slice(0, 8).map((el) => '· ' + el.querySelector('.nm').textContent.trim());
+      const more = extra.length > 8 ? `\n…等 ${extra.length} 个` : '';
+      const goOn = confirm(
+        `⚠ 有 ${extra.length} 个节点实际在位，但不在车端的 EOL 期望位图中：\n\n${names.join('\n')}${more}\n\n`
+        + '车端全量对齐按 EOL 位图取节点，通常不写它们（多见于后加装件）。\n'
+        + '写入的是同一份配置块，不会影响其它节点，只是比官方多写这一部分。\n\n'
+        + '点「确定」= 照常写入（保证车上在位节点全部对齐）\n'
+        + '点「取消」= 去掉这些节点，只写 EOL 位图内的节点'
+      );
+      if (!goOn) {
+        for (const el of extra) { const cb = el.querySelector('.pick'); if (cb) cb.checked = false; }
+        chosenNodes = chosenNodes.filter((el) => !extra.includes(el));
+        log(`已去掉 ${extra.length} 个不在 EOL 期望位图中的节点`);
+        if (!chosenNodes.length) return alert('没有剩余可写节点。');
+      } else {
+        log(`按实际在位写入：其中 ${extra.length} 个不在 EOL 期望位图中（官方全量通常不写）`);
+      }
+    }
+  }
+
+  // —— 车身电脑必须参与 ——
+  // 写入块与车身当前块不同（DATA3 合并 / 手动改过字节）时，只写其它节点、不写车身，
+  // 会变成「车身持旧块、节点持新块」——比不对齐更糟，必然继续闪。这里强制补进车身节点。
+  if (blockDrifted) {
+    const bodyTx = String((state.cables?.modules?.[state.session.bodyModule] || {}).tx || '40').toUpperCase();
+    const bodyNode = state.modules.alignmentNodes.find((n) => String(n.addr).toUpperCase() === bodyTx);
+    if (!bodyNode) {
+      stageFail('找不到车身电脑节点，已中止对齐');
+      return alert('找不到车身电脑（BCM）的对齐节点，无法保证车身与各节点写入同一份配置块。\n对齐已中止。');
+    }
+    if (!nodeAlignable(bodyNode)) {
+      stageFail('车身电脑不在实际位图中，已中止对齐');
+      return alert('车身电脑（BCM）不在 DATA3 实际位图中。\n\n'
+        + '配置块与车上当前块不一致时必须同时写入车身电脑，否则车身持旧块、其它节点持新块，'
+        + '反而会造成里程表闪烁。\n\n请重新「读取对齐状态」确认后再试。');
+    }
+    const bodyEl = [...document.querySelectorAll('.node')].find((el) => Number(el.dataset.idx) === bodyNode._idx);
+    const bodyCb = bodyEl && bodyEl.querySelector('.pick');
+    if (bodyCb && !bodyCb.checked) {
+      bodyCb.checked = true;
+      chosenIdx.add(bodyNode._idx);
+      chosenNodes = [...document.querySelectorAll('.node')].filter((el) => chosenIdx.has(Number(el.dataset.idx)));
+      log('配置块已变化：已自动加入车身电脑（BCM），避免车身与节点持不同块');
+    }
+  }
+
   state.aligning = true;
   // ⚠️ 进度分母必须用"最终真正要写的节点数"：上面两道闸可能自动补选了节点，
   //    用一开始的 chosen.length 会让进度显示成 1/1 却实际跑了 35 个（2026-10-18 审查）。
-  const total = chosenNodes.filter((el) => el.querySelector('.pick')?.checked).length;
+  const total = chosenNodes.filter((el) => {
+    const cb = el.querySelector('.pick');
+    return cb && cb.checked && !cb.disabled;
+  }).length;
   const failed = [];
   let cableCancelled = false;   // 作用域必须在两个循环之外：旧写法在 for 块内声明，块外引用会 ReferenceError
   try {
@@ -1715,7 +1796,8 @@ $('btnAlign').addEventListener('click', async () => {
     for (const key of ['plain', 'comfort', 'swap']) {
       const grp = state.modules.busGroups[key].label;
       for (const el of nodes.filter((n) => n.dataset.group === key)) {
-        if (!el.querySelector('.pick')?.checked) continue;
+        const cb = el.querySelector('.pick');
+        if (!cb || !cb.checked || cb.disabled) continue;
         const nodeMeta = state.modules.alignmentNodes[Number(el.dataset.idx)];
         idx++;
         const nodeName = el.querySelector('.nm').textContent.trim();
@@ -1725,22 +1807,29 @@ $('btnAlign').addEventListener('click', async () => {
         stage(`⟳ 正在对齐 ${idx}/${total} · ${nodeName}`);
         await stageWait(260);
 
-        let ok = true, errMsg = '';
+        let ok = true, errMsg = '', verified = true;
         try {
           // 逐节点连接（跨总线分组会提示换适配线），再写入 + 回读校验
           const node = state.modules.alignmentNodes[Number(el.dataset.idx)];
           await state.session.connectNode(node);
           await state.uds.writeProxi(state.block.bytes);
-          learnPresence(node, true);
-          // 写后按节点读 22 10 2A：存储块与基准块（车身电脑 PROXI）比对
-          const v = await state.uds.verifyProxi(state.block.bytes);
+          // 写后按节点读 22 10 2A：存储块与基准块（车身电脑 PROXI）比对。
+          // 22 10 2A 只是回读校验：实车不少模块对该 DID 不应答（NO DATA），
+          // 2E 已回 6E 就不能因为“读不到”把写入判成失败 —— 标成“已写入（未回读）”。
+          const v = await state.uds.verifyProxi(state.block.bytes).catch((e) => {
+            if (e && (e.code === 'NO_DATA' || e.code === 'TIMEOUT' || e.code === 'BAD_FRAME')) {
+              return { ok: true, diffs: [], unverified: true, why: e.message };
+            }
+            throw e;
+          });
           if (!v.ok) {
             ok = false;
             errMsg = '回读校验发现差异：' + v.diffs.map((d) => `Byte${d.byte}`).join('、');
+          } else if (v.unverified) {
+            verified = false;
           }
         } catch (e) {
           ok = false; errMsg = e.message;
-          if (e && e.nrc === 0x31) learnPresence(state.modules.alignmentNodes[Number(el.dataset.idx)], false);
         }
 
         // 用户取消换线 = 主动终止整轮对齐（否则每个节点都会再报一次「已取消」，看着像全线故障）
@@ -1749,9 +1838,13 @@ $('btnAlign').addEventListener('click', async () => {
         // —— 结束：立刻给出结论 ——
         if (ok) {
           el.dataset.st = 'ok';
-          el.querySelector('.st').innerHTML = '<b>✓ 对齐成功</b>';
+          el.querySelector('.st').innerHTML = verified
+            ? '<b>✓ 对齐成功</b>'
+            : '<b>✓ 已写入</b><br><span class="reason">该模块不支持 22 10 2A 回读，未做回读校验</span>';
           done++;
-          stage(`✓ ${idx}/${total} · ${nodeName} 对齐成功`);
+          stage(verified
+            ? `✓ ${idx}/${total} · ${nodeName} 对齐成功`
+            : `✓ ${idx}/${total} · ${nodeName} 已写入（未回读）`);
         } else {
           el.dataset.st = 'fail';
           el.querySelector('.st').innerHTML = `<b>✗ 对齐失败</b><br><span class="reason">${errMsg}</span>`;
@@ -1773,12 +1866,45 @@ $('btnAlign').addEventListener('click', async () => {
     }
     // 全部节点完成后留 ECU 收尾时间（标准流程 1 秒）
     await stageWait(1000);
+    // 结论条改成“本次运行结果”，避免残留开跑前的“需对齐 N 个”造成误解
+    const vd = $('alignVerdict');
+    vd.classList.remove('hidden', 'ok', 'bad');
     if (failed.length) {
+      vd.classList.add('bad');
+      vd.textContent = `对齐结束：成功 ${done} / 失败 ${fail}（失败节点可重试）`;
       stageFail(`对齐结束：成功 ${done} / 失败 ${fail}`);
       alert(`PROXI 对齐结束\n\n成功 ${done} 个节点\n失败 ${fail} 个节点：\n\n${failed.slice(0, 10).join('\n')}${failed.length > 10 ? '\n…' : ''}\n\n失败节点可重试。`);
     } else {
+      vd.classList.add('ok');
+      vd.textContent = `✓ 对齐完成：${done} 个节点全部成功；可重新「读取对齐状态」确认`;
       stageDone(`对齐完成：${done} 个节点全部成功`);
       alert(`PROXI 对齐完成\n\n${done} 个节点全部对齐成功`);
+    }
+
+    // —— 对齐后自动复检：结论必须来自车身位图，而不是「本次勾选了谁」 ——
+    // 逐节点写入成功 ≠ 整车已对齐（例如待移除节点的配置位仍在 DATA1 里）。
+    if (!cableCancelled) {
+      try {
+        stage('对齐结束，正在重读车身 DATA1 / DATA3 复检…');
+        const res = await refreshAlignment({ log: true });
+        if (res.ok) {
+          const keepDone = done, keepFail = fail;
+          renderAlign();                       // 节点列表按最新位图重画
+          $('stDone').textContent = keepDone;   // 保留「本次成功/失败」，别被重置成 0
+          $('stFail').textContent = keepFail;
+          const cc = res.counts;
+          const left = cc.needs + cc.eolFailed;
+          vd.classList.remove('hidden', 'ok', 'bad');
+          vd.classList.add(left ? 'bad' : 'ok');
+          vd.textContent = left
+            ? `本次成功 ${done} / 失败 ${fail}；重读位图仍有 ${left} 个需对齐`
+              + `（新增 ${cc.added} / 移除 ${cc.removed}${cc.eolFailed ? ` / EOL 未完成 ${cc.eolFailed}` : ''}）`
+            : `✓ 本次成功 ${done} / 失败 ${fail}；重读位图：${cc.present} 个在位节点，无新增/移除`;
+          if (left) log(`⚠ 对齐后复检：仍有 ${left} 个节点需对齐（新增 ${cc.added} / 移除 ${cc.removed}）`);
+        }
+      } catch (e) {
+        log('对齐后重读状态失败（不影响已完成的写入）：' + e.message);
+      }
     }
   } finally {
     state.aligning = false;
@@ -2131,10 +2257,13 @@ async function runCommandString(cmdStr, item) {
           break;
         }
         polls++;
-        // 车端已验证的响应缓冲是 [长度][服务][子功能][NRC]；协议层已去长度前缀，
-        // 所以 NRC 在 st[3]（旧实现看 st[2] 会把 0x03 当 NRC，第一次忙就停止）。
-        if (!(st && st.length >= 4 && st[0] === 0x7f && (st[3] === 0x21 || st[3] === 0x23))) {
-          sent.push(`[例程状态：${st ? Array.from(st).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ') : '空'}（轮询 ${polls} 次）]`);
+        // 车端已验证行为的缓冲带 1 字节长度前缀（NRC 在 array[3]）；我们协议层已剥前缀，
+        // 所以忙判定看 resp[2]（见 src/uds.js isRoutineBusy）。
+        // 旧实现照搬 st[3]：`7F 31 21` 只有 3 字节 → 条件恒 false → 第一次忙就停止轮询。
+        if (!isRoutineBusy(st)) {
+          const isStatus = !!(st && st[0] === 0x71 && st[1] === 0x03);
+          sent.push(`[例程状态：${st ? Array.from(st).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ') : '空'}`
+            + `${isStatus ? '' : '（非预期响应，停止轮询）'}（轮询 ${polls} 次）]`);
           break;
         }
       }
@@ -2397,19 +2526,6 @@ function stage(text, kind) {
 function stageDone(text) { stage(text, 'done'); setTimeout(() => $('stageBar').classList.add('hidden'), 1600); }
 function stageFail(text) { stage(text, 'fail'); }
 const stageWait = (ms) => new Promise((r) => setTimeout(r, ms));
-
-/**
- * 长任务的「执行中浮出取消按钮」（对齐状态扫描要 3~5 分钟，没取消只能干等）。
- * 返回 { remove }，调用方 finally 里 remove()。
- */
-function showCancelButton(onCancel) {
-  const b = document.createElement('button');
-  b.textContent = '取消';
-  b.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:118px;z-index:98;min-height:44px;padding:10px 22px;border-radius:12px;border:1px solid #b33;background:#2a1215;color:#f88;font-size:15px;';
-  b.onclick = () => { b.textContent = '正在取消…'; b.disabled = true; onCancel(); };
-  document.body.appendChild(b);
-  return { remove: () => b.remove() };
-}
 
 $('btnScan').addEventListener('click', async () => {
   if (!(await ensureConnected())) return;

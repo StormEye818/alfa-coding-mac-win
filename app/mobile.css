@@ -579,3 +579,129 @@ body.mobile.nav-rail footer.foot {
   body.mobile.nav-dock nav.tabs .tab .ico { width: 19px; height: 19px; }
   body.mobile.nav-dock nav.tabs .tab { gap: 1px; }
 }
+
+/* =====================================================================
+   P3：展开态（≥1024 + rail）启用平板/桌面级版式
+   —— 只改版式，不动交互；窄屏仍是单列
+   ===================================================================== */
+@media (min-width: 1024px) {
+  /* 模块诊断：左模块列表 + 右故障码详情 */
+  body.mobile.nav-rail .split {
+    display: grid;
+    grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+  }
+  body.mobile.nav-rail .pane-list { position: sticky; top: calc(var(--header-h) + 12px); }
+
+  /* 故障码列表两列（每条是独立卡片） */
+  body.mobile.nav-rail #dtcList,
+  body.mobile.nav-rail #dtcSnap {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 9px;
+  }
+
+  /* 对齐页：两组总线并排 */
+  body.mobile.nav-rail #alignGroups {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    align-items: start;
+  }
+
+  /* 实时数据：参数两列 */
+  body.mobile.nav-rail #liveParams {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+    align-items: stretch;
+  }
+
+  /* 特殊功能：两列卡片（命令串长的会自动换行）。
+     stretch 让同一行的卡片等高，底边齐平，不会参差 */
+  body.mobile.nav-rail #funcList {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+    align-items: stretch;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* 展开态：面板头恢复「标题在左、操作在右」的桌面排布，控件不再整行拉伸 */
+  body.mobile.nav-rail .panel-head {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  body.mobile.nav-rail .panel-head .actions {
+    width: auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  body.mobile.nav-rail .panel-head .actions select {
+    flex: 0 1 auto;
+    max-width: 230px;
+    width: auto;
+  }
+  body.mobile.nav-rail .panel-head .actions .search {
+    flex: 1 1 220px;
+    max-width: 320px;
+  }
+  body.mobile.nav-rail .panel-head .actions button {
+    flex: 0 0 auto;
+    min-width: 0;
+    padding: 9px 14px;
+  }
+
+  /* 统计条：按卡片数自适应铺满一行（对齐页 7 张、实时页 3 张、特殊页 4 张都能对齐） */
+  body.mobile.nav-rail .align-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+    gap: 8px;
+  }
+  body.mobile.nav-rail #tab-align .align-summary {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+  /* 7 列时「已隐藏其它平台专属」这类小字会撑高卡片，展开态直接省掉 */
+  body.mobile.nav-rail #tab-align .align-summary .stat .tiny { display: none; }
+  body.mobile.nav-rail .align-summary .stat { min-width: 0; padding: 9px 6px; }
+  body.mobile.nav-rail .align-summary .stat b { font-size: 19px; }
+  body.mobile.nav-rail .align-summary .stat span { font-size: 10.5px; }
+
+  /* 诊断页左侧模块行：一行放下，长文本省略，不再挤成四行 */
+  body.mobile.nav-rail .pane-list .mrow { gap: 10px; padding: 10px 12px; }
+  body.mobile.nav-rail .pane-list .mrow .grow { min-width: 0; }
+  body.mobile.nav-rail .pane-list .mrow .name,
+  body.mobile.nav-rail .pane-list .mrow .sub {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  body.mobile.nav-rail .pane-list .mrow > button {
+    min-width: 62px;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* 双列时节点卡改成两行：名称 + 地址在左，状态贴右，高度砍掉一半 */
+  body.mobile.nav-rail #alignGroups .node {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "nm st" "ad st";
+    gap: 2px 10px;
+    align-items: center;
+    padding: 9px 12px 9px 34px;
+  }
+  body.mobile.nav-rail #alignGroups .node .nm { grid-area: nm; margin-bottom: 0; }
+  body.mobile.nav-rail #alignGroups .node .ad { grid-area: ad; }
+  body.mobile.nav-rail #alignGroups .node .st {
+    grid-area: st;
+    margin-top: 0;
+    justify-content: flex-end;
+    text-align: right;
+  }
+}

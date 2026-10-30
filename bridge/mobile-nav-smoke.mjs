@@ -88,6 +88,15 @@ for (const c of CASES) {
         check('悬浮条让开侧栏', !g.float || g.float.r <= g.nav.l, g.float ? `float.r=${g.float.r} nav.l=${g.nav.l}` : '未显示');
         check('状态条不与侧栏相交', !g.stage || g.stage.r <= g.nav.l, g.stage ? `stage.r=${g.stage.r} nav.l=${g.nav.l}` : '未显示');
     }
+    // 三个「展开态会变形」的页面：不允许出现横向滚动条
+    for (const tab of ['diag', 'align', 'funcs', 'live']) {
+        const of = await page.evaluate((t) => {
+            document.querySelector(`.tab[data-tab="${t}"]`).click();
+            const d = document.documentElement;
+            return { sw: d.scrollWidth, cw: d.clientWidth };
+        }, tab);
+        check(`「${tab}」页无横向溢出`, of.sw <= of.cw + 1, `scrollWidth=${of.sw} clientWidth=${of.cw}`);
+    }
     check('无页面 JS 异常', errs.length === 0, errs.slice(0, 2).join(' / '));
 
     await page.screenshot({ path: `/tmp/nav-${c.mode}-${c.w}.png` });

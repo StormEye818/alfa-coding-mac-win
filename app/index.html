@@ -333,19 +333,25 @@
         <button id="btnSample" class="ghost" title="导出 DATA1/2/3 三块原始数据（SGW 对齐映射破解用样本）">导出 PROXI 采数</button>
       </div>
     </div>
-    <div id="moduleList" class="module-list"></div>
-    <div class="sec-head" style="margin-top:26px">
-      <h3>故障码（DTC）</h3>
-      <p class="dim">选择模块后读取故障码，支持清除。故障名称与说明来自诊断数据源（952/949 共 3812 条）。</p>
+    <div class="split">
+      <div class="pane pane-list">
+        <div id="moduleList" class="module-list"></div>
+      </div>
+      <div class="pane pane-detail">
+        <div class="sec-head" style="margin-top:0">
+          <h3>故障码（DTC）</h3>
+          <p class="dim">选择模块后读取故障码，支持清除。故障名称与说明来自诊断数据源（952/949 共 3812 条）。</p>
+        </div>
+        <div class="actions" style="margin-bottom:14px">
+          <select id="dtcModule"><option value="">选择模块</option></select>
+          <button id="btnReadDtc" class="primary">读取故障码</button>
+          <button id="btnDtcSnap" class="ghost" title="读 ECU 保存的冻结帧快照（19 04，与车端已验证行为同一条命令：19 04 00 00 00 00）">冻结帧快照</button>
+          <button id="btnClearDtc" class="ghost">清除故障码</button>
+        </div>
+        <div id="dtcList" class="module-list"></div>
+        <div id="dtcSnap" class="module-list" style="margin-top:12px"></div>
+      </div>
     </div>
-    <div class="actions" style="margin-bottom:14px">
-      <select id="dtcModule"><option value="">选择模块</option></select>
-      <button id="btnReadDtc" class="primary">读取故障码</button>
-      <button id="btnDtcSnap" class="ghost" title="读 ECU 保存的冻结帧快照（19 04，与车端已验证行为同一条命令：19 04 00 00 00 00）">冻结帧快照</button>
-      <button id="btnClearDtc" class="ghost">清除故障码</button>
-    </div>
-    <div id="dtcList" class="module-list"></div>
-    <div id="dtcSnap" class="module-list" style="margin-top:12px"></div>
   </section>
 
   <!-- ============ 待验证（开发用，?dev=1 显示） ============ -->

@@ -67,6 +67,11 @@ for (const c of CASES) {
                 const r = m.getBoundingClientRect();
                 return Math.round(r.right - parseFloat(getComputedStyle(m).paddingRight));
             })(),
+            mainContentLeft: (() => {
+                const m = document.querySelector('main');
+                const r = m.getBoundingClientRect();
+                return Math.round(r.left + parseFloat(getComputedStyle(m).paddingLeft));
+            })(),
             float: bar && !bar.classList.contains('hidden') ? rect(bar) : null,
             stage: stage && !stage.classList.contains('hidden') ? rect(stage) : null,
         };
@@ -89,7 +94,12 @@ for (const c of CASES) {
             Math.abs(g.nav.t - (g.header.b + 8)) <= 2, `nav.t=${g.nav.t} header.b=${g.header.b}`);
         check('侧栏顶在状态栏下沿之外', g.nav.t >= s.t + 8, `nav.t=${g.nav.t} safeT=${s.t}`);
         check('侧栏宽 88', g.nav.w === 88, `w=${g.nav.w}`);
-        check('侧栏在 header 右侧之外', g.header.r <= g.nav.l, `header.r=${g.header.r} nav.l=${g.nav.l}`);
+        // 顶栏现在是整条铺满的：之前用 margin-right 给侧栏让位，右侧会断出一道竖缝
+        check('顶栏铺满整屏（右侧无断口）', Math.abs(g.header.r - g.vw) <= 1,
+            `header.r=${g.header.r} vw=${g.vw}`);
+        check('内容列在可用区内左右留白对称',
+            Math.abs((g.mainContentLeft) - (g.nav.l - g.mainContentRight)) <= 2,
+            `左=${g.mainContentLeft} 右=${g.nav.l - g.mainContentRight}`);
         check('内容不钻进侧栏', g.mainContentRight <= g.nav.l, `contentRight=${g.mainContentRight} nav.l=${g.nav.l}`);
         check('悬浮条让开侧栏', !g.float || g.float.r <= g.nav.l, g.float ? `float.r=${g.float.r} nav.l=${g.nav.l}` : '未显示');
         check('状态条不与侧栏相交', !g.stage || g.stage.r <= g.nav.l, g.stage ? `stage.r=${g.stage.r} nav.l=${g.nav.l}` : '未显示');
@@ -98,7 +108,11 @@ for (const c of CASES) {
         const hip = await page.evaluate(() => {
             document.querySelector('.tab[data-tab="diag"]').click();
             const h = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hinge-w')) || 0;
-            const mid = window.innerWidth / 2;
+            const m = document.querySelector('main');
+            const mr = m.getBoundingClientRect();
+            const padL = parseFloat(getComputedStyle(m).paddingLeft);
+            const padR = parseFloat(getComputedStyle(m).paddingRight);
+            const mid = (mr.left + padL + mr.right - padR) / 2;   // 以内容列为基准
             const h0 = mid - h / 2, h1 = mid + h / 2;
             const left = document.querySelector('.split .pane-list').getBoundingClientRect();
             const right = document.querySelector('.split .pane-detail').getBoundingClientRect();

@@ -464,7 +464,15 @@ body.mobile.nav-dock.has-float-write main {
 }
 
 /* ---- 形态 2：右侧 Rail（duo 展开 / iPad） ---- */
-body.mobile.nav-rail { --stack-bottom: calc(var(--safe-b) + 18px); }
+body.mobile.nav-rail {
+  --stack-bottom: calc(var(--safe-b) + 18px);
+  /* 内容列几何：先把「侧栏以外的可用宽度」算出来（含刘海/手势区），
+     再让内容列在其中居中 —— 这样左右留白对称，不会往侧栏那边挤。 */
+  --rail-gutter: calc(var(--rail-w) + var(--safe-r) + 10px);
+  --free-w: calc(100vw - var(--safe-l) - var(--rail-gutter));
+  --col-w: min(calc(var(--content-max) + 44px), var(--free-w));
+  --col-x: calc((var(--free-w) - var(--col-w)) / 2);
+}
 body.mobile.nav-rail nav.tabs {
   right: calc(var(--safe-r) + 10px);
   /* 从顶栏下方开始：顶栏已经让出了状态栏/刘海，Rail 再往下 8px，
@@ -485,25 +493,32 @@ body.mobile.nav-rail nav.tabs .tab {
   height: 64px;
 }
 body.mobile.nav-rail header.top {
-  margin-right: calc(var(--rail-w) + var(--safe-r) + 18px);   /* 与内容列右缘对齐；Rail 在它下方 */
+  /* 顶栏必须整条铺满：之前用 margin-right 给侧栏让位，结果玻璃底纹在右侧
+     断在屏幕中间，留下一道竖缝（实机截图可见）。侧栏在顶栏下方，不需要让位。
+     这里改为整条铺满 + 左右内边距对齐内容列。 */
+  margin-right: 0;
+  padding-left: calc(var(--col-x) + 22px);
+  padding-right: calc(var(--rail-gutter) + var(--col-x) - 22px);
 }
 body.mobile.nav-rail main {
-  /* 居中在「屏宽 − 两侧到侧栏的最小间距」以内：窄屏（iPad 820）不会被侧栏压住，
-     宽屏（Duo 1080）仍是 720 的内容宽 */
-  max-width: min(
-    calc(var(--content-max) + 44px),
-    calc(100vw - 2 * (var(--rail-w) + var(--safe-r) + 18px))
-  );
+  /* 宽度固定为 max(内容宽, 可用宽)，左边距吃掉剩余空白 —— 于是内容列
+     在「侧栏左边那块区域」里居中，而不是在整屏居中（整屏居中会贴着侧栏）。 */
+  width: var(--col-w);
+  max-width: none;
+  margin-left: var(--col-x);
+  margin-right: 0;
   padding-bottom: calc(var(--safe-b) + 28px);
-  margin: 0 auto;
 }
 body.mobile.nav-rail #floatWriteBar {
-  right: calc(var(--rail-w) + var(--safe-r) + 18px);
+  left: calc(var(--col-x) + 10px);
+  right: auto;
+  width: calc(var(--col-w) - 20px);
   bottom: calc(var(--safe-b) + 18px);
-  left: calc(var(--safe-l) + 16px);
 }
 body.mobile.nav-rail .stage-bar {
-  transform: translateX(calc(-50% - (var(--rail-w) + var(--safe-r)) / 2));
+  left: calc(var(--col-x) + var(--col-w) / 2);
+  transform: translateX(-50%);
+  max-width: calc(var(--col-w) - 32px);
 }
 body.mobile.nav-rail .apx-toast {
   right: calc(var(--rail-w) + var(--safe-r) + 10px);
@@ -566,7 +581,10 @@ body.mobile.nav-rail #simBanner,
 body.mobile.nav-rail .veh-bar,
 body.mobile.nav-rail .todo-bar,
 body.mobile.nav-rail footer.foot {
-  margin-right: calc(var(--rail-w) + var(--safe-r) + 18px);
+  /* 与内容列同宽同左：这些是整幅区块，同样不能让玻璃底纹断在半路 */
+  width: var(--col-w);
+  margin-left: var(--col-x);
+  margin-right: 0;
 }
 
 /* ---- 矮视口（手机横屏 393 高）：收紧头部，别把内容挤没 ---- */
@@ -721,70 +739,32 @@ body.mobile.nav-rail footer.foot {
 body.mobile.nav-rail.hinge-2 .split > .pane { min-width: 0; }
 
 @media (min-width: 700px) {
-  /* 主区不再整体居中，改由各页面按屏分配；右侧给 Rail 留出空间，内容不钻到它下面 */
-  body.mobile.nav-rail.hinge-2 main {
-    max-width: none;
-    margin: 0;
-    padding-right: calc(var(--rail-w) + 30px);
-  }
+  /* 双屏版式一律以「内容列」为基准，不再用 100vw 推算 ——
+     内容列本身已经避开侧栏，再用 100vw 会和居中布局打架。 */
 
-  /* 表单型页面（配置项 / 字节编辑器）：整块放左屏，别被中缝切开。
-     50% - 中缝/2 = 主内容区（已含 22px 内边距）里的单屏宽度，正好贴住中缝 */
+  /* 表单型页面（配置项 / 字节编辑器）：整块放左屏，别被中缝切开 */
   body.mobile.nav-rail.hinge-2 #tab-features,
   body.mobile.nav-rail.hinge-2 #tab-editor {
-    max-width: calc((100vw - 44px - var(--hinge-w)) / 2);
+    max-width: calc((100% - var(--hinge-w)) / 2);
   }
 
-  /* 列表型页面：两列 = 两块屏，中间那道 gap 就是中缝（1fr 1fr 自动对齐） */
+  /* 列表型页面：两列 = 两块屏，中间那道 gap 就是中缝 */
   body.mobile.nav-rail.hinge-2 #alignGroups,
   body.mobile.nav-rail.hinge-2 #funcList,
   body.mobile.nav-rail.hinge-2 #liveParams,
   body.mobile.nav-rail.hinge-2 .split {
-    /* 左列严格贴住中缝：主区左右各 22px 内边距，再减去中缝的一半；
-       右列吃掉剩下的空间（右侧还要给 Rail 让位） */
-    grid-template-columns: calc((100vw - 44px - var(--hinge-w)) / 2) minmax(0, 1fr);
+    grid-template-columns: 1fr 1fr;
     column-gap: var(--hinge-w);
   }
   body.mobile.nav-rail.hinge-2 .pane-list { position: static; }
-
-  /* 浮层/状态条：只落在左屏，不横跨中缝 */
-  body.mobile.hinge-2 #floatWriteBar {
-    left: 16px;
-    right: auto;
-    width: calc((100vw - 44px - var(--hinge-w)) / 2 + 12px);
-  }
-  body.mobile.hinge-2 .stage-bar {
-    left: calc((100vw - 44px - var(--hinge-w)) / 4 + 11px);
-    transform: translateX(-50%);
-    max-width: calc((100vw - 44px - var(--hinge-w)) / 2 - 12px);
-  }
-  body.mobile.hinge-2 .apx-toast {
-    right: auto;
-    width: calc((100vw - 44px - var(--hinge-w)) / 2 - 12px);
-  }
 }
 
 @media (min-width: 700px) {
   /* 双屏时：顶部工具区只放左屏，列表本体再按屏分列，避免按钮/搜索框横跨中缝 */
-  body.mobile.nav-rail.hinge-2 #tab-align .panel-head,
-  body.mobile.nav-rail.hinge-2 #tab-align .align-summary,
-  body.mobile.nav-rail.hinge-2 #tab-align .warn-box,
-  body.mobile.nav-rail.hinge-2 #tab-align .verdict,
-  body.mobile.nav-rail.hinge-2 #tab-align .legend-bar,
-  body.mobile.nav-rail.hinge-2 #tab-funcs .panel-head,
-  body.mobile.nav-rail.hinge-2 #tab-funcs .warn-box,
-  body.mobile.nav-rail.hinge-2 #tab-funcs .align-summary,
-  body.mobile.nav-rail.hinge-2 #tab-funcs .legend-bar,
-  body.mobile.nav-rail.hinge-2 #tab-live .panel-head,
-  body.mobile.nav-rail.hinge-2 #tab-live .align-summary,
-  body.mobile.nav-rail.hinge-2 #tab-live .legend-bar {
-    max-width: calc((100vw - 44px - var(--hinge-w)) / 2);
-  }
-
   /* 诊断页头：标题占左屏、操作占右屏，搜索框不再横跨中缝 */
   body.mobile.nav-rail.hinge-2 #tab-diag .panel-head {
     display: grid;
-    grid-template-columns: calc((100vw - 44px - var(--hinge-w)) / 2) minmax(0, 1fr);
+    grid-template-columns: 1fr 1fr;
     column-gap: var(--hinge-w);
     align-items: end;
   }
@@ -796,7 +776,7 @@ body.mobile.nav-rail.hinge-2 .split > .pane { min-width: 0; }
   /* 双屏：左屏=控制区，右屏=结果区（对齐 / 实时 / 特殊） */
   body.mobile.nav-rail.hinge-2 .hinge-split {
     display: grid;
-    grid-template-columns: calc((100vw - 44px - var(--hinge-w)) / 2) minmax(0, 1fr);
+    grid-template-columns: 1fr 1fr;
     column-gap: var(--hinge-w);
     align-items: start;
   }
@@ -824,4 +804,131 @@ body.mobile.nav-rail.hinge-2 .split > .pane { min-width: 0; }
     font-size: 11px;
   }
   body.mobile.nav-rail.hinge-2 .hinge-split .main-col .group > header .toggle-absent { order: 4; margin-left: 0; }
+}
+
+/* =====================================================================
+   Liquid Glass 动态层（app/glass.js 驱动）
+   —— 对应系统里的 glassEffect(.interactive()) / GlassEffectContainer /
+      glassEffectID + matchedGeometry / .materialize。
+   只有 JS 挂上 .glass-live 后才接管；无 JS 时旧的 .tab.active 样式照常。
+   ===================================================================== */
+
+body.mobile nav.tabs { isolation: isolate; }
+body.mobile nav.tabs .tab { position: relative; z-index: 1; }
+
+/* 单一选取胶囊：位置/尺寸由 JS 弹簧驱动，这里是材质 */
+body.mobile nav.tabs .glass-pill {
+  position: absolute;
+  left: 0; top: 0;
+  width: 0; height: 0;
+  z-index: 0;
+  border-radius: 19px;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    linear-gradient(180deg,
+      rgba(96, 168, 255, .34),
+      rgba(66, 140, 250, .20) 58%,
+      rgba(45, 110, 220, .14));
+  border: 1px solid rgba(146, 202, 255, .46);
+  box-shadow:
+    0 10px 26px rgba(26, 100, 210, .34),
+    0 2px 6px rgba(0, 0, 0, .24),
+    inset 0 1px 0 rgba(255, 255, 255, .52),
+    inset 0 -10px 18px rgba(8, 28, 58, .34);
+  will-change: transform, width, height;
+  transition: opacity .28s ease;
+}
+
+/* 顶部弧光：玻璃上缘那道折射亮线 */
+body.mobile nav.tabs .glass-pill::after {
+  content: "";
+  position: absolute;
+  left: 10%; right: 10%; top: 2px;
+  height: 46%;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .34), rgba(255, 255, 255, 0));
+  opacity: .9;
+  pointer-events: none;
+}
+
+/* 指针高光：按下时跟着手指走，模拟玻璃对光的实时响应 */
+body.mobile nav.tabs .glass-pill::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: radial-gradient(circle 70px at var(--px, 50%) var(--py, 50%),
+    rgba(255, 255, 255, .55), rgba(255, 255, 255, .10) 55%, transparent 72%);
+  opacity: var(--spec, 0);
+  transition: opacity .18s ease;
+  pointer-events: none;
+}
+
+/* 有胶囊的时候，旧的下划线/底色让位（文字颜色保留，压得住胶囊） */
+body.mobile.glass-live nav.tabs .tab.active {
+  background: none;
+  border-color: transparent;
+  box-shadow: none;
+}
+body.mobile.glass-live nav.tabs .tab.active::after { display: none; }
+
+/* 按下：控件本身缩一下（interactive 的 scale 反馈），松手弹回 */
+body.mobile nav.tabs .tab {
+  transition:
+    transform .34s cubic-bezier(.34, 1.56, .64, 1),
+    color .18s ease;
+}
+body.mobile nav.tabs .tab.pressing { transform: scale(.92); }
+body.mobile nav.tabs .tab.pressing .ico { transform: scale(.94); }
+body.mobile nav.tabs .tab .ico { transition: transform .34s cubic-bezier(.34, 1.56, .64, 1); }
+
+/* 每个标签自己的按压高光（= 系统里每个控件各自一层玻璃） */
+body.mobile nav.tabs .tab::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(circle 62px at var(--gx, 50%) var(--gy, 50%),
+    rgba(255, 255, 255, .30), rgba(255, 255, 255, .07) 58%, transparent 74%);
+  opacity: var(--spec, 0);
+  transition: opacity .16s ease;
+}
+
+/* 浮动写入条：同一套指针响应（它也是浮在内容上的控制层） */
+body.mobile #floatWriteBar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(260px circle at var(--gx, 50%) var(--gy, 0%),
+    rgba(255, 255, 255, .16), transparent 70%);
+  opacity: var(--spec, 0);
+  transition: opacity .2s ease;
+}
+body.mobile #floatWriteBar { position: fixed; }
+
+/* 减弱动态 / 减弱透明 时的降级：不位移不发光，只保留可读的实色 */
+@media (prefers-reduced-motion: reduce) {
+  body.mobile nav.tabs .glass-pill,
+  body.mobile nav.tabs .tab,
+  body.mobile nav.tabs .tab .ico { transition: none !important; }
+  body.mobile nav.tabs .tab.pressing { transform: none; }
+}
+
+/* 原生适配层接管右侧导航（iOS 26 UIGlassEffect）时，网页这一条让位。
+   位置、材质、按压反馈都由原生给，网页只保留「内容要留多宽」这套几何。 */
+body.mobile.native-rail nav.tabs { display: none; }
+body.mobile.native-rail { --rail-w: 88px; }   /* 与原生侧栏同宽，内容照旧预留 */
+
+/* 状态条：文字换行时 999px 圆角会变成一颗椭圆（手机窄屏实测很难看），
+   移动端改成圆角矩形；单行时仍是胶囊观感。 */
+body.mobile .stage-bar {
+  border-radius: 18px;
+  padding: 9px 14px;
+  line-height: 1.45;
+  max-width: min(88vw, calc(var(--col-w, 88vw) - 24px));
 }

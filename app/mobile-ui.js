@@ -92,11 +92,87 @@
     new ResizeObserver(measureHeader).observe(headerEl);
   }
 
+  /* ---------- 0c) 原生玻璃侧栏（iOS 26 Liquid Glass 适配层） ----------
+     侧栏不由网页画，交给原生 UIGlassEffect（真正的系统玻璃 + 交互反馈）。
+     这里只做三件事：把标签清单交给原生、切换时同步高亮、点按后回到网页切页。
+     插件不存在（老安装包 / Android / 浏览器）时整段静默退出，网页侧栏照旧。 */
+  function initNativeRail() {
+    const cap = window.Capacitor;
+    const headers = cap && cap.PluginHeaders;
+    const has = !!(cap && typeof cap.nativePromise === 'function'
+      && Array.isArray(headers) && headers.some((h) => h.name === 'GlassRail'));
+    if (!has) return;
+
+    const SYMBOL = {
+      features: 'slider.horizontal.3',
+      editor: 'square.grid.2x2',
+      align: 'scope',
+      live: 'waveform.path.ecg',
+      funcs: 'bolt.fill',
+      diag: 'square.stack.3d.up',
+      pending: 'clock',
+    };
+    const nav = document.querySelector('nav.tabs');
+    if (!nav) return;
+
+    let shown = false;
+    const listItems = () => [].slice.call(nav.querySelectorAll('.tab'))
+      .filter((t) => !t.classList.contains('hidden'))
+      .map((t) => ({
+        id: t.dataset.tab,
+        label: ((t.querySelector('.tab-label') || t).textContent || '').trim(),
+        symbol: SYMBOL[t.dataset.tab] || 'circle',
+      }));
+    const activeId = () => {
+      const a = nav.querySelector('.tab.active');
+      return a ? a.dataset.tab : null;
+    };
+
+    function sync() {
+      const want = document.body.classList.contains('nav-rail');
+      if (want && !shown) {
+        cap.nativePromise('GlassRail', 'show', { items: listItems(), activeId: activeId() })
+          .then(() => { shown = true; document.body.classList.add('native-rail'); })
+          .catch(() => {});
+      } else if (!want && shown) {
+        cap.nativePromise('GlassRail', 'hide', {}).catch(() => {});
+        shown = false;
+        document.body.classList.remove('native-rail');
+      } else if (want && shown) {
+        cap.nativePromise('GlassRail', 'setActive', { id: activeId() }).catch(() => {});
+      }
+    }
+    window.__apxRailSync = sync;
+
+    /* 原生点按 → 点一下对应标签，复用现成的切页逻辑 */
+    window.APXRail = {
+      select(id) {
+        const t = nav.querySelector('.tab[data-tab="' + id + '"]');
+        if (t) t.click();
+      },
+    };
+
+    /* 网页自己切页（按钮/快捷键）时，把高亮同步回原生 */
+    const mo = new MutationObserver(() => {
+      if (shown) cap.nativePromise('GlassRail', 'setActive', { id: activeId() }).catch(() => {});
+    });
+    [].forEach.call(nav.querySelectorAll('.tab'), (t) => {
+      mo.observe(t, { attributes: true, attributeFilter: ['class'] });
+    });
+
+    sync();
+    setTimeout(sync, 120);
+  }
+  initNativeRail();
+
   let navTimer = 0;
   const onViewportChange = () => {
     measureHeader();
     clearTimeout(navTimer);
-    navTimer = setTimeout(applyNavMode, 120);   // 旋转/折叠时防抖，避免来回抖
+    navTimer = setTimeout(() => {
+      applyNavMode();
+      if (typeof window.__apxRailSync === 'function') window.__apxRailSync();
+    }, 120);   // 旋转/折叠时防抖，避免来回抖
   };
   window.addEventListener('resize', onViewportChange);
   window.addEventListener('orientationchange', onViewportChange);

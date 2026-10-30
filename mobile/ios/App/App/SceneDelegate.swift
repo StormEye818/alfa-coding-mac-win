@@ -30,5 +30,7 @@ class MfiBridgeViewController: CAPBridgeViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         bridge?.registerPluginType(MfiSerialPlugin.self)
+        // 原生右侧玻璃导航栏（Liquid Glass 适配层，见 GlassRailPlugin.swift）
+        bridge?.registerPluginType(GlassRailPlugin.self)
     }
 }

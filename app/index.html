@@ -205,119 +205,136 @@
 
   <!-- ============ PROXI 对齐 ============ -->
   <section id="tab-align" class="panel">
-    <div class="panel-head">
-      <div>
-        <h2>PROXI 对齐</h2>
-        <p class="dim">按总线分组逐节点写入，每个节点实时显示处理状态。</p>
+    <div class="hinge-split">
+      <div class="side">
+        <div class="panel-head">
+          <div>
+            <h2>PROXI 对齐</h2>
+            <p class="dim">按总线分组逐节点写入，每个节点实时显示处理状态。</p>
+          </div>
+          <div class="actions">
+            <button id="btnCheckAlign" class="ghost" title="进入车身电脑读 DATA1/DATA3，用配置位图 vs 实际位图比对出 已对齐/待添加/待移除（秒级，不需换线）">读取对齐状态</button>
+            <button id="btnPresenceReset" class="ghost" title="按当前配置块重新比对 DATA1/DATA3 位图（改过在场位配置、换车或增删模块后使用）；只重算状态，不写车">重算对齐状态</button>
+            <button id="btnSelAll" class="ghost">全选</button>
+            <button id="btnSelNone" class="ghost">清空</button>
+            <button id="btnSelFail" class="ghost">只选失败</button>
+            <button id="btnSelMisalign" class="ghost">只选未对齐</button>
+            <button id="btnAlignAll" class="ghost" title="与官方平台一致：一次对齐全部已安装节点">全部对齐</button>
+            <button id="btnAlign" class="primary">对齐所选节点</button>
+          </div>
+        </div>
+    
+        <div class="align-summary">
+          <div class="stat"><b id="stTotal">0</b><span>节点</span><span class="tiny">已隐藏其它平台专属</span></div>
+          <div class="stat"><b id="stPresent">0</b><span>已安装</span></div>
+          <div class="stat ok clickable" id="stAlignedBox" title="点击只勾选已对齐节点"><b id="stAligned">0</b><span>已对齐</span></div>
+          <div class="stat err clickable" id="stMisalignedBox" title="点击只勾选需要对齐的节点并定位（待添加；待移除节点不可写）"><b id="stMisaligned">0</b><span>需对齐</span></div>
+          <div class="stat"><b id="stDone">0</b><span>本次成功</span></div>
+          <div class="stat err clickable" id="stFailBox" title="点击只勾选本次失败节点并定位"><b id="stFail">0</b><span>本次失败</span></div>
+          <div class="stat"><b id="stPending">0</b><span>待处理</span></div>
+        </div>
+        <div id="alignVerdict" class="verdict hidden"></div>
+        <div class="warn-box">
+          <strong>关于对齐方式（依据诊断协议实现核实）</strong>
+          <ul>
+            <li><b>写入是逐节点独立的</b>：同一份完整配置块（<code>2E 20 23 &lt;DATA1&gt;</code>）逐个发给各节点，每节点独立连接、独立重试、独立校验，<b>无全局提交步骤</b>。因此「只补写失败节点」与「全量重跑」对这些节点的效果等价。</li>
+            <li><b>对齐状态以车身电脑 <code>DATA1 / DATA3</code> 位图比对为准</b>：<code>DATA1[25..40]</code> 是 PROXI 配置位图（应该有哪些节点），<code>DATA3[32..47]</code> 是 CAN 实际位图（车上实际有哪些节点）。只在配置里 = 待移除；只在实际里 = 待添加；两者都有 = 已对齐；EOL 位另判。</li>
+            <li><b>只有「实际位图」置位的节点才能勾选/写入</b>：待移除（配置里有、车上没有）与未安装节点的复选框是禁用的，写入前还会按位图再核一遍。「全部对齐」= 一次写全部在位节点，与车端全量口径一致。</li>
+            <li><b>车端全量写入按 EOL 期望位图取节点</b>（<code>DATA3[48..63]</code>，位为 0 直接跳过）。该位图在部分车上可能全 0（等于不过滤）；若某节点实际在位、EOL 位却没置位（多见于后加装件），写入前会单独弹窗确认，避免与官方口径悄悄分叉。</li>
+            <li><b>位图一致 ≠ 每个模块的存储块都一致</b>：位图只反映「配置 ↔ 实际」的节点清单。换过模块（新模块里是旧块、位图却正常）时里程表仍会闪 —— 这种情况执行一次「全部对齐」即可重写全部在位节点，写入结果会逐节点回读。</li>
+            <li><b><code>22 10 2A</code> 只用于单节点写入后的回读校验</b>，不作为整车状态来源。实车部分模块不应答该 DID，读不到不代表未对齐。</li>
+            <li><b>兜底</b>：若补写后里程表仍闪烁，请执行一次「全部对齐」（与官方平台一致，一次完成所有已安装节点）。</li>
+            <li>⚠ 对齐会复位 ABS（Giulia / Stelvio），完成后需做转向角、加速度、胎压标定。</li>
+            <li>⚠ 一旦开始不要中断。钥匙 ON、发动机 OFF；完成后按提示将钥匙 OFF 至少 60 秒再上电。</li>
+          </ul>
+        </div>
       </div>
-      <div class="actions">
-        <button id="btnCheckAlign" class="ghost" title="进入车身电脑读 DATA1/DATA3，用配置位图 vs 实际位图比对出 已对齐/待添加/待移除（秒级，不需换线）">读取对齐状态</button>
-        <button id="btnPresenceReset" class="ghost" title="按当前配置块重新比对 DATA1/DATA3 位图（改过在场位配置、换车或增删模块后使用）；只重算状态，不写车">重算对齐状态</button>
-        <button id="btnSelAll" class="ghost">全选</button>
-        <button id="btnSelNone" class="ghost">清空</button>
-        <button id="btnSelFail" class="ghost">只选失败</button>
-        <button id="btnSelMisalign" class="ghost">只选未对齐</button>
-        <button id="btnAlignAll" class="ghost" title="与官方平台一致：一次对齐全部已安装节点">全部对齐</button>
-        <button id="btnAlign" class="primary">对齐所选节点</button>
+      <div class="main-col">
+        <div id="alignGroups"></div>
       </div>
     </div>
-
-    <div class="align-summary">
-      <div class="stat"><b id="stTotal">0</b><span>节点</span><span class="tiny">已隐藏其它平台专属</span></div>
-      <div class="stat"><b id="stPresent">0</b><span>已安装</span></div>
-      <div class="stat ok clickable" id="stAlignedBox" title="点击只勾选已对齐节点"><b id="stAligned">0</b><span>已对齐</span></div>
-      <div class="stat err clickable" id="stMisalignedBox" title="点击只勾选需要对齐的节点并定位（待添加；待移除节点不可写）"><b id="stMisaligned">0</b><span>需对齐</span></div>
-      <div class="stat"><b id="stDone">0</b><span>本次成功</span></div>
-      <div class="stat err clickable" id="stFailBox" title="点击只勾选本次失败节点并定位"><b id="stFail">0</b><span>本次失败</span></div>
-      <div class="stat"><b id="stPending">0</b><span>待处理</span></div>
-    </div>
-    <div id="alignVerdict" class="verdict hidden"></div>
-    <div class="warn-box">
-      <strong>关于对齐方式（依据诊断协议实现核实）</strong>
-      <ul>
-        <li><b>写入是逐节点独立的</b>：同一份完整配置块（<code>2E 20 23 &lt;DATA1&gt;</code>）逐个发给各节点，每节点独立连接、独立重试、独立校验，<b>无全局提交步骤</b>。因此「只补写失败节点」与「全量重跑」对这些节点的效果等价。</li>
-        <li><b>对齐状态以车身电脑 <code>DATA1 / DATA3</code> 位图比对为准</b>：<code>DATA1[25..40]</code> 是 PROXI 配置位图（应该有哪些节点），<code>DATA3[32..47]</code> 是 CAN 实际位图（车上实际有哪些节点）。只在配置里 = 待移除；只在实际里 = 待添加；两者都有 = 已对齐；EOL 位另判。</li>
-        <li><b>只有「实际位图」置位的节点才能勾选/写入</b>：待移除（配置里有、车上没有）与未安装节点的复选框是禁用的，写入前还会按位图再核一遍。「全部对齐」= 一次写全部在位节点，与车端全量口径一致。</li>
-        <li><b>车端全量写入按 EOL 期望位图取节点</b>（<code>DATA3[48..63]</code>，位为 0 直接跳过）。该位图在部分车上可能全 0（等于不过滤）；若某节点实际在位、EOL 位却没置位（多见于后加装件），写入前会单独弹窗确认，避免与官方口径悄悄分叉。</li>
-        <li><b>位图一致 ≠ 每个模块的存储块都一致</b>：位图只反映「配置 ↔ 实际」的节点清单。换过模块（新模块里是旧块、位图却正常）时里程表仍会闪 —— 这种情况执行一次「全部对齐」即可重写全部在位节点，写入结果会逐节点回读。</li>
-        <li><b><code>22 10 2A</code> 只用于单节点写入后的回读校验</b>，不作为整车状态来源。实车部分模块不应答该 DID，读不到不代表未对齐。</li>
-        <li><b>兜底</b>：若补写后里程表仍闪烁，请执行一次「全部对齐」（与官方平台一致，一次完成所有已安装节点）。</li>
-        <li>⚠ 对齐会复位 ABS（Giulia / Stelvio），完成后需做转向角、加速度、胎压标定。</li>
-        <li>⚠ 一旦开始不要中断。钥匙 ON、发动机 OFF；完成后按提示将钥匙 OFF 至少 60 秒再上电。</li>
-      </ul>
-    </div>
-
-    <div id="alignGroups"></div>
   </section>
 
   <!-- ============ 实时数据 ============ -->
   <section id="tab-live" class="panel">
-    <div class="panel-head">
-      <div>
-        <h2>实时数据</h2>
-        <p class="dim">选择模块与参数，持续读取并显示。可导出 CSV。</p>
+    <div class="hinge-split">
+      <div class="side">
+        <div class="panel-head">
+          <div>
+            <h2>实时数据</h2>
+            <p class="dim">选择模块与参数，持续读取并显示。可导出 CSV。</p>
+          </div>
+          <div class="actions">
+            <select id="liveModule"><option value="">选择模块</option></select>
+            <input id="liveSearch" placeholder="搜索参数 / DID" spellcheck="false" style="max-width:190px">
+            <button id="btnLiveEnter" class="primary">进入模块</button>
+            <button id="btnLiveExit" class="ghost hidden">退出模块</button>
+            <button id="btnLiveCsv" class="ghost">导出 CSV</button>
+          </div>
+        </div>
+        <div class="align-summary">
+          <div class="stat"><b id="liveCount">0</b><span>参数</span></div>
+          <div class="stat ok"><b id="liveRate">0</b><span>轮询次/分</span></div>
+          <div class="stat"><b id="liveSamples">0</b><span>采样点</span></div>
+        </div>
+        <div class="legend-bar">
+          <span class="lg-item dim">先「进入模块」（确认后连入），再勾选参数即自动持续读取；换模块须先「退出模块」</span>
+        </div>
       </div>
-      <div class="actions">
-        <select id="liveModule"><option value="">选择模块</option></select>
-        <input id="liveSearch" placeholder="搜索参数 / DID" spellcheck="false" style="max-width:190px">
-        <button id="btnLiveEnter" class="primary">进入模块</button>
-        <button id="btnLiveExit" class="ghost hidden">退出模块</button>
-        <button id="btnLiveCsv" class="ghost">导出 CSV</button>
+      <div class="main-col">
+        <div id="liveParams" class="module-list"></div>
       </div>
     </div>
-    <div class="align-summary">
-      <div class="stat"><b id="liveCount">0</b><span>参数</span></div>
-      <div class="stat ok"><b id="liveRate">0</b><span>轮询次/分</span></div>
-      <div class="stat"><b id="liveSamples">0</b><span>采样点</span></div>
-    </div>
-    <div class="legend-bar">
-      <span class="lg-item dim">先「进入模块」（确认后连入），再勾选参数即自动持续读取；换模块须先「退出模块」</span>
-    </div>
-    <div id="liveParams" class="module-list"></div>
   </section>
 
   <!-- ============ 特殊功能 ============ -->
   <section id="tab-funcs" class="panel">
-    <div class="warn-box">
-      <strong>⚠ 执行器测试安全须知</strong>
-      <ul><li>执行器测试（灯光、门锁、阀体、电机等）会驱动真实执行器动作。请先按安全规范断开相关执行器并接入模拟电阻，确认周围无人及无障碍物后再执行。</li>
-      <li>制动系统排气、EPB 维修模式等操作请按维修手册规定流程进行。</li></ul>
-    </div>
-    <div class="panel-head">
-      <div>
-        <h2>特殊功能</h2>
-        <p class="dim">执行器测试、保养复位、钥匙匹配、制动系统排气等。里程表写入类功能不提供。</p>
+    <div class="hinge-split">
+      <div class="side">
+        <div class="warn-box">
+          <strong>⚠ 执行器测试安全须知</strong>
+          <ul><li>执行器测试（灯光、门锁、阀体、电机等）会驱动真实执行器动作。请先按安全规范断开相关执行器并接入模拟电阻，确认周围无人及无障碍物后再执行。</li>
+          <li>制动系统排气、EPB 维修模式等操作请按维修手册规定流程进行。</li></ul>
+        </div>
+        <div class="panel-head">
+          <div>
+            <h2>特殊功能</h2>
+            <p class="dim">执行器测试、保养复位、钥匙匹配、制动系统排气等。里程表写入类功能不提供。</p>
+          </div>
+          <div class="actions">
+            <input id="fnSearch" class="search wide" placeholder="搜索功能名称 / 模块 / 命令…">
+            <select id="fnModule">
+              <option value="">全部模块</option>
+            </select>
+            <button id="fnEnter" class="primary">进入模块</button>
+            <button id="fnExit" class="ghost hidden">退出模块</button>
+            <select id="funcCat">
+              <option value="">全部分类</option>
+            </select>
+            <select id="funcSec">
+              <option value="">全部安全等级</option>
+              <option value="none">无需安全访问</option>
+              <option value="pin">需 PIN</option>
+              <option value="server">需服务器密钥（不支持）</option>
+            </select>
+          </div>
+        </div>
+        <div class="legend-bar">
+          <span class="lg-item"><i class="sw sw-new"></i> 本工具新增（蓝色底色）</span>
+          <span class="lg-item"><i class="sw sw-src"></i> 来自诊断数据源</span>
+          <span class="lg-item dim">新增项用于补充数据源中缺失或无法直接使用的功能</span>
+        </div>
+        <div class="align-summary">
+          <div class="stat"><b id="fnTotal">0</b><span>功能</span></div>
+          <div class="stat ok"><b id="fnOffline">0</b><span>离线可用</span></div>
+          <div class="stat"><b id="fnPin">0</b><span>需 PIN</span></div>
+          <div class="stat err"><b id="fnServer">0</b><span>不支持</span></div>
+        </div>
       </div>
-      <div class="actions">
-        <input id="fnSearch" class="search wide" placeholder="搜索功能名称 / 模块 / 命令…">
-        <select id="fnModule">
-          <option value="">全部模块</option>
-        </select>
-        <button id="fnEnter" class="primary">进入模块</button>
-        <button id="fnExit" class="ghost hidden">退出模块</button>
-        <select id="funcCat">
-          <option value="">全部分类</option>
-        </select>
-        <select id="funcSec">
-          <option value="">全部安全等级</option>
-          <option value="none">无需安全访问</option>
-          <option value="pin">需 PIN</option>
-          <option value="server">需服务器密钥（不支持）</option>
-        </select>
+      <div class="main-col">
+        <div id="funcList" class="module-list"></div>
       </div>
     </div>
-    <div class="legend-bar">
-      <span class="lg-item"><i class="sw sw-new"></i> 本工具新增（蓝色底色）</span>
-      <span class="lg-item"><i class="sw sw-src"></i> 来自诊断数据源</span>
-      <span class="lg-item dim">新增项用于补充数据源中缺失或无法直接使用的功能</span>
-    </div>
-    <div class="align-summary">
-      <div class="stat"><b id="fnTotal">0</b><span>功能</span></div>
-      <div class="stat ok"><b id="fnOffline">0</b><span>离线可用</span></div>
-      <div class="stat"><b id="fnPin">0</b><span>需 PIN</span></div>
-      <div class="stat err"><b id="fnServer">0</b><span>不支持</span></div>
-    </div>
-    <div id="funcList" class="module-list"></div>
   </section>
 
   <!-- ============ 模块诊断 ============ -->

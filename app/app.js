@@ -3199,7 +3199,11 @@ function renderLive(items) {
 function renderLiveParams() {
   const code = $('liveModule').value;
   const wrap = $('liveParams');
-  if (!code) { wrap.innerHTML = ''; return; }
+  if (!code) {
+    // 展开态（双屏）时这块在右屏，给一句引导比空白好
+    wrap.innerHTML = '<div class="dim" style="padding:16px">选择模块并「进入模块」后，参数会显示在这里</div>';
+    return;
+  }
   // 进入模块并连接成功后才显示参数列表——避免未连接就勾选、漏掉连接步骤
   if (!modSess.code || modSess.code !== code) {
     state.liveItems = [];

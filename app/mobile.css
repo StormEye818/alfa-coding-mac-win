@@ -705,3 +705,123 @@ body.mobile.nav-rail footer.foot {
     text-align: right;
   }
 }
+
+/* =====================================================================
+   P4：双屏铰链（Duo 展开）。命中条件由 mobile-ui.js 加 body.hinge-2：
+     · 真机：@media (horizontal-viewport-segments: 2) + env(viewport-segment-*)
+     · 调试：?hinge=34 直接写死 --seg-w / --hinge-w
+   规则：一屏一列，任何卡片/按钮都不跨中缝。
+   ===================================================================== */
+/* 默认值放在 :root —— 这样 ?hinge= 写在内联 style 上的值能盖住它；
+   如果放在 body.hinge-2 里，会把内联值遮掉，调试参数就失效了 */
+:root {
+  --seg-w: env(viewport-segment-width 0 0, 480px);
+  --hinge-w: calc(env(viewport-segment-left 0 1, 0px) - env(viewport-segment-right 0 0, 0px));
+}
+body.mobile.nav-rail.hinge-2 .split > .pane { min-width: 0; }
+
+@media (min-width: 700px) {
+  /* 主区不再整体居中，改由各页面按屏分配；右侧给 Rail 留出空间，内容不钻到它下面 */
+  body.mobile.nav-rail.hinge-2 main {
+    max-width: none;
+    margin: 0;
+    padding-right: calc(var(--rail-w) + 30px);
+  }
+
+  /* 表单型页面（配置项 / 字节编辑器）：整块放左屏，别被中缝切开。
+     50% - 中缝/2 = 主内容区（已含 22px 内边距）里的单屏宽度，正好贴住中缝 */
+  body.mobile.nav-rail.hinge-2 #tab-features,
+  body.mobile.nav-rail.hinge-2 #tab-editor {
+    max-width: calc((100vw - 44px - var(--hinge-w)) / 2);
+  }
+
+  /* 列表型页面：两列 = 两块屏，中间那道 gap 就是中缝（1fr 1fr 自动对齐） */
+  body.mobile.nav-rail.hinge-2 #alignGroups,
+  body.mobile.nav-rail.hinge-2 #funcList,
+  body.mobile.nav-rail.hinge-2 #liveParams,
+  body.mobile.nav-rail.hinge-2 .split {
+    /* 左列严格贴住中缝：主区左右各 22px 内边距，再减去中缝的一半；
+       右列吃掉剩下的空间（右侧还要给 Rail 让位） */
+    grid-template-columns: calc((100vw - 44px - var(--hinge-w)) / 2) minmax(0, 1fr);
+    column-gap: var(--hinge-w);
+  }
+  body.mobile.nav-rail.hinge-2 .pane-list { position: static; }
+
+  /* 浮层/状态条：只落在左屏，不横跨中缝 */
+  body.mobile.hinge-2 #floatWriteBar {
+    left: 16px;
+    right: auto;
+    width: calc((100vw - 44px - var(--hinge-w)) / 2 + 12px);
+  }
+  body.mobile.hinge-2 .stage-bar {
+    left: calc((100vw - 44px - var(--hinge-w)) / 4 + 11px);
+    transform: translateX(-50%);
+    max-width: calc((100vw - 44px - var(--hinge-w)) / 2 - 12px);
+  }
+  body.mobile.hinge-2 .apx-toast {
+    right: auto;
+    width: calc((100vw - 44px - var(--hinge-w)) / 2 - 12px);
+  }
+}
+
+@media (min-width: 700px) {
+  /* 双屏时：顶部工具区只放左屏，列表本体再按屏分列，避免按钮/搜索框横跨中缝 */
+  body.mobile.nav-rail.hinge-2 #tab-align .panel-head,
+  body.mobile.nav-rail.hinge-2 #tab-align .align-summary,
+  body.mobile.nav-rail.hinge-2 #tab-align .warn-box,
+  body.mobile.nav-rail.hinge-2 #tab-align .verdict,
+  body.mobile.nav-rail.hinge-2 #tab-align .legend-bar,
+  body.mobile.nav-rail.hinge-2 #tab-funcs .panel-head,
+  body.mobile.nav-rail.hinge-2 #tab-funcs .warn-box,
+  body.mobile.nav-rail.hinge-2 #tab-funcs .align-summary,
+  body.mobile.nav-rail.hinge-2 #tab-funcs .legend-bar,
+  body.mobile.nav-rail.hinge-2 #tab-live .panel-head,
+  body.mobile.nav-rail.hinge-2 #tab-live .align-summary,
+  body.mobile.nav-rail.hinge-2 #tab-live .legend-bar {
+    max-width: calc((100vw - 44px - var(--hinge-w)) / 2);
+  }
+
+  /* 诊断页头：标题占左屏、操作占右屏，搜索框不再横跨中缝 */
+  body.mobile.nav-rail.hinge-2 #tab-diag .panel-head {
+    display: grid;
+    grid-template-columns: calc((100vw - 44px - var(--hinge-w)) / 2) minmax(0, 1fr);
+    column-gap: var(--hinge-w);
+    align-items: end;
+  }
+  body.mobile.nav-rail.hinge-2 #tab-diag .panel-head > div:first-child { grid-column: 1; grid-row: 1; }
+  body.mobile.nav-rail.hinge-2 #tab-diag .panel-head .actions { grid-column: 2; grid-row: 1; justify-content: flex-start; }
+}
+
+@media (min-width: 700px) {
+  /* 双屏：左屏=控制区，右屏=结果区（对齐 / 实时 / 特殊） */
+  body.mobile.nav-rail.hinge-2 .hinge-split {
+    display: grid;
+    grid-template-columns: calc((100vw - 44px - var(--hinge-w)) / 2) minmax(0, 1fr);
+    column-gap: var(--hinge-w);
+    align-items: start;
+  }
+  body.mobile.nav-rail.hinge-2 .hinge-split > .side { grid-column: 1; min-width: 0; }
+  body.mobile.nav-rail.hinge-2 .hinge-split > .main-col { grid-column: 2; min-width: 0; }
+
+  /* 右屏只剩一列宽，列表改单列 */
+  body.mobile.nav-rail.hinge-2 .hinge-split .main-col #alignGroups,
+  body.mobile.nav-rail.hinge-2 .hinge-split .main-col #liveParams,
+  body.mobile.nav-rail.hinge-2 .hinge-split .main-col #funcList {
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: 0;
+  }
+}
+
+@media (min-width: 700px) {
+  /* 右屏窄，分组头改成两行：标题一行，参数说明一行 */
+  body.mobile.nav-rail.hinge-2 .hinge-split .main-col .group > header {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+  body.mobile.nav-rail.hinge-2 .hinge-split .main-col .group > header .meta {
+    flex: 1 1 100%;
+    order: 3;
+    font-size: 11px;
+  }
+  body.mobile.nav-rail.hinge-2 .hinge-split .main-col .group > header .toggle-absent { order: 4; margin-left: 0; }
+}

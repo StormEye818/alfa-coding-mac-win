@@ -41,6 +41,29 @@
   }
   applyNavMode();
 
+  /* ---------- 0b) 双屏铰链（Surface Duo 类展开设备） ----------
+     支持 viewport segments 的浏览器会命中 (horizontal-viewport-segments: 2)，
+     此时 CSS 用 env(viewport-segment-*) 拿到每块屏的宽度与中缝；
+     无头浏览器模拟不了，用 ?hinge=34 把两个变量写死来回归。 */
+  const segMq = window.matchMedia('(horizontal-viewport-segments: 2)');
+  const hingeArg = /[?&]hinge=([\d.]+)/.exec(location.search);
+  function applyHinge() {
+    const forced = hingeArg ? parseFloat(hingeArg[1]) : 0;
+    const two = forced > 0 || segMq.matches;
+    document.body.classList.toggle('hinge-2', two);
+    const st = document.documentElement.style;
+    if (forced > 0) {
+      const seg = Math.max(200, Math.round((window.innerWidth - forced) / 2));
+      st.setProperty('--seg-w', seg + 'px');
+      st.setProperty('--hinge-w', forced + 'px');
+    } else {
+      st.removeProperty('--seg-w');
+      st.removeProperty('--hinge-w');
+    }
+  }
+  applyHinge();
+  if (segMq.addEventListener) segMq.addEventListener('change', applyHinge);
+
   /* 调试用：?safe=59,34,47,47 覆盖安全区（无头浏览器无法模拟刘海，靠它做遮挡回归） */
   (function overrideSafeArea() {
     const m = /[?&]safe=([\d.]+),([\d.]+),([\d.]+),([\d.]+)/.exec(location.search);

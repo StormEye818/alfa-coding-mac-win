@@ -20,6 +20,7 @@ const CASES = [
     { name: 'iPhone 横屏 dock', w: 852, h: 393, safe: '0,47,21,47', mode: 'nav-dock' },
     { name: 'Duo 展开 rail', w: 1080, h: 760, safe: '24,0,0,0', mode: 'nav-rail' },
     { name: 'iPad 竖屏 rail', w: 820, h: 1180, safe: '24,0,20,0', mode: 'nav-rail' },
+    { name: 'Duo 双屏铰链', w: 1080, h: 760, safe: '24,0,0,0', mode: 'nav-rail', hinge: 34 },
 ];
 
 let pass = 0, fail = 0;
@@ -33,7 +34,7 @@ for (const c of CASES) {
     const errs = [];
     page.on('pageerror', (e) => errs.push(e.message));
     page.on('dialog', (d) => d.accept().catch(() => {}));
-    await page.goto(`${BASE}?mobile=1&safe=${c.safe}`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`${BASE}?mobile=1&safe=${c.safe}${c.hinge ? `&hinge=${c.hinge}` : ''}`, { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => document.getElementById('ifaceType')?.options?.length > 1, { timeout: 15000 });
     await page.evaluate(() => document.getElementById('btnSimulate').click());
     await page.waitForFunction(() => /已读取/.test(document.getElementById('readState').textContent), { timeout: 30000 });
@@ -61,6 +62,11 @@ for (const c of CASES) {
             nav: rect(document.querySelector('nav.tabs')),
             header: rect(document.querySelector('header.top')),
             main: rect(document.querySelector('main')),
+            mainContentRight: (() => {
+                const m = document.querySelector('main');
+                const r = m.getBoundingClientRect();
+                return Math.round(r.right - parseFloat(getComputedStyle(m).paddingRight));
+            })(),
             float: bar && !bar.classList.contains('hidden') ? rect(bar) : null,
             stage: stage && !stage.classList.contains('hidden') ? rect(stage) : null,
         };
@@ -84,10 +90,27 @@ for (const c of CASES) {
         check('侧栏顶在状态栏下沿之外', g.nav.t >= s.t + 8, `nav.t=${g.nav.t} safeT=${s.t}`);
         check('侧栏宽 88', g.nav.w === 88, `w=${g.nav.w}`);
         check('侧栏在 header 右侧之外', g.header.r <= g.nav.l, `header.r=${g.header.r} nav.l=${g.nav.l}`);
-        check('内容不钻进侧栏', g.main.r <= g.nav.l, `main.r=${g.main.r} nav.l=${g.nav.l}`);
+        check('内容不钻进侧栏', g.mainContentRight <= g.nav.l, `contentRight=${g.mainContentRight} nav.l=${g.nav.l}`);
         check('悬浮条让开侧栏', !g.float || g.float.r <= g.nav.l, g.float ? `float.r=${g.float.r} nav.l=${g.nav.l}` : '未显示');
         check('状态条不与侧栏相交', !g.stage || g.stage.r <= g.nav.l, g.stage ? `stage.r=${g.stage.r} nav.l=${g.nav.l}` : '未显示');
     }
+    if (c.hinge) {
+        const hip = await page.evaluate(() => {
+            document.querySelector('.tab[data-tab="diag"]').click();
+            const h = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--hinge-w')) || 0;
+            const mid = window.innerWidth / 2;
+            const h0 = mid - h / 2, h1 = mid + h / 2;
+            const left = document.querySelector('.split .pane-list').getBoundingClientRect();
+            const right = document.querySelector('.split .pane-detail').getBoundingClientRect();
+            const crosses = [...document.querySelectorAll('.split .mrow, .split .pane-detail button')]
+                .filter((el) => { const r = el.getBoundingClientRect(); return r.width > 4 && r.left < h1 && r.right > h0; }).length;
+            return { h0: Math.round(h0), h1: Math.round(h1), leftRight: Math.round(left.right), rightLeft: Math.round(right.left), crosses };
+        });
+        check('左屏内容止于中缝', hip.leftRight <= hip.h0 + 1, `left.right=${hip.leftRight} hinge=${hip.h0}..${hip.h1}`);
+        check('右屏内容始于中缝之后', hip.rightLeft >= hip.h1 - 1, `right.left=${hip.rightLeft}`);
+        check('没有卡片横跨中缝', hip.crosses === 0, `crosses=${hip.crosses}`);
+    }
+
     // 三个「展开态会变形」的页面：不允许出现横向滚动条
     for (const tab of ['diag', 'align', 'funcs', 'live']) {
         const of = await page.evaluate((t) => {

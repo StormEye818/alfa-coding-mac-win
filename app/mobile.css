@@ -467,7 +467,9 @@ body.mobile.nav-dock.has-float-write main {
 body.mobile.nav-rail { --stack-bottom: calc(var(--safe-b) + 18px); }
 body.mobile.nav-rail nav.tabs {
   right: calc(var(--safe-r) + 10px);
-  top: calc(var(--safe-t) + 10px);
+  /* 从顶栏下方开始：顶栏已经让出了状态栏/刘海，Rail 再往下 8px，
+     右上角的电量、WiFi 一定在 Rail 之上（2026-10-30 实机反馈修正） */
+  top: calc(var(--header-h) + 8px);
   bottom: auto;                 /* 胶囊只包住内容，不铺满整条边 */
   height: auto;
   max-height: calc(100vh - var(--safe-t) - var(--safe-b) - 22px);
@@ -483,7 +485,7 @@ body.mobile.nav-rail nav.tabs .tab {
   height: 64px;
 }
 body.mobile.nav-rail header.top {
-  margin-right: calc(var(--rail-w) + var(--safe-r) + 18px);
+  margin-right: calc(var(--rail-w) + var(--safe-r) + 18px);   /* 与内容列右缘对齐；Rail 在它下方 */
 }
 body.mobile.nav-rail main {
   /* 居中在「屏宽 − 两侧到侧栏的最小间距」以内：窄屏（iPad 820）不会被侧栏压住，

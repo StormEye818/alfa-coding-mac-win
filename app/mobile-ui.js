@@ -52,8 +52,26 @@
     st.setProperty('--safe-l', m[4] + 'px');
   })();
 
+  /* 顶栏实际高度 → --header-h。
+     右侧 Rail 必须从顶栏下方开始：顶栏自己吃 --safe-t（iOS 状态栏/刘海），
+     这样无论 WebView 报不报 safe-area，Rail 都不会贴到右上角的电量/WiFi 上。
+     顶栏内容会随「连接 chip / 车 ping」变化而换行，所以用 ResizeObserver 持续量。 */
+  const headerEl = document.querySelector('header.top');
+  function measureHeader() {
+    if (!headerEl) return;
+    const h = Math.round(headerEl.getBoundingClientRect().height);
+    if (h > 0) document.documentElement.style.setProperty('--header-h', h + 'px');
+  }
+  measureHeader();
+  requestAnimationFrame(measureHeader);          // 样式表刚注入时高度还会变，等一帧再量一次
+  setTimeout(measureHeader, 150);
+  if (headerEl && window.ResizeObserver) {
+    new ResizeObserver(measureHeader).observe(headerEl);
+  }
+
   let navTimer = 0;
   const onViewportChange = () => {
+    measureHeader();
     clearTimeout(navTimer);
     navTimer = setTimeout(applyNavMode, 120);   // 旋转/折叠时防抖，避免来回抖
   };

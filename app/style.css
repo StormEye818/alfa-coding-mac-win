@@ -31,6 +31,7 @@
   /* 浮层默认落在「底栏之上」；rail 模式下由 mobile.css 改写 */
   --stack-bottom: calc(var(--safe-b) + var(--dock-h) + var(--gap));
   --rail-inset: 0px;
+  --header-h: 0px;      /* 运行时由 mobile-ui.js 量出顶栏实际高度 */
 }
 
 /* 线性图标：统一描边。之前只给了尺寸没给 fill/stroke，SVG 默认黑色填充 → 显示成黑块 */

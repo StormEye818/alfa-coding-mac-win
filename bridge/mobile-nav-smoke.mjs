@@ -79,7 +79,9 @@ for (const c of CASES) {
         check('状态条在底栏之上', !g.stage || g.stage.b <= g.nav.t, g.stage ? `stage.b=${g.stage.b} nav.t=${g.nav.t}` : '未显示');
     } else {
         check('侧栏距右 = 安全区 + 10', Math.abs((g.vw - g.nav.r) - (s.r + 10)) <= 1, `nav.r=${g.nav.r} vw=${g.vw} safeR=${s.r}`);
-        check('侧栏顶 = 安全区 + 10（不压状态栏）', Math.abs(g.nav.t - (s.t + 10)) <= 1, `nav.t=${g.nav.t} safeT=${s.t}`);
+        check('侧栏顶 = 顶栏底 + 8（不进入状态栏区域）',
+            Math.abs(g.nav.t - (g.header.b + 8)) <= 2, `nav.t=${g.nav.t} header.b=${g.header.b}`);
+        check('侧栏顶在状态栏下沿之外', g.nav.t >= s.t + 8, `nav.t=${g.nav.t} safeT=${s.t}`);
         check('侧栏宽 88', g.nav.w === 88, `w=${g.nav.w}`);
         check('侧栏在 header 右侧之外', g.header.r <= g.nav.l, `header.r=${g.header.r} nav.l=${g.nav.l}`);
         check('内容不钻进侧栏', g.main.r <= g.nav.l, `main.r=${g.main.r} nav.l=${g.nav.l}`);

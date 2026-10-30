@@ -53,6 +53,23 @@
   </div>
 </header>
 
+<div id="vehBar" class="veh-bar hidden">
+  <span class="veh-ico">🚗</span>
+  <span class="veh-title">本车识别</span>
+  <b id="vehName">—</b>
+  <label class="veh-engine" title="自动按 PROXI 位图判断：有 V6 副 ECU → 2.9；有 AdBlue/SCR → 2.2；否则 2.0。判断错了在这里改一次，按 VIN 记住。">
+    <span>发动机</span>
+    <select id="vehEngine">
+      <option value="">自动</option>
+      <option value="2.0">2.0 汽油</option>
+      <option value="2.2">2.2 柴油</option>
+      <option value="2.9">2.9 V6</option>
+    </select>
+  </label>
+  <span id="vehNote" class="veh-note dim">—</span>
+  <button id="vehToggle" class="ghost small">显示未配置</button>
+</div>
+
 <div id="simBanner" class="banner sim hidden">
   <strong>⚠ 模拟模式！数据非真实数据！</strong>
   <span>当前不连接车辆，可浏览各控制模块可用的参数、测试与标定。写入类操作不会下发到车辆。</span>

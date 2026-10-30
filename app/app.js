@@ -12,6 +12,7 @@ import { applyScale, snapshotValue } from '../src/scale.js';
 import { Elm327, hexToBytes } from '../src/elm327.js';
 import { Uds, NRC, isRoutineBusy, DID } from '../src/uds.js';
 import { computeAlignment, ALIGN_STATUS_LABEL } from '../src/alignment.js';
+import { buildVehicleProfile, ENGINE_LABELS } from '../src/vehicle-profile.js';
 import { DemoLink } from '../src/demo-link.js';
 import { BridgeClient } from '../src/serial/bridge-client.js';
 import { InterfaceTester } from '../src/serial/detect.js';
@@ -54,6 +55,9 @@ const state = {
   vin: null,                    // 车身电脑 VIN（仅日志/诊断用）
   data3: null,                  // DID 0x40A2（对齐状态位图来源）
   alignment: null,              // computeAlignment() 结果
+  profile: null,                // 本车画像（vehicle-profile.js），用于过滤模块清单
+  engineOverride: '',           // 用户手动指定的发动机版本（按 VIN 记住）
+  showAllModules: false,        // 模块清单是否显示本车未配置的模块
   aligning: false,
   busy: null,                   // 长任务（对齐状态扫描等）并发闸：非 null = 正在跑的任务名
   bitEditIndex: null,
@@ -120,6 +124,9 @@ document.querySelectorAll('.tab').forEach((b) => {
     document.querySelectorAll('.panel').forEach((x) => x.classList.remove('active'));
     b.classList.add('active');
     $('tab-' + b.dataset.tab).classList.add('active');
+    // 进「模块诊断 / 特殊功能 / 实时数据」时按当前块+位图重算本车画像：
+    // 期间可能改过配置位、做过对齐，模块清单要跟着变（懒重算，避免每个写字节路径都挂一次）
+    if (['diag', 'funcs', 'live'].includes(b.dataset.tab) && state.modules) refreshVehicleProfile();
   });
 });
 
@@ -531,6 +538,10 @@ async function connect(forceSim) {
     state.readDone = false;
     state.block = null;
     state.baseline = null;
+    state.profile = null;
+    state.engineOverride = '';
+    state.showAllModules = false;
+    renderVehicleBar();
     state.selected.clear();
     state.namedPicks.clear();
     state.writeState.clear();
@@ -591,6 +602,9 @@ async function readConfig() {
     state.data3 = data3;
     state.block = new ProxiBlock(d1);
     state.baseline = state.block.clone();
+    // 本车画像：发动机手动指定的记忆按 VIN 取（VIN 读不到时退化为全局键）
+    state.engineOverride = loadEngineOverride();
+    refreshVehicleProfile();
     applyAlignment(d1, data3, { log: true });
     renderAlign();                            // 按位图状态渲染（已对齐/待添加/待移除/未安装）
     state.readDone = true;
@@ -648,7 +662,10 @@ $('platform').addEventListener('change', async () => {
   state.vin = null;
   state.data3 = null;
   state.alignment = null;
-  if (!state.connected) { if (state.modules) renderAlign(); return; }
+  state.profile = null;
+  state.engineOverride = '';
+  renderVehicleBar();
+  if (!state.connected) { if (state.modules) { renderAlign(); refreshVehicleProfile(); } return; }
   await window.__apxDisconnect();
   alert('已切换车型并断开连接，请重新点「连接」。');
 });
@@ -2293,33 +2310,34 @@ function renderFunctions() {
   //      ABSMMKC1 Hydraulic unit bleed 两套序列）。此前按钮只带 name+module，
   //      `all.find(name && module)` 永远命中第一条 → 点第二行执行第一行（2026-10-18 审查 M5）。
   all.forEach((x, i) => { x._uid = i; });
-  $('fnTotal').textContent = all.length;
-  $('fnOffline').textContent = all.filter((i) => i.security.level === 'none').length;
-  $('fnPin').textContent = all.filter((i) => i.security.level === 'pin').length;
-  $('fnServer').textContent = all.filter((i) => i.security.level === 'server').length;
+  // 统计口径跟随本车画像：本车没装的模块，其功能既选不到也执行不了，不该算进「功能 N」
+  const usable = all.filter((i) => moduleVisible(i.module));
+  $('fnTotal').textContent = usable.length;
+  $('fnOffline').textContent = usable.filter((i) => i.security.level === 'none').length;
+  $('fnPin').textContent = usable.filter((i) => i.security.level === 'pin').length;
+  $('fnServer').textContent = usable.filter((i) => i.security.level === 'server').length;
+  const statsWrap = $('fnTotal').closest('.align-summary');
+  if (statsWrap) statsWrap.title = usable.length === all.length
+    ? `全部 ${all.length} 项功能`
+    : `本车可用 ${usable.length} 项（全量 ${all.length} 项，含 ${all.length - usable.length} 项本车未装模块）`;
 
   const catSel = $('funcCat');
   const modSel = $('fnModule');
-  if (catSel.options.length <= 1) {
+  if (!catSel.dataset.bound) {
     for (const c of state.funcs.categories) {
       const o = document.createElement('option');
       o.value = c.category;
       o.textContent = `${t(c.category) || c.category}（${c.count}）`;
       catSel.appendChild(o);
     }
-    // 分模块筛选：按功能数量降序
-    const perMod = {};
-    for (const i of all) perMod[i.module] = (perMod[i.module] || 0) + 1;
-    for (const [code, n] of Object.entries(perMod).sort((a, b) => b[1] - a[1])) {
-      const o = document.createElement('option');
-      o.value = code;
-      o.textContent = `${modLabel(code)}（${n}）`;
-      modSel.appendChild(o);
-    }
     catSel.addEventListener('change', renderFunctions);
     modSel.addEventListener('change', renderFunctions);
     $('funcSec').addEventListener('change', renderFunctions);
     $('fnSearch').addEventListener('input', renderFunctions);
+    catSel.dataset.bound = '1';
+    // 模块下拉由 rebuildModuleSelects() 统一维护（本车画像变了要重铺）；
+    // 首次进入时这里补一次，避免 renderFunctions 先于它跑时下拉是空的。
+    if (modSel.options.length <= 1) rebuildModuleSelects();
   }
 
   const cat = catSel.value;
@@ -2534,8 +2552,9 @@ $('btnScan').addEventListener('click', async () => {
   if (state.session) state.session.resetCableAbort();
   state.busy = '扫描模块';
   $('btnScan').disabled = true;
-  const list = state.modules.modules;
-  stage(`正在扫描车辆支持的控制模块…`);
+  const list = state.modules.modules.filter((m) => moduleVisible(m.code));
+  const skippedByProfile = state.modules.modules.length - list.length;
+  stage(`正在扫描车辆支持的控制模块…${skippedByProfile ? `（已跳过本车未配置的 ${skippedByProfile} 个）` : ''}`);
   // 真实逐模块探测：对每个模块发 testerPresent，按应答标注（不再只是静态清单）
   let ok = 0, none = 0, skipped = 0;
   try {
@@ -2612,13 +2631,114 @@ $('moduleList').addEventListener('click', (e) => {
   else connectModuleManual(code);
 });
 
+/* ================= 本车识别（模块清单按车过滤） ================= */
+/**
+ * 发动机手动指定：按 VIN 记住。
+ * 自动识别（ECM2 → 2.9 / SCR → 2.2 / 单 ECM → 2.0）在绝大多数车上够用，
+ * 但 2.0 与 2.2 共用地址 0x10、PROXI 里也没有发动机排量字段，只能靠 SCR 位间接判断；
+ * 万一判断错（例如无 AdBlue 的柴油车），用户改一次就永久生效，不用每次重选。
+ */
+function engineOverrideKey() {
+  return 'apx.engine.' + (state.vin || 'no-vin');
+}
+function loadEngineOverride() {
+  try { return localStorage.getItem(engineOverrideKey()) || ''; } catch { return ''; }
+}
+function saveEngineOverride(v) {
+  try {
+    if (v) localStorage.setItem(engineOverrideKey(), v);
+    else localStorage.removeItem(engineOverrideKey());
+  } catch { /* 隐私模式/无存储：仅本次生效 */ }
+}
+
+/** 重新计算本车画像并刷新所有依赖它的界面 */
+function refreshVehicleProfile() {
+  const platform = ($('platform') && $('platform').value) || '952';
+  state.profile = (state.modules && state.modules.modules && state.block)
+    ? buildVehicleProfile({
+      platform,
+      data1: state.block.bytes,
+      data3: state.data3,
+      modules: state.modules.modules,
+      nodes: state.modules.alignmentNodes,
+      engineOverride: state.engineOverride,
+    })
+    : null;
+  renderVehicleBar();
+  renderModules();
+  rebuildModuleSelects();
+}
+
+function renderVehicleBar() {
+  const bar = $('vehBar');
+  if (!bar) return;
+  const p = state.profile;
+  if (!p) { bar.classList.add('hidden'); return; }
+  bar.classList.remove('hidden');
+
+  const plat = (state.modules.platforms || {})[p.platform] || {};
+  const eng = p.engine ? ENGINE_LABELS[p.engine] : '发动机未识别';
+  $('vehName').textContent = `${plat.name || '?'}（${p.platform}）· ${eng}`;
+  $('vehEngine').value = state.engineOverride || '';
+  $('vehEngine').className = state.engineOverride ? 'manual' : '';
+
+  const src = {
+    ecm2: '按 V6 副 ECU（ECM2）判定',
+    scr: '按 AdBlue/SCR 模块判定',
+    'single-ecm': '单 ECM 平台推断为 2.0（若实际是 2.2 柴油，请在上方改正）',
+    user: '已手动指定',
+    unknown: '位图中没有发动机节点，未能判定',
+  }[p.engineSource] || '';
+  $('vehNote').textContent = `${src} · 本车 ${p.counts.visible}/${p.counts.total} 个模块`;
+  $('vehNote').title = p.notes && p.notes.length ? p.notes.join('\n') : src;
+
+  const btn = $('vehToggle');
+  btn.textContent = state.showAllModules
+    ? '只看本车模块'
+    : `显示未配置（${p.counts.hidden}）`;
+  btn.classList.toggle('primary', state.showAllModules);
+}
+
+/** 模块是否应出现在清单/下拉里 */
+function moduleVisible(code) {
+  const p = state.profile;
+  if (!p || state.showAllModules) return true;
+  const row = p.rowByCode.get(code);
+  if (!row) return true;
+  if (row.visible) return true;
+  // 当前已连接的模块永远保留在清单里（否则连接中突然消失）
+  const cur = state.session && state.session.current ? state.session.current.code : null;
+  return code === cur || code === modSess.code;
+}
+
+/** 隐藏原因 → 行尾标签 */
+const PROFILE_TAG = {
+  platform: '其它平台',
+  engine: '其它动力',
+  absent: '未配置',
+  unmapped: '未映射',
+};
+
 function renderModules() {
   const q = ($('modSearch') && $('modSearch').value) || '';
-  const list = state.modules.modules.filter((m) =>
-    hit(q, m.code, m.name, modLabel(m.code), m.bus, m.tx));
-  $('moduleList').innerHTML = list.length ? '' : '<div class="dim" style="padding:14px">没有匹配的模块</div>';
-  const currentCode = state.session && state.session.current ? state.session.current.code : null;
-  $('moduleList').innerHTML += list.map((m) => `
+  const all = state.modules.modules;
+  const shown = all.filter((m) => moduleVisible(m.code));
+  const list = shown.filter((m) => hit(q, m.code, m.name, modLabel(m.code), m.bus, m.tx));
+  const p = state.profile;
+  const head = p && !state.showAllModules
+    ? `<div class="dim" style="padding:10px 14px 4px">已按本车配置过滤：显示 ${shown.length}/${all.length} 个模块
+        <button class="link" id="modShowAll">显示未配置的 ${all.length - shown.length} 个</button></div>`
+    : p
+      ? `<div class="dim" style="padding:10px 14px 4px">显示全部 ${all.length} 个模块（未配置项带标签）</div>`
+      : `<div class="dim" style="padding:10px 14px 4px">未读取车辆配置，暂显示全部 ${all.length} 个模块
+          <span class="dim">（连接后自动按本车配置过滤）</span></div>`;
+
+  $('moduleList').innerHTML = head
+    + (list.length ? list.map((m) => {
+      const row = p && p.rowByCode.get(m.code);
+      const tag = row && !row.visible ? `<span class="state-tag pending">${PROFILE_TAG[row.reason] || '未配置'}</span>` : '';
+      const cur = state.session && state.session.current ? state.session.current.code : null;
+      return `
     <div class="mrow">
       <div class="code">${m.code}</div>
       <div class="grow">
@@ -2626,14 +2746,72 @@ function renderModules() {
           ok: '<span class="state-tag written">有应答</span>',
           none: '<span class="state-tag failed">无应答</span>',
           skip: '<span class="state-tag pending">跨总线未探测</span>',
-        }[m.scanState || ''] || ''}</div>
+        }[m.scanState || ''] || ''}${tag}</div>
         <div class="sub">${m.code} · ${m.bus} · 地址 0x${m.tx} ← 0x${m.rx} · ${m.platforms.join('/')} · ${
           { none: '无需换线', comfort: '5 号蓝色适配线', swap: '6 号灰色适配线' }[(state.cables.modules[m.code] || {}).group || 'none']
-        }</div>
+        }${row && row.node ? ` · 节点 ${row.node}` : ''}</div>
       </div>
-      <button class="small ${m.code === currentCode ? 'primary' : 'ghost'}" data-mod="${m.code}">${m.code === currentCode ? '断开' : '连接'}</button>
-    </div>`).join('');
+      <button class="small ${m.code === cur ? 'primary' : 'ghost'}" data-mod="${m.code}">${m.code === cur ? '断开' : '连接'}</button>
+    </div>`;
+    }).join('') : '<div class="dim" style="padding:14px">没有匹配的模块</div>');
+
+  const showAll = $('modShowAll');
+  if (showAll) showAll.addEventListener('click', () => toggleShowAllModules(true));
 }
+
+function toggleShowAllModules(v) {
+  state.showAllModules = typeof v === 'boolean' ? v : !state.showAllModules;
+  renderVehicleBar();
+  renderModules();
+  rebuildModuleSelects();
+  log(state.showAllModules ? '模块清单：显示全部（含本车未配置）' : '模块清单：只看本车已配置模块');
+}
+
+$('vehEngine') && $('vehEngine').addEventListener('change', () => {
+  state.engineOverride = $('vehEngine').value || '';
+  saveEngineOverride(state.engineOverride);       // 按 VIN 记住，下次连同一台车不用再改
+  refreshVehicleProfile();
+  const p = state.profile;
+  if (p) {
+    log(`发动机：${p.engine ? ENGINE_LABELS[p.engine] : '未识别'}`
+      + `（${state.engineOverride ? '手动指定' : '自动识别'}）`
+      + ` · 显示 ${p.counts.visible}/${p.counts.total} 个模块`);
+  }
+});
+$('vehToggle') && $('vehToggle').addEventListener('click', () => toggleShowAllModules());
+
+/** 重建所有"选择模块"下拉：特殊功能 / 故障码 / 实时数据 */
+function rebuildModuleSelects() {
+  if (!state.modules) return;
+  // —— 特殊功能的模块筛选（带功能条数，按数量降序） ——
+  const fnSel = $('fnModule');
+  if (fnSel && state.funcs) {
+    const keep = fnSel.value;
+    const perMod = {};
+    for (const c of state.funcs.categories) {
+      for (const i of c.items) perMod[i.module] = (perMod[i.module] || 0) + 1;
+    }
+    const codes = Object.keys(perMod)
+      .filter((c) => moduleVisible(c))
+      .sort((a, b) => perMod[b] - perMod[a]);
+    fnSel.innerHTML = '<option value="">全部模块</option>' + codes.map((c) =>
+      `<option value="${c}">${modLabel(c)}（${perMod[c]}）</option>`).join('');
+    if (keep && (codes.includes(keep) || keep === modSess.code)) fnSel.value = keep;
+    else if (keep) fnSel.value = '';
+  }
+  // —— 故障码 / 实时数据的模块下拉 ——
+  for (const id of ['dtcModule', 'liveModule']) {
+    const sel = $(id);
+    if (!sel) continue;
+    const keep = sel.value;
+    const codes = state.modules.modules.filter((m) => moduleVisible(m.code)).map((m) => m.code);
+    sel.innerHTML = '<option value="">选择模块</option>' + codes.map((c) =>
+      `<option value="${c}">${modLabel(c)}（${c}）</option>`).join('');
+    sel.value = codes.includes(keep) ? keep : '';
+  }
+  if (state.funcs) renderFunctions();
+}
+
 
 function renderPending() {
   $('pendingCount').textContent = state.features.pending.length;
@@ -2658,23 +2836,9 @@ function dtcLookup(mod, code) {
 }
 
 function renderDtcModuleOptions() {
-  const sel = $('dtcModule');
-  if (sel.options.length > 1) return;
-  for (const m of state.modules.modules) {
-    const o = document.createElement('option');
-    o.value = m.code;
-    o.textContent = `${modLabel(m.code)}（${m.code}）`;
-    sel.appendChild(o);
-  }
-  const lv = $('liveModule');
-  if (lv && lv.options.length <= 1) {
-    for (const m of state.modules.modules) {
-      const o = document.createElement('option');
-      o.value = m.code;
-      o.textContent = `${modLabel(m.code)}（${m.code}）`;
-      lv.appendChild(o);
-    }
-  }
+  // 首次进入时按当前画像（可能为空 = 全量）铺选项；连接/读取配置后由
+  // refreshVehicleProfile() → rebuildModuleSelects() 重铺，把本车没有的模块去掉。
+  rebuildModuleSelects();
 }
 
 $('btnReadDtc').addEventListener('click', async () => {
@@ -2956,7 +3120,12 @@ function renderModuleSessionUI() {
     $('fnModule').disabled = inMod;
     $('fnEnter').classList.toggle('hidden', inMod);
     $('fnExit').classList.toggle('hidden', !inMod);
-    if (inMod) $('fnModule').value = modSess.code;
+    if (inMod) {
+      // 模块可能被本车画像过滤掉了（例如已进入的模块随后被判定为未配置）：
+      // 先确保选项里还有它，再选中，否则 value 赋不上 → 列表会退回「全部模块」
+      if (!$('fnModule').querySelector(`option[value="${modSess.code}"]`)) rebuildModuleSelects();
+      $('fnModule').value = modSess.code;
+    }
   }
   renderFunctions();
   renderLiveParams();

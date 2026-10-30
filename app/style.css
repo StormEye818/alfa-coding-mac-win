@@ -102,6 +102,32 @@ body.cable-active { padding-bottom: 96px; }
   color: var(--amber); font-size: 13px; }
 .banner.hidden { display: none; }
 
+/* ---------- 本车识别条（模块清单按车过滤） ---------- */
+.veh-bar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 9px 22px; background: rgba(76, 154, 255, .07);
+  border-bottom: 1px solid var(--line); font-size: 13px;
+}
+.veh-bar.hidden { display: none; }
+.veh-bar .veh-ico { font-size: 15px; line-height: 1; }
+.veh-bar .veh-title { color: var(--dim); font-size: 12px; letter-spacing: .3px; }
+.veh-bar b { font-weight: 600; color: var(--fg); }
+.veh-bar .veh-engine { display: inline-flex; align-items: center; gap: 6px; color: var(--dim); font-size: 12px; }
+.veh-bar .veh-engine select { min-width: 96px; padding: 4px 8px; font-size: 12px; }
+.veh-bar .veh-engine select.manual { border-color: var(--amber); color: var(--amber); }
+.veh-bar .veh-note { font-size: 12px; }
+.veh-bar button.small { margin-left: auto; }
+button.link {
+  border: 0; background: transparent; padding: 0 4px; color: var(--accent);
+  font-size: 12px; text-decoration: underline; cursor: pointer;
+}
+button.link:hover { color: var(--accent2); }
+@media (max-width: 720px) {
+  .veh-bar { padding: 8px 14px; gap: 8px; }
+  .veh-bar .veh-note { flex-basis: 100%; order: 9; }
+  .veh-bar button.small { margin-left: 0; }
+}
+
 /* ---------- 标签页 ---------- */
 .tabs {
   display: flex; gap: 4px; padding: 0 22px; background: var(--bg2);

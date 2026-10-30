@@ -6,7 +6,7 @@
   "description": "Alfa Romeo Giulia/Stelvio (952/949) 刷隐藏与 PROXI 对齐工具",
   "main": "electron/main.cjs",
   "scripts": {
-    "test": "node tools/check-syntax.mjs && node test/proxi.test.js && node test/protocol.test.js && node test/session.test.js && node test/align.test.js && node test/scale.test.js && node test/alignment.test.js",
+    "test": "node tools/check-syntax.mjs && node test/proxi.test.js && node test/protocol.test.js && node test/session.test.js && node test/align.test.js && node test/scale.test.js && node test/alignment.test.js && node test/vehicle-profile.test.js",
     "build-data": "node tools/build-data.cjs",
     "app": "python3 -m http.server 8848",
     "electron": "electron .",

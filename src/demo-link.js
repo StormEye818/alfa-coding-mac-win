@@ -21,15 +21,49 @@ const SERVICE = {
     0x2F: '输入输出控制（执行器）', 0x31: '例程控制', 0x3E: '在线保活',
 };
 
+/**
+ * 演示车的「本车未装」节点。
+ *
+ * 演示模式要能演示**按车过滤模块清单**这件事，所以它不能是一台「什么都有」的车：
+ * 这里按 Giulia 2.0 汽油 / 后驱 / 无 AdBlue 的典型配置，把互相排斥或本车没有的节点
+ * 标成未安装。等价于 sandbox/giulia-car.mjs 里的 ABSENT_NODES（那边是给回归测试用的
+ * 同一台虚拟车），两边改动要一起改。
+ *
+ * 注意：ECM2（V6 副 ECU）与 SCRM（AdBlue）必须留在这里 —— 车辆识别靠它们判排量：
+ * ECM2 在 → 2.9 V6；否则 SCR 在 → 2.2 柴油；都没有 → 2.0 汽油。
+ */
+const DEMO_ABSENT_NODES = new Set([
+    'Compact Disk Node (CDM)',                       // 无 CD 换碟机
+    'Amplifier Node (AMP)',                          // 无独立功放
+    'Selective Catalytic Reduction Module (SCRM)',   // 汽油车无 SCR/AdBlue
+    'Rear Left Climate Control Node (RLCM)',         // 无后排独立空调
+    'Additional Heater Node (CTM)',                  // 无驻车加热器
+    'Driver monitoring system module (DMSM)',        // 无驾驶员监测
+    'Passenger Occupant Classification Node (OCM)',  // 无副驾占用识别
+    'Left Blind Spot Sensor Node (LBSS)',            // 无盲区监测
+    'Vehicle Tracking Module (VTM)',                 // 无车辆追踪
+    'Collision Mitigation Module (CMM)',             // 无碰撞缓解
+    'Drive Train Control Node (DTCM)',               // 后驱（无耦合控制）
+    'Passenger Door Latch Module (PDML)',            // 无电动门锁闩
+    'Engine control Module 2 (ECM2)',                // 4 缸单 ECU（V6 才有副 ECU）
+    'Torque vectoring module (TVM)',                 // 无扭矩矢量
+    'Active aerodynamic module Left (AAML)',         // 无主动空气动力
+    'Active aerodynamic module Right (AAMR)',
+    'Haptical Lane Feedback Node (HALF)',            // 无车道保持触觉反馈
+    'Coupling Control Node (CCM)',                   // 后驱
+    'Traffic message module (TMM)',                  // 无 TMC
+]);
+
 class DemoLink {
     constructor(opts = {}) {
         this.log = opts.log || (() => {});
         this.addr = null;
         this.cables = opts.cables || null;   // 地址 → 模块代号（对齐逐节点连接时只有地址）
         this.nodes = opts.nodes || [];       // 对齐节点表（用于生成 DATA1/DATA3 位图）
+        this.absent = opts.absent ? new Set(opts.absent) : DEMO_ABSENT_NODES;
         this.frames = [];            // 记录已下发的载荷，便于展示
         this.proxi = opts.proxi ? Uint8Array.from(opts.proxi)
-            : DemoLink.demoProxi(this.nodes, opts.extraActual || 'Electric Steering');
+            : DemoLink.demoProxi(this.nodes, opts.extraActual || 'Electric Steering', this.absent);
         /** 演示用 DATA3（80B）：实际位图 = 配置位图，另把 EPS 设成“只在车上存在” */
         this.data3 = opts.data3 ? Uint8Array.from(opts.data3)
             : DemoLink.demoData3(this.proxi, this.nodes, opts.extraActual || 'Electric Steering');
@@ -63,12 +97,14 @@ class DemoLink {
      * 在场位图在 DATA1[25..40]，**反序**：节点 startByte=1 → 索引 40，startByte=16 → 索引 25。
      * （与 src/alignment.js 同口径；SGW startByte=2 ↔ Byte40 已交叉验证）
      */
-    static demoProxi(nodes = [], excludeName = '') {
+    static demoProxi(nodes = [], excludeName = '', absentNames = null) {
+        const absent = absentNames instanceof Set ? absentNames : new Set(absentNames || []);
         const b = new Uint8Array(289);
         const head = '406200000001OUTPUT-SIT %';
         for (let i = 0; i < 24; i++) b[i] = head.charCodeAt(i);
         for (const n of nodes) {
             if (!n || n.excluded) continue;
+            if (absent.has(n.name)) continue;                                    // 演示车未装
             if (excludeName && String(n.name).includes(excludeName)) continue;  // 演示“只在车上、不在配置里”
             const sb = Number(n.startByte);
             const mask = parseInt(n.bitMask || (n.presence || '').slice(0, 2) || '0', 16) & 0xff;

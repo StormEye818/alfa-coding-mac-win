@@ -383,3 +383,26 @@ body.mobile .apx-toast {
 body.mobile .stage-bar {
   max-width: min(580px, 92vw);
 }
+
+/* --- 悬浮写入条必须让开底部标签栏（2026-10-30 修）---
+   底部导航是 position:fixed，高度约 58px；而 style.css 里给悬浮条让位的规则
+   只写在 `@media (max-width:720px)` 里 —— 平板/折叠机展开态（视口 >720）不生效，
+   于是悬浮条 bottom:18px 直接压在标签栏上，盖住标签文字。
+   这里按 body.mobile 无条件让开，宽窄视口都覆盖。 */
+body.mobile #floatWriteBar {
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 6px);
+}
+/* 悬浮条出现时会盖住正文最后一段，补足底部留白（64 = 标签栏 + 60 = 悬浮条） */
+body.mobile.has-float-write {
+  padding-bottom: calc(124px + env(safe-area-inset-bottom, 0px));
+}
+
+/* 状态条（"正在读取…" / "配置读取完成"）同样要避开标签栏与悬浮条：
+   它原本 fixed bottom:58px，在移动端正好压在标签栏上，悬浮条出现后又被压住。 */
+body.mobile .stage-bar {
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 8px);
+  z-index: 85;
+}
+body.mobile.has-float-write .stage-bar {
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 72px);
+}

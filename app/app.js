@@ -253,6 +253,11 @@ window.__apxDisconnect = async () => {
   state.vin = null;
   state.data3 = null;
   state.alignment = null;
+  // 断开后待写选择没有意义：清掉并收起浮动条（否则会挂着一个旧计数）
+  state.selected.clear();
+  state.namedPicks.clear();
+  state.writeState.clear();
+  updateFloatBar();
   if (state.session) state.session.resetLink();
   // 模块会话必须一起复位：否则「进入模块」被拦（提示先退出），而退出按钮又是隐藏态 → 卡死
   modSess.code = null;
@@ -546,6 +551,7 @@ async function connect(forceSim) {
     state.namedPicks.clear();
     state.writeState.clear();
     state.bitEditIndex = null;
+    updateFloatBar();                    // 新会话无待写项 → 收起浮动条（含移动端底部留白）
     modSess.code = null;
     stopLiveLoop();
     live.samples = []; live.picks = []; live.items = [];
@@ -1212,7 +1218,10 @@ function updateFloatBar() {
   const bar = $('floatWriteBar');
   if (!bar) return;
   const n = state.namedPicks.size + state.selected.size;
-  bar.classList.toggle('hidden', n === 0 || !state.readDone);
+  const show = n > 0 && state.readDone;
+  bar.classList.toggle('hidden', !show);
+  // 移动端底部还有固定的标签栏：显示悬浮条时给正文补底部留白（见 mobile.css）
+  document.body.classList.toggle('has-float-write', show);
   $('fwCount').textContent = n;
 }
 $('fwPreview').addEventListener('click', async () => {

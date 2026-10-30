@@ -592,6 +592,9 @@ main { padding: 22px; max-width: 1360px; margin: 0 auto; }
   font-size: 13px;
 }
 #floatWriteBar .fw-text b { color: var(--accent, #6ea8ff); }
+/* 只在「有待写选择」时出现：updateFloatBar() 用 .hidden 控制。
+   这里原来漏了这条规则，导致空选时也一直挂着（2026-10-30 修） */
+#floatWriteBar.hidden { display: none; }
 @media (max-width: 720px) {
   #floatWriteBar {
     left: 10px; right: 10px;

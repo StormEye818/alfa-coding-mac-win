@@ -109,8 +109,14 @@ body.mobile .dim {
 /* ---------- 卡片与列表 ---------- */
 body.mobile .named-grid,
 body.mobile .feat-grid {
-  grid-template-columns: 1fr;   /* 单列卡片 */
+  grid-template-columns: 1fr;   /* 单列卡片（窄屏默认） */
   gap: 10px;
+}
+/* 宽屏（rail 模式 = 展开/横屏）：多列网格，充分利用横向空间 */
+body.mobile.nav-rail .named-grid,
+body.mobile.nav-rail .feat-grid {
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
 }
 body.mobile .named,
 body.mobile .card {
@@ -470,7 +476,7 @@ body.mobile.nav-rail {
      再让内容列在其中居中 —— 这样左右留白对称，不会往侧栏那边挤。 */
   --rail-gutter: calc(var(--rail-w) + var(--safe-r) + 10px);
   --free-w: calc(100vw - var(--safe-l) - var(--rail-gutter));
-  --col-w: min(calc(var(--content-max) + 44px), var(--free-w));
+  --col-w: min(calc(var(--content-max) * 2.2), var(--free-w));   /* 宽屏放开到 2.2 倍，配置项能排 2-3 列 */
   --col-x: calc((var(--free-w) - var(--col-w)) / 2);
 }
 body.mobile.nav-rail nav.tabs {

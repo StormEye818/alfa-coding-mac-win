@@ -113,6 +113,8 @@
       return cap.nativePromise('GlassRail', method, opts || {});
     };
     let available = true;
+    let retryCount = 0;
+    const MAX_RETRY = 6;
 
     const SYMBOL = {
       features: 'slider.horizontal.3',
@@ -141,16 +143,29 @@
 
     function sync() {
       if (!available) return;
-      const want = document.body.classList.contains('nav-rail');
-      if (want && !shown) {
+      // 系统侧栏（UITabBarController）在所有屏幕尺寸都可用：
+      //   · Duo 展开横屏 → 右侧竖栏（vertical bar）
+      //   · Duo 合盖 → 右侧侧栏（preferredPlacement = .sidebar）
+      //   · 普通 iPhone → 底部 tab bar（系统自动适配）
+      // 不再按 nav-rail / nav-dock 区分 —— 那套留给非原生回退路径。
+      if (!shown) {
         callNative('show', { items: listItems(), activeId: activeId() })
-          .then(() => { shown = true; document.body.classList.add('native-rail'); })
-          .catch(() => { available = false; });   // 老包/插件缺失：永久退回网页侧栏
-      } else if (!want && shown) {
-        callNative('hide', {}).catch(() => {});
-        shown = false;
-        document.body.classList.remove('native-rail');
-      } else if (want && shown) {
+          .then(() => {
+            shown = true; retryCount = 0;
+            document.body.classList.add('native-rail');
+            // 同步当前选中态
+            callNative('setActive', { id: activeId() }).catch(() => {});
+          })
+          .catch(() => {
+            // bridge 可能晚就绪，指数退避重试（最多 MAX_RETRY 次）
+            if (retryCount < MAX_RETRY) {
+              retryCount++;
+              setTimeout(sync, 300 * retryCount);
+            } else {
+              available = false;   // 确实没有插件（老包）：退回网页侧栏
+            }
+          });
+      } else {
         callNative('setActive', { id: activeId() }).catch(() => {});
       }
     }

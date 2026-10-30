@@ -9,12 +9,17 @@
 body.mobile {
   font-size: 14px;
   -webkit-text-size-adjust: 100%;
-  padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); /* 给底部导航让位 */
+  /* 底部留白随 dock / rail 两种形态变化，统一交给 main（见文件末尾「三态导航」段） */
 }
 
 /* ---------- 顶部连接区：压缩 + 可折叠 ---------- */
 body.mobile header.top {
-  padding: 10px 12px 8px;
+  position: sticky; top: 0; z-index: 30;
+  padding: calc(var(--safe-t) + 10px) 12px 8px;
+  background: linear-gradient(180deg, rgba(11, 16, 21, .94), rgba(11, 16, 21, .76));
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  backdrop-filter: blur(18px) saturate(150%);
+  border-bottom: 1px solid rgba(255, 255, 255, .06);
 }
 body.mobile .brand h1 { font-size: 17px; margin: 0; }
 body.mobile .brand .sub { font-size: 12px; }
@@ -71,31 +76,9 @@ body.mobile .conn-chip .dot {
 }
 body.mobile .conn-chip.on .dot { background: #3fb27f; }
 
-/* ---------- 底部标签导航 ---------- */
-body.mobile nav.tabs {
-  position: fixed;
-  left: 0; right: 0; bottom: 0;
-  z-index: 60;
-  display: flex;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  gap: 0;
-  margin: 0;
-  padding: 4px 4px calc(4px + env(safe-area-inset-bottom, 0px));
-  background: rgba(15, 22, 33, 0.97);
-  border-top: 1px solid var(--border, #3a4658);
-  scrollbar-width: none;
-}
+/* ---------- 标签导航：样式见文件末尾「三态导航」段 ---------- */
+body.mobile nav.tabs { scrollbar-width: none; }
 body.mobile nav.tabs::-webkit-scrollbar { display: none; }
-body.mobile nav.tabs .tab {
-  flex: 1 0 auto;
-  min-width: 64px;
-  min-height: 48px;
-  padding: 6px 10px;
-  font-size: 12px;
-  border-radius: 10px;
-  white-space: nowrap;
-}
 
 /* ---------- 通用触控放大 ---------- */
 body.mobile button {
@@ -177,7 +160,7 @@ body.mobile .hex-grid .hbyte .bits {
 body.mobile #bitPanel {
   position: fixed;
   left: 8px; right: 8px;
-  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(var(--stack-bottom) + 8px);
   /* 必须盖过浮动写入条(z=80)——否则 hex 输入行被压住无法手动改字节 */
   z-index: 92;
   max-height: 46vh;
@@ -200,7 +183,7 @@ body.mobile #inputModal .modal {
   max-height: 86vh;
   overflow-y: auto;
   border-radius: 16px 16px 0 0;
-  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(12px + var(--safe-b));
 }
 body.mobile #inputModal .modal button {
   min-height: 46px;
@@ -211,7 +194,7 @@ body.mobile #inputModal .modal button {
 body.mobile .help-sheet {
   position: fixed;
   left: 8px; right: 8px;
-  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(var(--stack-bottom) + 8px);
   z-index: 80;
   padding: 14px 16px;
   border-radius: 14px;
@@ -238,7 +221,7 @@ body.mobile .help-btn {
 body.mobile .apx-toast {
   position: fixed;
   left: 8px; right: 8px;
-  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  bottom: var(--stack-bottom);
   z-index: 96;
   max-height: 52vh;
   overflow-y: auto;
@@ -267,7 +250,7 @@ body.mobile .fn-row {
 }
 /* 过程提示条（测试/扫描中的转圈）：必须压过浮动条/导航，此前选择器写错(.stagebar)从未生效 */
 body.mobile .stage-bar {
-  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  bottom: var(--stack-bottom);
   z-index: 97;
   max-width: 92vw;
 }
@@ -281,16 +264,12 @@ body.mobile .fn-cmds {
 /* iOS 刘海/灵动岛安全区：viewport-fit=cover 后必须手动让出顶部与两侧
    （2026-09-30 真机实测：缺这段内容会顶进状态栏） */
 body.mobile {
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-left: env(safe-area-inset-left, 0px);
-  padding-right: env(safe-area-inset-right, 0px);
+  /* 顶部安全区由 header 自己吃：固定/吸顶元素不吃 body padding，写在 body 上会双份或漏掉 */
+  padding-left: var(--safe-l);
+  padding-right: var(--safe-r);
 }
 body.mobile header.top {
   margin-top: 0;
-}
-body.mobile nav.tabs {
-  padding-left: calc(4px + env(safe-area-inset-left, 0px));
-  padding-right: calc(4px + env(safe-area-inset-right, 0px));
 }
 
 /* --- iOS 真机修复（2026-09-30）--- */
@@ -384,25 +363,217 @@ body.mobile .stage-bar {
   max-width: min(580px, 92vw);
 }
 
-/* --- 悬浮写入条必须让开底部标签栏（2026-10-30 修）---
-   底部导航是 position:fixed，高度约 58px；而 style.css 里给悬浮条让位的规则
-   只写在 `@media (max-width:720px)` 里 —— 平板/折叠机展开态（视口 >720）不生效，
-   于是悬浮条 bottom:18px 直接压在标签栏上，盖住标签文字。
-   这里按 body.mobile 无条件让开，宽窄视口都覆盖。 */
-body.mobile #floatWriteBar {
-  bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 6px);
-}
-/* 悬浮条出现时会盖住正文最后一段，补足底部留白（64 = 标签栏 + 60 = 悬浮条） */
-body.mobile.has-float-write {
-  padding-bottom: calc(124px + env(safe-area-inset-bottom, 0px));
+/* 浮层让位统一在文件末尾「三态导航」段 */
+
+/* =====================================================================
+   三态导航（dock / rail）与浮层堆叠 —— 2026-10-30 P0+P1
+   形态由 mobile-ui.js 按视口尺寸给 body 加 .nav-dock / .nav-rail；
+   所有位置只引用 style.css 里的几何令牌，不再写死 64/72px。
+   ===================================================================== */
+
+body.mobile nav.tabs,
+body.mobile #floatWriteBar,
+body.mobile .stage-bar,
+body.mobile .apx-toast {
+  -webkit-backdrop-filter: blur(28px) saturate(170%);
+  backdrop-filter: blur(28px) saturate(170%);
 }
 
-/* 状态条（"正在读取…" / "配置读取完成"）同样要避开标签栏与悬浮条：
-   它原本 fixed bottom:58px，在移动端正好压在标签栏上，悬浮条出现后又被压住。 */
+body.mobile nav.tabs {
+  position: fixed;
+  z-index: 40;
+  display: flex;
+  gap: 2px;
+  margin: 0;
+  padding: 7px;
+  border-radius: 26px;
+  border: 1px solid rgba(255, 255, 255, .15);
+  background: linear-gradient(158deg, rgba(255, 255, 255, .115), rgba(255, 255, 255, .045) 46%, rgba(255, 255, 255, .02));
+  box-shadow:
+    0 20px 44px rgba(0, 0, 0, .46),
+    0 2px 8px rgba(0, 0, 0, .30),
+    inset 0 1px 0 rgba(255, 255, 255, .32),
+    inset 0 -1px 0 rgba(0, 0, 0, .36);
+  transition: transform .24s cubic-bezier(.32, .72, 0, 1), opacity .18s ease;
+}
+
+body.mobile nav.tabs .tab {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 4px 2px;
+  border: 1px solid transparent;
+  border-radius: 19px;
+  background: transparent;
+  color: var(--dim2, #6d7c8c);
+  font-size: 10.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+body.mobile nav.tabs .tab .ico { display: block; width: 22px; height: 22px; }
+body.mobile nav.tabs .tab:hover { border-color: transparent; color: var(--fg); }
+body.mobile nav.tabs .tab.active {
+  color: #eaf4ff;
+  background: linear-gradient(180deg, rgba(76, 154, 255, .32), rgba(76, 154, 255, .12) 62%, rgba(76, 154, 255, .08));
+  border-color: rgba(140, 200, 255, .42);
+  box-shadow:
+    0 10px 24px rgba(30, 110, 220, .30),
+    inset 0 1px 0 rgba(255, 255, 255, .45),
+    inset 0 -8px 14px rgba(10, 30, 60, .35);
+}
+body.mobile nav.tabs .tab.active::after {
+  content: "";
+  position: absolute;
+  left: 14%; right: 14%; top: 2px; height: 42%;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .30), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+body.mobile nav.tabs .tab .badge {
+  position: absolute;
+  top: 3px; right: calc(50% - 22px);
+  min-width: 16px; height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--amber);
+  color: #20160a;
+  font-size: 10px; font-weight: 800; line-height: 1;
+  display: grid; place-items: center;
+}
+
+/* ---- 形态 1：底部 Dock（手机竖/横，单屏折叠） ---- */
+body.mobile.nav-dock nav.tabs {
+  left: calc(var(--safe-l) + 12px);
+  right: calc(var(--safe-r) + 12px);
+  bottom: calc(var(--safe-b) + var(--gap));
+  height: var(--dock-h);
+  flex-direction: row;
+}
+body.mobile.nav-dock main {
+  max-width: none;                       /* 手机横屏 852 宽时别被 580 卡住 */
+  padding-bottom: calc(var(--dock-h) + var(--safe-b) + 28px);
+}
+body.mobile.nav-dock.has-float-write main {
+  padding-bottom: calc(var(--dock-h) + var(--safe-b) + 92px);
+}
+
+/* ---- 形态 2：右侧 Rail（duo 展开 / iPad） ---- */
+body.mobile.nav-rail { --stack-bottom: calc(var(--safe-b) + 18px); }
+body.mobile.nav-rail nav.tabs {
+  right: calc(var(--safe-r) + 10px);
+  top: calc(var(--safe-t) + 10px);
+  bottom: auto;                 /* 胶囊只包住内容，不铺满整条边 */
+  height: auto;
+  max-height: calc(100vh - var(--safe-t) - var(--safe-b) - 22px);
+  overflow-y: auto;
+  width: var(--rail-w);
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 8px 7px;
+}
+body.mobile.nav-rail nav.tabs .tab {
+  flex: 0 0 auto;
+  height: 64px;
+}
+body.mobile.nav-rail header.top {
+  margin-right: calc(var(--rail-w) + var(--safe-r) + 18px);
+}
+body.mobile.nav-rail main {
+  /* 居中在「屏宽 − 两侧到侧栏的最小间距」以内：窄屏（iPad 820）不会被侧栏压住，
+     宽屏（Duo 1080）仍是 720 的内容宽 */
+  max-width: min(
+    calc(var(--content-max) + 44px),
+    calc(100vw - 2 * (var(--rail-w) + var(--safe-r) + 18px))
+  );
+  padding-bottom: calc(var(--safe-b) + 28px);
+  margin: 0 auto;
+}
+body.mobile.nav-rail #floatWriteBar {
+  right: calc(var(--rail-w) + var(--safe-r) + 18px);
+  bottom: calc(var(--safe-b) + 18px);
+  left: calc(var(--safe-l) + 16px);
+}
+body.mobile.nav-rail .stage-bar {
+  transform: translateX(calc(-50% - (var(--rail-w) + var(--safe-r)) / 2));
+}
+body.mobile.nav-rail .apx-toast {
+  right: calc(var(--rail-w) + var(--safe-r) + 10px);
+}
+body.mobile.nav-rail #cableBanner {
+  right: calc(var(--rail-w) + var(--safe-r));
+}
+body.mobile.nav-rail #bitPanel,
+body.mobile.nav-rail .help-sheet {
+  right: calc(var(--rail-w) + var(--safe-r) + 10px);
+}
+
+/* ---- 浮层：永远叠在导航内侧 ---- */
+body.mobile #floatWriteBar {
+  left: calc(var(--safe-l) + 12px);
+  right: calc(var(--safe-r) + 12px);
+  bottom: var(--stack-bottom);
+  width: auto;
+  transform: none;
+  justify-content: space-between;
+}
 body.mobile .stage-bar {
-  bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 8px);
-  z-index: 85;
+  bottom: calc(var(--stack-bottom) + 10px);
+  z-index: 45;
 }
 body.mobile.has-float-write .stage-bar {
-  bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 72px);
+  bottom: calc(var(--stack-bottom) + 74px);
+}
+
+/* ---- 键盘弹出：收起 Dock（搜索框在顶部，底栏只会挡内容） ---- */
+body.mobile.nav-dock.kb-open nav.tabs {
+  transform: translateY(140%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---- 低端机/减弱透明：退回纯色，保证可读 ---- */
+@media (prefers-reduced-transparency: reduce) {
+  body.mobile nav.tabs,
+  body.mobile #floatWriteBar,
+  body.mobile .stage-bar,
+  body.mobile .apx-toast {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: rgba(18, 25, 35, .98);
+  }
+}
+
+/* ---- 窄屏 Dock：7 个标签放不下全称，换成 2 字短名（全称在 rail/宽屏仍显示） ---- */
+@media (max-width: 559px) {
+  body.mobile.nav-dock nav.tabs .tab-label { font-size: 0; }
+  body.mobile.nav-dock nav.tabs .tab-label::after {
+    content: attr(data-short);
+    font-size: 10px;
+  }
+}
+
+/* ---- rail 模式下，整幅区块（横幅/识别条/页脚）也要让开侧栏 ---- */
+body.mobile.nav-rail #simBanner,
+body.mobile.nav-rail .veh-bar,
+body.mobile.nav-rail .todo-bar,
+body.mobile.nav-rail footer.foot {
+  margin-right: calc(var(--rail-w) + var(--safe-r) + 18px);
+}
+
+/* ---- 矮视口（手机横屏 393 高）：收紧头部，别把内容挤没 ---- */
+@media (max-height: 560px) {
+  body.mobile.nav-dock { --dock-h: 58px; }
+  body.mobile.nav-dock header.top { padding: calc(var(--safe-t) + 6px) 12px 4px; }
+  body.mobile.nav-dock .brand .sub { display: none; }
+  body.mobile.nav-dock .logo { width: 34px; height: 34px; border-radius: 10px; font-size: 12px; }
+  body.mobile.nav-dock .conn-chip { min-height: 36px; margin: 4px 12px; padding: 5px 12px; font-size: 12.5px; }
+  body.mobile.nav-dock nav.tabs .tab .ico { width: 19px; height: 19px; }
+  body.mobile.nav-dock nav.tabs .tab { gap: 1px; }
 }

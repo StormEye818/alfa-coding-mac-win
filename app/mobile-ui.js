@@ -22,6 +22,57 @@
   link.href = './mobile.css?v=' + Date.now();
   document.head.appendChild(link);
 
+  /* ---------- 0) 三态导航：dock / rail ----------
+     判定只看「可用尺寸」，不看设备名：
+       · 宽 ≥720 且 高 ≥560 → 右侧 Rail（duo 展开 1080×720、iPad 竖 820×1180）
+       · 其余               → 底部 Dock（手机竖屏；手机横屏 852×393 因高度不足仍是底栏）
+     桌面端不加 .mobile，走顶部标签，不受影响。
+     Rail 的位置全部由 CSS 变量算（含 safe-area），这里只管加类。 */
+  const RAIL_MIN_W = 720;
+  const RAIL_MIN_H = 560;
+  function applyNavMode() {
+    if (!document.body.classList.contains('mobile')) {
+      document.body.classList.remove('nav-dock', 'nav-rail');
+      return;
+    }
+    const rail = window.innerWidth >= RAIL_MIN_W && window.innerHeight >= RAIL_MIN_H;
+    document.body.classList.toggle('nav-rail', rail);
+    document.body.classList.toggle('nav-dock', !rail);
+  }
+  applyNavMode();
+
+  /* 调试用：?safe=59,34,47,47 覆盖安全区（无头浏览器无法模拟刘海，靠它做遮挡回归） */
+  (function overrideSafeArea() {
+    const m = /[?&]safe=([\d.]+),([\d.]+),([\d.]+),([\d.]+)/.exec(location.search);
+    if (!m) return;
+    const st = document.documentElement.style;
+    st.setProperty('--safe-t', m[1] + 'px');
+    st.setProperty('--safe-r', m[2] + 'px');
+    st.setProperty('--safe-b', m[3] + 'px');
+    st.setProperty('--safe-l', m[4] + 'px');
+  })();
+
+  let navTimer = 0;
+  const onViewportChange = () => {
+    clearTimeout(navTimer);
+    navTimer = setTimeout(applyNavMode, 120);   // 旋转/折叠时防抖，避免来回抖
+  };
+  window.addEventListener('resize', onViewportChange);
+  window.addEventListener('orientationchange', onViewportChange);
+
+  /* 键盘弹出：visualViewport 高度骤减 → 收起 Dock（iOS WebView 键盘是覆盖式的）。
+     Android 走 adjustResize 时 WebView 自身变矮，fixed 底栏天然在键盘上方，不会触发。 */
+  (function watchKeyboard() {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const check = () => {
+      const covered = window.innerHeight - vv.height;
+      document.body.classList.toggle('kb-open', covered > 140);
+    };
+    vv.addEventListener('resize', check);
+    vv.addEventListener('scroll', check);
+  })();
+
   /* ---------- 1) 连接 chip + 底部动作单 ---------- */
   function initConnSheet() {
     const conn = document.querySelector('.conn');

@@ -15,7 +15,30 @@
   --amber-bg: rgba(210, 153, 34, .15);
   --radius: 12px;
   --mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+
+  /* ---------- 安全区与导航几何（唯一真源） ----------
+     iOS：env() 有效；Android：原生侧已把系统栏转成内容区 padding，这里取到 0 才是对的 */
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --gap: 8px;
+  --topbar-h: 56px;
+  --dock-h: 66px;
+  --rail-w: 88px;
+  --content-max: 720px;
+  --r-glass: 24px;
+  /* 浮层默认落在「底栏之上」；rail 模式下由 mobile.css 改写 */
+  --stack-bottom: calc(var(--safe-b) + var(--dock-h) + var(--gap));
+  --rail-inset: 0px;
 }
+
+/* 线性图标：统一描边。之前只给了尺寸没给 fill/stroke，SVG 默认黑色填充 → 显示成黑块 */
+.ico { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+
+/* 通用隐藏：App 里到处用 .hidden 切显隐，但一直没定义这条规则 ——
+   于是 #floatWriteBar、开发用的「待验证」标签等元素切了 class 也照旧显示（2026-10-30 修） */
+.hidden { display: none !important; }
 
 * { box-sizing: border-box; }
 
@@ -136,9 +159,14 @@ button.link:hover { color: var(--accent2); }
 .tab {
   border: 0; background: transparent; border-radius: 0; padding: 13px 16px;
   color: var(--dim); border-bottom: 2px solid transparent; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 7px;
 }
 .tab:hover { color: var(--fg); border-color: transparent; }
 .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+/* 图标只在移动端（底栏/侧栏）出现；桌面顶栏保持纯文字，避免版面变化 */
+.tab .ico { display: none; width: 22px; height: 22px; }
+.tab-label { white-space: nowrap; }
+.tab .badge { margin-left: 2px; }
 .badge {
   background: var(--amber); color: #000; border-radius: 999px; padding: 1px 7px;
   font-size: 11px; font-weight: 700; margin-left: 4px;

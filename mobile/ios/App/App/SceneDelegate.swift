@@ -29,8 +29,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 class MfiBridgeViewController: CAPBridgeViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
+        // MFi 串口：已在 capacitor.config.json 的 packageClassList 里，autoRegister 会带上；
+        // 这里保留运行时注册是为了 cap sync 重写配置时兜底。
         bridge?.registerPluginType(MfiSerialPlugin.self)
-        // 原生右侧玻璃导航栏（Liquid Glass 适配层，见 GlassRailPlugin.swift）
-        bridge?.registerPluginType(GlassRailPlugin.self)
+
+        // 原生右侧玻璃导航栏（Liquid Glass 适配层，见 GlassRailPlugin.swift）。
+        // ⚠️ 必须用 registerPluginInstance：Capacitor 8 的 autoRegisterPlugins 默认为 true，
+        //    此时 registerPluginType 第一行就 return（不报错、不注册），插件会静默失效。
+        //    registerPluginInstance 不受该开关影响（2026-10-30 实机踩过）。
+        bridge?.registerPluginInstance(GlassRailPlugin())
     }
 }

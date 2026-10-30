@@ -98,10 +98,21 @@
      插件不存在（老安装包 / Android / 浏览器）时整段静默退出，网页侧栏照旧。 */
   function initNativeRail() {
     const cap = window.Capacitor;
-    const headers = cap && cap.PluginHeaders;
-    const has = !!(cap && typeof cap.nativePromise === 'function'
-      && Array.isArray(headers) && headers.some((h) => h.name === 'GlassRail'));
-    if (!has) return;
+    if (!cap || !cap.isNativePlatform || !cap.isNativePlatform()) return;
+    if (cap.getPlatform && cap.getPlatform() !== 'ios') return;
+
+    /* 两条通道都试：
+       · 原生注册时注入的代理 Capacitor.Plugins.GlassRail（正常路径）
+       · 低层 Capacitor.nativePromise（代理还没注入时的兜底）
+       不能用 PluginHeaders 判断可用性 —— 运行时注册的插件不一定在首屏头列表里，
+       否则会误判成"没有插件"而永远退回网页侧栏（2026-10-30 踩过）。 */
+    const proxy = cap.Plugins && cap.Plugins.GlassRail;
+    if (!proxy && typeof cap.nativePromise !== 'function') return;
+    const callNative = (method, opts) => {
+      if (proxy && typeof proxy[method] === 'function') return proxy[method](opts || {});
+      return cap.nativePromise('GlassRail', method, opts || {});
+    };
+    let available = true;
 
     const SYMBOL = {
       features: 'slider.horizontal.3',
@@ -129,17 +140,18 @@
     };
 
     function sync() {
+      if (!available) return;
       const want = document.body.classList.contains('nav-rail');
       if (want && !shown) {
-        cap.nativePromise('GlassRail', 'show', { items: listItems(), activeId: activeId() })
+        callNative('show', { items: listItems(), activeId: activeId() })
           .then(() => { shown = true; document.body.classList.add('native-rail'); })
-          .catch(() => {});
+          .catch(() => { available = false; });   // 老包/插件缺失：永久退回网页侧栏
       } else if (!want && shown) {
-        cap.nativePromise('GlassRail', 'hide', {}).catch(() => {});
+        callNative('hide', {}).catch(() => {});
         shown = false;
         document.body.classList.remove('native-rail');
       } else if (want && shown) {
-        cap.nativePromise('GlassRail', 'setActive', { id: activeId() }).catch(() => {});
+        callNative('setActive', { id: activeId() }).catch(() => {});
       }
     }
     window.__apxRailSync = sync;
@@ -154,7 +166,7 @@
 
     /* 网页自己切页（按钮/快捷键）时，把高亮同步回原生 */
     const mo = new MutationObserver(() => {
-      if (shown) cap.nativePromise('GlassRail', 'setActive', { id: activeId() }).catch(() => {});
+      if (shown) callNative('setActive', { id: activeId() }).catch(() => {});
     });
     [].forEach.call(nav.querySelectorAll('.tab'), (t) => {
       mo.observe(t, { attributes: true, attributeFilter: ['class'] });

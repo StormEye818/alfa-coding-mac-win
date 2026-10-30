@@ -47,6 +47,7 @@ public class GlassRailPlugin: CAPPlugin, CAPBridgedPlugin {
             return
         }
         let activeId = call.getString("activeId")
+        CAPLog.print("[GlassRail] show items=\(items.count) active=\(activeId ?? "-")")
 
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
@@ -127,8 +128,9 @@ final class GlassRailView: UIView {
     var onSelect: ((String) -> Void)?
 
     private let backdrop = UIVisualEffectView(effect: nil)
-    private let selection = UIVisualEffectView(effect: nil)
+    private let selection = UIView()          // 不是玻璃：玻璃不能叠玻璃，这里只是染色高亮
     private let stack = UIStackView()
+    private let sheen = CAGradientLayer()
     private var buttons: [String: RailButton] = [:]
     private(set) var activeId: String?
 
@@ -169,22 +171,31 @@ final class GlassRailView: UIView {
         }
         backdrop.isUserInteractionEnabled = false
 
-        // 选中胶囊：独立一层玻璃，带 tint 与交互反馈
+        // 选中高亮：不叠第二层玻璃（Apple 明确 glass 不能叠 glass，否则内层采不到外层的样）。
+        // 系统 tab bar 也是这个做法：一条玻璃 + 一层染色指示块。
         selection.translatesAutoresizingMaskIntoConstraints = true
         selection.isUserInteractionEnabled = false
-        selection.clipsToBounds = true
+        selection.clipsToBounds = false
         selection.layer.cornerRadius = 19
         selection.layer.cornerCurve = .continuous
-        if #available(iOS 26.0, *) {
-            let g = UIGlassEffect(style: .regular)
-            g.isInteractive = true
-            g.tintColor = UIColor.systemBlue.withAlphaComponent(0.45)
-            selection.effect = g
-        } else {
-            selection.effect = UIBlurEffect(style: .systemThinMaterialDark)
-            selection.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.35)
-        }
+        selection.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.26)
+        selection.layer.borderWidth = 1
+        selection.layer.borderColor = UIColor(red: 0.57, green: 0.79, blue: 1.0, alpha: 0.42).cgColor
+        selection.layer.shadowColor = UIColor.systemBlue.cgColor
+        selection.layer.shadowOpacity = 0.32
+        selection.layer.shadowRadius = 10
+        selection.layer.shadowOffset = CGSize(width: 0, height: 4)
         selection.alpha = 0
+
+        // 上缘那道折射亮线（纯绘制，不引入第二层材质）
+        sheen.colors = [
+            UIColor.white.withAlphaComponent(0.34).cgColor,
+            UIColor.white.withAlphaComponent(0.0).cgColor,
+        ]
+        sheen.startPoint = CGPoint(x: 0.5, y: 0)
+        sheen.endPoint = CGPoint(x: 0.5, y: 1)
+        sheen.cornerRadius = 14
+        selection.layer.addSublayer(sheen)
         addSubview(selection)
 
         stack.axis = .vertical
@@ -262,9 +273,14 @@ final class GlassRailView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
         // 旋转 / 分屏切换后重贴一次，不做动画
-        let old = selection.frame
         moveSelection(animated: false)
-        if old != selection.frame { /* 保持静默 */ }
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        sheen.frame = CGRect(x: selection.bounds.minX + selection.bounds.width * 0.1,
+                             y: 2,
+                             width: selection.bounds.width * 0.8,
+                             height: selection.bounds.height * 0.46)
+        CATransaction.commit()
     }
 }
 

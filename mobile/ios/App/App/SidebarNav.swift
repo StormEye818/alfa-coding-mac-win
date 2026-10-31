@@ -27,8 +27,6 @@ class SidebarNav: UITabBarController, UITabBarControllerDelegate {
 
     private let webHost: UIViewController
     private weak var glassRail: GlassRailPlugin?
-    /// WebView 固定挂在这里，永不移动（避免切页 reparent 白闪）
-    private let contentContainer = UIView()
 
     init(webHost: UIViewController, glassRail: GlassRailPlugin?) {
         self.webHost = webHost
@@ -42,35 +40,8 @@ class SidebarNav: UITabBarController, UITabBarControllerDelegate {
         super.viewDidLoad()
         mode = .tabBar
         delegate = self
-        view.backgroundColor = .clear
 
-        // ---- WebView 固定容器（挂在 UITabBarController.view 底层，永不移动）----
-        // 切 tab 时 TabContentVC 只触发 evaluateJavaScript 切内容，
-        // 不再 reparent WebView → 消除白闪（removeFromSuperview 那一帧）。
-        contentContainer.backgroundColor = .clear
-        contentContainer.translatesAutoresizingMaskIntoConstraints = false
-        view.insertSubview(contentContainer, at: 0)
-        NSLayoutConstraint.activate([
-            contentContainer.topAnchor.constraint(equalTo: view.topAnchor),
-            contentContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            contentContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            contentContainer.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-        ])
-
-        // WebView 作为 SidebarNav 的 child VC（Capacitor bridge 需要），
-        // 其 view 固定在 contentContainer 里
-        addChild(webHost)
-        webHost.view.translatesAutoresizingMaskIntoConstraints = false
-        contentContainer.addSubview(webHost.view)
-        NSLayoutConstraint.activate([
-            webHost.view.topAnchor.constraint(equalTo: contentContainer.topAnchor),
-            webHost.view.leadingAnchor.constraint(equalTo: contentContainer.leadingAnchor),
-            webHost.view.trailingAnchor.constraint(equalTo: contentContainer.trailingAnchor),
-            webHost.view.bottomAnchor.constraint(equalTo: contentContainer.bottomAnchor),
-        ])
-        webHost.didMove(toParent: self)
-
-        // 确保 WebView 提前加载
+        // 确保 WebView 提前加载（不等第一个 tab 被选中才加载）
         webHost.loadViewIfNeeded()
 
         // 创建系统 tab（icon + label + 内容 VC，UI 全部系统渲染）
@@ -107,9 +78,9 @@ class SidebarNav: UITabBarController, UITabBarControllerDelegate {
         tabBar.scrollEdgeAppearance = app
     }
 
-    /// 每个 tab 的内容 VC：透明覆盖层，不承载 WebView
+    /// 每个 tab 的内容 VC：承载共享 WebView（reparent 模式，触控完全正常）
     private func makeContentVC(for tabId: String) -> UIViewController {
-        let vc = TabContentVC(tabId: tabId)
+        let vc = TabContentVC(tabId: tabId, hostVC: webHost)
         vc.onShow = { [weak self] id in self?.notifyWeb(id) }
         return vc
     }
@@ -137,17 +108,22 @@ class SidebarNav: UITabBarController, UITabBarControllerDelegate {
     }
 }
 
-// MARK: - Tab 内容 VC（透明覆盖层，不承载 WebView）
+// MARK: - Tab 内容 VC（承载共享 WebView）
 
-/// 透明覆盖 VC：WebView 固定在 SidebarNav.contentContainer 里，
-/// 本 VC 只负责在出现时触发 evaluateJavaScript 切内容。
-/// 不 reparent WebView → 消除切页白闪。
+/// 轻量容器 VC：把共享的 Capacitor WebView 嵌入自己的视图。
+/// 切 tab 时 WebView 被 reparent 到新 VC（触控完全正常）。
+///
+/// 闪屏修复：背景从 .clear 改为深色（#0F1419，与 WebView 底色一致）。
+/// reparent 的 removeFromSuperview→addSubview 之间，UITabBarController 内容区
+/// 会露出一帧 —— 之前是白色（内容区默认底色），现在是深色，视觉上不可感知。
 class TabContentVC: UIViewController {
     let tabId: String
+    private weak var hostVC: UIViewController?
     var onShow: ((String) -> Void)?
 
-    init(tabId: String) {
+    init(tabId: String, hostVC: UIViewController) {
         self.tabId = tabId
+        self.hostVC = hostVC
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -155,11 +131,39 @@ class TabContentVC: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .clear   // 透明：WebView 在底层可见
+        view.backgroundColor = .clear
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // 渲染之前就把 WebView 搬到位 → 第一帧就有内容，零闪屏。
+        // 如果放在 viewDidAppear（渲染后），中间会露一帧空白。
+        embedHost()
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        onShow?(tabId)   // 只切内容，不移动 WebView
+        onShow?(tabId)   // 切内容在渲染后，不影响视觉
+    }
+
+    /// 把共享 WebView 挂到当前 VC（从旧父 VC 移过来）。
+    /// 触控完全正常 —— WebView 是本 VC 的子视图，事件直接到达。
+    private func embedHost() {
+        guard let host = hostVC, let hostView = host.view else { return }
+        if host.parent != nil {
+            host.willMove(toParent: nil)
+            hostView.removeFromSuperview()
+            host.removeFromParent()
+        }
+        host.willMove(toParent: self)
+        hostView.frame = view.bounds
+        hostView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        view.addSubview(hostView)
+        host.didMove(toParent: self)
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        hostVC?.view.frame = view.bounds
     }
 }

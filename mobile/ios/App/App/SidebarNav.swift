@@ -27,6 +27,8 @@ class SidebarNav: UITabBarController, UITabBarControllerDelegate {
 
     private let webHost: UIViewController
     private weak var glassRail: GlassRailPlugin?
+    /// WebView 固定挂在这里，永不移动（避免切页 reparent 白闪）
+    private let contentContainer = UIView()
 
     init(webHost: UIViewController, glassRail: GlassRailPlugin?) {
         self.webHost = webHost
@@ -38,14 +40,37 @@ class SidebarNav: UITabBarController, UITabBarControllerDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // 用 .tabBar 模式（不是 .tabSidebar）：
-        //   · .tabSidebar 在宽屏时会切成左侧 sidebar（iPad 风格），位置在左不对
-        //   · .tabBar 在 Duo 上始终渲染为右侧竖栏（verticalBarEdge = .trailing）
-        //   · 合盖/展开/旋转全部是同一套竖栏，不跳位置
         mode = .tabBar
         delegate = self
+        view.backgroundColor = .clear
 
-        // 确保 WebView 提前加载（不等第一个 tab 被选中才加载）
+        // ---- WebView 固定容器（挂在 UITabBarController.view 底层，永不移动）----
+        // 切 tab 时 TabContentVC 只触发 evaluateJavaScript 切内容，
+        // 不再 reparent WebView → 消除白闪（removeFromSuperview 那一帧）。
+        contentContainer.backgroundColor = .clear
+        contentContainer.translatesAutoresizingMaskIntoConstraints = false
+        view.insertSubview(contentContainer, at: 0)
+        NSLayoutConstraint.activate([
+            contentContainer.topAnchor.constraint(equalTo: view.topAnchor),
+            contentContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            contentContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            contentContainer.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+        ])
+
+        // WebView 作为 SidebarNav 的 child VC（Capacitor bridge 需要），
+        // 其 view 固定在 contentContainer 里
+        addChild(webHost)
+        webHost.view.translatesAutoresizingMaskIntoConstraints = false
+        contentContainer.addSubview(webHost.view)
+        NSLayoutConstraint.activate([
+            webHost.view.topAnchor.constraint(equalTo: contentContainer.topAnchor),
+            webHost.view.leadingAnchor.constraint(equalTo: contentContainer.leadingAnchor),
+            webHost.view.trailingAnchor.constraint(equalTo: contentContainer.trailingAnchor),
+            webHost.view.bottomAnchor.constraint(equalTo: contentContainer.bottomAnchor),
+        ])
+        webHost.didMove(toParent: self)
+
+        // 确保 WebView 提前加载
         webHost.loadViewIfNeeded()
 
         // 创建系统 tab（icon + label + 内容 VC，UI 全部系统渲染）
@@ -57,7 +82,6 @@ class SidebarNav: UITabBarController, UITabBarControllerDelegate {
             ) { [weak self] _ in
                 self?.makeContentVC(for: item.id) ?? UIViewController()
             }
-            // .pinned 让条目固定显示（竖栏模式下尽量带 label）
             tab.preferredPlacement = .pinned
             return tab
         }
@@ -83,9 +107,9 @@ class SidebarNav: UITabBarController, UITabBarControllerDelegate {
         tabBar.scrollEdgeAppearance = app
     }
 
-    /// 每个 tab 的内容 VC：透明背景 + 承载共享的 WebView
+    /// 每个 tab 的内容 VC：透明覆盖层，不承载 WebView
     private func makeContentVC(for tabId: String) -> UIViewController {
-        let vc = TabContentVC(tabId: tabId, hostVC: webHost)
+        let vc = TabContentVC(tabId: tabId)
         vc.onShow = { [weak self] id in self?.notifyWeb(id) }
         return vc
     }
@@ -113,18 +137,17 @@ class SidebarNav: UITabBarController, UITabBarControllerDelegate {
     }
 }
 
-// MARK: - Tab 内容 VC（承载共享 WebView）
+// MARK: - Tab 内容 VC（透明覆盖层，不承载 WebView）
 
-/// 轻量容器 VC：把共享的 Capacitor WebView 嵌入自己的视图。
-/// 切 tab 时 WebView 被 reparent 到新 VC（不重载，不闪烁）。
+/// 透明覆盖 VC：WebView 固定在 SidebarNav.contentContainer 里，
+/// 本 VC 只负责在出现时触发 evaluateJavaScript 切内容。
+/// 不 reparent WebView → 消除切页白闪。
 class TabContentVC: UIViewController {
     let tabId: String
-    private weak var hostVC: UIViewController?
     var onShow: ((String) -> Void)?
 
-    init(tabId: String, hostVC: UIViewController) {
+    init(tabId: String) {
         self.tabId = tabId
-        self.hostVC = hostVC
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -132,34 +155,11 @@ class TabContentVC: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .clear   // 透明：WebView 铺满，系统侧栏叠在上方
+        view.backgroundColor = .clear   // 透明：WebView 在底层可见
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        embedHost()
-        onShow?(tabId)
-    }
-
-    /// 把共享 WebView 挂到当前 VC（从旧父 VC 移过来）
-    private func embedHost() {
-        guard let host = hostVC, let hostView = host.view else { return }
-        // 先从旧父 VC 移除
-        if host.parent != nil {
-            host.willMove(toParent: nil)
-            hostView.removeFromSuperview()
-            host.removeFromParent()
-        }
-        // 挂到当前 VC
-        host.willMove(toParent: self)
-        hostView.frame = view.bounds
-        hostView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        view.addSubview(hostView)
-        host.didMove(toParent: self)
-    }
-
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        hostVC?.view.frame = view.bounds
+        onShow?(tabId)   // 只切内容，不移动 WebView
     }
 }

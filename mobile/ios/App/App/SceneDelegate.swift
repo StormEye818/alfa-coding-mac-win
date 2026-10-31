@@ -13,19 +13,31 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let webHost = MfiBridgeViewController()
         webHost.loadViewIfNeeded()   // 触发 viewDidLoad → 注册插件、加载网页
 
-        // 2) 用系统 UITabBarController 包一层（Liquid Glass 侧栏，系统管 UI）
-        let sidebarNav = SidebarNav(webHost: webHost, glassRail: webHost.glassRailPlugin)
-        window?.rootViewController = sidebarNav
+        // 2) 只有 iPhone Duo（有右侧竖栏的设备）才用系统 UITabBarController 侧栏；
+        //    其他设备（普通 iPhone/iPad）保持原有网页导航，零改动。
+        if Self.hasVerticalBar(windowScene) {
+            let sidebarNav = SidebarNav(webHost: webHost, glassRail: webHost.glassRailPlugin)
+            window?.rootViewController = sidebarNav
+            if let plugin = webHost.glassRailPlugin {
+                plugin.onActiveChanged = { [weak sidebarNav] id in
+                    sidebarNav?.setSelectedTab(id)
+                }
+            }
+        } else {
+            window?.rootViewController = webHost
+        }
         window?.makeKeyAndVisible()
 
-        // 3) 连接 GlassRail 插件（bridge 就绪后才能拿到）
-        if let plugin = webHost.glassRailPlugin {
-            plugin.onActiveChanged = { [weak sidebarNav] id in
-                sidebarNav?.setSelectedTab(id)
-            }
-        }
-
         SceneDelegateProxy.shared.scene(scene, willConnectTo: session, options: connectionOptions)
+    }
+
+    /// 设备是否有系统竖栏（iPhone Duo 右侧 vertical bar）。
+    /// iOS 27.1+ 用 UIVerticalBarEdge trait 精确判断；其他版本一律走旧路径。
+    static func hasVerticalBar(_ scene: UIWindowScene) -> Bool {
+        if #available(iOS 27.1, *) {
+            return scene.traitCollection.verticalBarEdge != .unspecified
+        }
+        return false   // 非 27.1+ 设备：无竖栏，保持网页导航
     }
 
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
@@ -55,11 +67,21 @@ class MfiBridgeViewController: CAPBridgeViewController {
         registerGlassRail()
     }
 
-    /// GlassRail 系统侧栏桥接插件。
+    /// GlassRail 系统侧栏桥接插件 —— **只在 iPhone Duo（有竖栏的设备）注册**。
+    /// 非 Duo 设备不注册 → 网页 show() 调用失败 → 走网页导航回退，零影响。
     /// ⚠️ 必须用 registerPluginInstance：Capacitor 8 的 autoRegisterPlugins 默认 true，
     ///    此时 registerPluginType 第一行就 return（不报错、不注册）。
     private func registerGlassRail() {
         guard !glassRailRegistered, let bridge = bridge else { return }
+        // 设备隔离：只有竖栏设备才注册系统侧栏插件
+        if #available(iOS 27.1, *) {
+            guard traitCollection.verticalBarEdge != .unspecified else {
+                CAPLog.print("[GlassRail] skipped (no vertical bar, using web navigation)")
+                return
+            }
+        } else {
+            return   // 非 27.1+：无竖栏，保持网页导航
+        }
         let plugin = GlassRailPlugin()
         bridge.registerPluginInstance(plugin)
         glassRailPlugin = plugin

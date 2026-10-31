@@ -157,12 +157,15 @@
             callNative('setActive', { id: activeId() }).catch(() => {});
           })
           .catch(() => {
-            // bridge 可能晚就绪，指数退避重试（最多 MAX_RETRY 次）
-            if (retryCount < MAX_RETRY) {
+            // 插件代理存在 = bridge 时序问题（Duo 上插件已注册，等它就绪）→ 正常重试
+            // 插件代理不存在 = 非竖栏设备（插件根本没注册）→ 快速回退，不浪费时间
+            const hasProxy = cap.Plugins && cap.Plugins.GlassRail;
+            const maxRetries = hasProxy ? MAX_RETRY : 2;
+            if (retryCount < maxRetries) {
               retryCount++;
               setTimeout(sync, 300 * retryCount);
             } else {
-              available = false;   // 确实没有插件（老包）：退回网页侧栏
+              available = false;   // 退回网页导航
             }
           });
       } else {

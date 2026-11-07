@@ -273,9 +273,9 @@ console.log('\n附加：在场位 / 安全访问 / 失败模式');
 
     // 在场位判定与 snapshot 一致
     const snap = car.snapshot();
-    const cdmNode = Object.entries(snap.nodes).find(([k]) => k.includes('Compact Disk'));
+    const cdmNode = Object.entries(snap.nodes).find(([k]) => k.includes('Compact disk'));
     check('snapshot 标记 CDM 未安装', cdmNode && cdmNode[1].installed === false);
-    const bcmNode = Object.entries(snap.nodes).find(([k]) => k.includes('Body Computer'));
+    const bcmNode = Object.entries(snap.nodes).find(([k]) => /body computer/i.test(k));
     check('snapshot 标记 BCM 已安装且已对齐', bcmNode && bcmNode[1].installed && bcmNode[1].aligned);
 
     // 安全访问：PIN 路径可用；SECURITY0529（05/06）返回 NRC
@@ -302,7 +302,7 @@ console.log('\n附加：契约接口与总线分组');
     check('ecuByAddress(0x40) 返回车身电脑 ECU', E(0x40) !== null && E(0x40).modules.includes('BODY33'));
     check('ecuByAddress(未知地址) 返回 null', car.ecuByAddress(0xEE) === null);
     const snap = car.snapshot();
-    check('35 个模块全部出现在 snapshot.modules', Object.keys(snap.modules).length === 35,
+    check('40 个模块全部出现在 snapshot.modules', Object.keys(snap.modules).length === 40,
         String(Object.keys(snap.modules).length));
     const buses = new Set(Object.values(snap.modules).map((m) => m.bus));
     check('分 CCAN29 / BHCAN29 两条总线', buses.has('CCAN29') && buses.has('BHCAN29'), [...buses].join(','));

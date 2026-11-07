@@ -69,10 +69,18 @@ function securityNote(f) {
     return { level: 'none', text: '无需安全访问' };
 }
 
+/** 公开面中性化：数据串里的第三方工具名换成通用说法（发版红线，每次生成都要过） */
+function sanitizeDesc(s) {
+    if (!s) return s;
+    return s
+        .replace(/Multiecuscan/gi, 'the diagnostic tool')
+        .replace(/your the diagnostic tool/gi, 'your diagnostic tool');
+}
+
 function build() {
     fs.mkdirSync(OUT, { recursive: true });
-    const params = readTsv('params_all.tsv');
-    const ecus = readTsv('ecu_list.tsv');
+    const params = readTsv('params_all_55.tsv');
+    const ecus = readTsv('ecu_list_55.tsv');
     const okCodes = new Set();
     for (const r of ecus) {
         const n = parseInt(r.carId, 10);
@@ -101,7 +109,7 @@ function build() {
 
     fs.writeFileSync(path.join(OUT, 'named-settings.json'), JSON.stringify({
         note: '数据源自带的 PROXI 命名设置（一键写）。每个 = 在 DATA1 的 startByte 上按 mask 改成某个 value，然后 2E 20 23 写回 + 重算 CRC。',
-        source: 'diag-data/data/params_all.tsv (ModuleID=PROXIX1, CmdType=4)',
+        source: 'diag-data/data/params_all_55.tsv (ModuleID=PROXIX1, CmdType=4)',
         count: named.length,
         settings: named,
     }, null, 2) + '\n');
@@ -123,6 +131,8 @@ function build() {
         PLGM1: '尾门', ABG28: '安全气囊', LRBSS1: '盲点监测',
         AAML1: '主动空气动力', AAMR1: '主动空气动力', ADBLU1: '排放 / 尿素',
         DASH29: '仪表', PROXIX1: 'PROXI 对齐',
+        BODY33V2: '车身执行器与编程', CDCM1: '驾驶辅助 / 底盘',
+        DASH29TFT: '仪表', TBM1: '多媒体', TTM1: '车身执行器与编程',
     };
     const perCat = new Map();
     for (const r of params) {
@@ -139,7 +149,7 @@ function build() {
             cmdType: r.CmdType,
             commands: r.Commands,
             resultFormat: r.ResultFormat,
-            desc: r.Description && r.Description !== 'No help available' ? r.Description : '',
+            desc: r.Description && r.Description !== 'No help available' ? sanitizeDesc(r.Description) : '',
             security: sec,
             needsUserInput: flags.userEntry !== null,
             execManual: flags.execManual,
@@ -199,7 +209,7 @@ function build() {
 
     fs.writeFileSync(path.join(OUT, 'functions.json'), JSON.stringify({
         note: '特殊功能（执行器测试 / 编程 / 调整）。已剔除里程表写入类条目。security.level=server 的本工具不支持。',
-        source: 'diag-data/data/params_all.tsv (CmdType=3/4/8/6, 952/949 模块)',
+        source: 'diag-data/data/params_all_55.tsv (CmdType=3/4/8/6, 952/949 模块)',
         total: funcs.reduce((n, f) => n + f.count, 0),
         categories: funcs,
     }, null, 2) + '\n');

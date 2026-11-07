@@ -11,8 +11,9 @@
 import json
 import pathlib
 import csv
+import re
 
-TSV = pathlib.Path.home() / 'diag-data/data/params_all.tsv'
+TSV = pathlib.Path.home() / 'diag-data/data/params_all_55.tsv'
 OUT = pathlib.Path(__file__).resolve().parent.parent / 'src/data/params.json'
 
 NUM_FAMILIES = ('num', 'nums')  # nums = signed
@@ -84,6 +85,9 @@ def main():
             bits = (r.get('BitResults') or '').strip()
             if bits:
                 spec['options'] = [e for e in bits.split('|') if e]
+            # RWUSERENTRY* 等旗标串不是展示格式；带 MMVV 选项表时按位语义展示（5.5 新增行）
+            if 'options' in spec and re.match(r'^RWUSERENTRY', str(spec.get('format') or ''), re.I):
+                spec['format'] = 'bits'
             it['spec'] = spec
     json.dump(params, open(OUT, 'w'), ensure_ascii=False, indent=1)
     print(f'重建 spec：命中 {hit}，源缺失 {miss}（保留原样）')

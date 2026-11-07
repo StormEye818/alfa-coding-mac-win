@@ -40,7 +40,7 @@ function build() {
     fs.mkdirSync(OUT, { recursive: true });
 
     // ---- 1. 952/949 模块表 ----
-    const ecus = readTsv('ecu_list.tsv');
+    const ecus = readTsv('ecu_list_55.tsv');
     const platOf = (carId) => {
         const n = parseInt(carId, 10);
         if (n >= 680 && n <= 682) return '952';   // Giulia
@@ -70,26 +70,31 @@ function build() {
     const modules = [...byCode.values()].sort((a, b) => a.sort - b.sort);
 
     // ---- 2. PROXI 对齐节点表 ----
-    const params = readTsv('params_all.tsv');
-    // 952/949 不支持的混动/纯电/空气悬架/拖车节点：源数据 PROXIX1 表里存在，
-    // 但本平台没有这些硬件。生成时必须保留排除标记，否则整页会多出 15 个
+    const params = readTsv('params_all_55.tsv');
+    // 952/949 不支持的混动/纯电/空气悬架/CNG 节点：源数据 PROXIX1 表里存在，
+    // 但本平台没有这些硬件。生成时必须保留排除标记，否则整页会多出
     // 永远读不到、也无法对齐的节点（旧产物是人工排除的，重跑会丢）。
+    // 2026-11-07 对齐 5.5 数据源：名称按 5.5 措辞（Node→Module 一并跟进）；
+    // 拖车系列（TTM/TTEBM）不再排除——5.5 ECU 定义把 Trailer tow module 映射到
+    // 952/949（拖挂套件选装，是否装配以在场位为准）。APM/MCPB 为 5.5 新增的
+    // 混动/纯电槽位，按同类硬件排除。
     const EXCLUDED = new Set([
         'Auxiliary hybrid control processor module (AHCP)',
-        'Battery Pack Control Node (BPCM)',
-        'Electric Air Compressor Node (EAC)',
-        'Electric Vehicle Control Node (EVCU)',
-        'Gas Injector Node (SDU)',
+        'Battery pack control module (BPCM)',
+        'Electric air compressor module (EAC)',
+        'Electric vehicle control module (EVCU)',
+        'Gas injector module (SDU)',
         'Hybrid control processor module (HCP)',
-        'Integrated Dual Charger Module (IDCM)',
-        'Onboard Battery Charger Node (OBCM)',
-        'Power Inverter Node (PIM)',
-        'Regenerative Brakes Control Node (RBC)',
-        'Trailer Tow Node (TTM)',
-        'Air Suspension Node (NMA/ASM)',
-        'Overweight Monitoring Node (OMM)',
-        'Roll Control Node (NRC)',
-        'Suspension Controlled Node (DCM)',
+        'Integrated dual charger module (IDCM)',
+        'Onboard battery charger module (OBCM)',
+        'Power inverter module (PIM)',
+        'Regenerative brakes control module (RBC)',
+        'Air suspension module (ASM/NMA)',
+        'Overweight monitoring module (OMM)',
+        'Roll control module (RCM/NRC)',
+        'Controlled suspension module (DCM)',
+        'Auxiliary power module (APM)',
+        'Motor control processor (MCPB)',
     ]);
     const nodes = [];
     for (const r of params) {
@@ -123,7 +128,7 @@ function build() {
     };
 
     fs.writeFileSync(path.join(OUT, 'modules.json'), JSON.stringify({
-        generatedFrom: 'diag-data/data (5.4 DB)',
+        generatedFrom: 'diag-data/data (5.5 DB)',
         platforms: {
             '952': { name: 'Giulia', code: '952', bodyModule: 'BODY33', proxiModule: 'PROXIX1' },
             '949': { name: 'Stelvio', code: '949', bodyModule: 'BODY30', proxiModule: 'PROXIX1' },

@@ -2029,14 +2029,14 @@
      "start": 0,
      "format": "bits",
      "options": [
-      "0F00Activated",
-      "0F01In progress",
-      "0F02Activated",
+      "0F00Applied",
+      "0F01Applying",
+      "0F02Fully applied",
       "0F03Released",
-      "0F04In progress",
+      "0F04Releasing",
       "0F06Initialization",
-      "0F07Released",
-      "0F08In progress",
+      "0F07Fully released",
+      "0F08Releasing",
       "0F09Service mode",
       "0F05Unknown"
      ]
@@ -2065,14 +2065,14 @@
      "start": 0,
      "format": "bits",
      "options": [
-      "0F00Activated",
-      "0F01In progress",
-      "0F02Activated",
+      "0F00Applied",
+      "0F01Applying",
+      "0F02Fully applied",
       "0F03Released",
-      "0F04In progress",
+      "0F04Releasing",
       "0F06Initialization",
-      "0F07Released",
-      "0F08In progress",
+      "0F07Fully released",
+      "0F08Releasing",
       "0F09Service mode",
       "0F05Unknown"
      ]
@@ -3917,7 +3917,7 @@
       "1C042",
       "1C083",
       "1C0C4",
-      "1C10",
+      "1C105",
       "1C00OFF"
      ]
     }
@@ -4556,7 +4556,7 @@
       "1C042",
       "1C083",
       "1C0C4",
-      "1C10",
+      "1C105",
       "1C00OFF"
      ]
     }
@@ -12242,6 +12242,10 @@
      "bytes": 1,
      "start": 0,
      "format": "nm,0,1,0,7F",
+     "decimals": 0,
+     "scale": 1.0,
+     "offset": 0.0,
+     "mask": "7F",
      "unit": "%"
     }
    },
@@ -12353,6 +12357,10 @@
      "bytes": 1,
      "start": 0,
      "format": "nm,0,1,0,7F",
+     "decimals": 0,
+     "scale": 1.0,
+     "offset": 0.0,
+     "mask": "7F",
      "unit": "%"
     }
    },
@@ -12479,6 +12487,10 @@
      "bytes": 1,
      "start": 0,
      "format": "nm,0,1,0,7F",
+     "decimals": 0,
+     "scale": 1.0,
+     "offset": 0.0,
+     "mask": "7F",
      "unit": "%"
     }
    },
@@ -18090,7 +18102,7 @@
     }
    },
    {
-    "name": "Body Computer Node (BCM/NBC)",
+    "name": "Body computer module (BCM/NBC)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18104,7 +18116,7 @@
     }
    },
    {
-    "name": "Engine Control Node (ECM/NCM)",
+    "name": "Engine control module (ECM/NCM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18118,7 +18130,7 @@
     }
    },
    {
-    "name": "Dashboard Node (IPC/NQS)",
+    "name": "Instrument panel cluster module (IPC/NQS)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18132,7 +18144,7 @@
     }
    },
    {
-    "name": "Steering Wheel Controls Node (NVO)",
+    "name": "Steering wheel switches module (SSM/NVO)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18146,7 +18158,7 @@
     }
    },
    {
-    "name": "Info-Telematic/Convergence Node (NIT/NCV)",
+    "name": "Infotainment module (ITM/NIT/NCV)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18160,7 +18172,7 @@
     }
    },
    {
-    "name": "Boot Node (NVB)",
+    "name": "Trunk area module (TAM/NVB)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18174,7 +18186,7 @@
     }
    },
    {
-    "name": "Automatic Transmission Node (TCM/NCA/NCR)",
+    "name": "Automatic transmission module (TCM/MTA/DCTM/NCA/NCR)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18188,7 +18200,7 @@
     }
    },
    {
-    "name": "Steering Angle Sensor Node (NAS)",
+    "name": "Steering angle sensor module (SAS/NAS)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18202,7 +18214,7 @@
     }
    },
    {
-    "name": "Ceiling Node (NIM)",
+    "name": "Roof area module (RAM/NIM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18216,7 +18228,7 @@
     }
    },
    {
-    "name": "Side Acceleration / Yaw Node (NYL)",
+    "name": "Yaw rate sensor module (YRS/NYL)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18230,7 +18242,7 @@
     }
    },
    {
-    "name": "Adaptive Cruise Control Node (NAC)",
+    "name": "Adaptive cruise control module (ACC/NAC)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18244,7 +18256,7 @@
     }
    },
    {
-    "name": "Assisted Braking Node (NBA)",
+    "name": "Brake assistant module (BAM/NBA)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18258,7 +18270,7 @@
     }
    },
    {
-    "name": "Gearbox Selector Node (ESM/GSM/NSC)",
+    "name": "Gearbox selector module (ESM/GSM/STM/AGSM/NSC)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18272,7 +18284,7 @@
     }
    },
    {
-    "name": "Engine Signals Node (NSM)",
+    "name": "Engine signals converter/Methane module (ESCM/FMM/NSM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18286,7 +18298,7 @@
     }
    },
    {
-    "name": "Coupling Control Node (CCM)",
+    "name": "Coupling control module (CCM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18300,7 +18312,7 @@
     }
    },
    {
-    "name": "Telematic Box Node (TBM)",
+    "name": "Telematic box module (TBM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18314,7 +18326,7 @@
     }
    },
    {
-    "name": "Gas Injector Node (SDU)",
+    "name": "Gas injector module (SDU)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18328,7 +18340,7 @@
     }
    },
    {
-    "name": "Selective Catalytic Reduction Module (SCRM)",
+    "name": "Selective catalytic reduction module (SCRM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18342,7 +18354,7 @@
     }
    },
    {
-    "name": "Wireless Ignition Node (WIN)",
+    "name": "Wireless ignition module (WIN)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18356,7 +18368,7 @@
     }
    },
    {
-    "name": "Driver Assistant System Node (DASM)",
+    "name": "Radar/Driver assistant system module (DASM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18370,7 +18382,7 @@
     }
    },
    {
-    "name": "Electric Vehicle Control Node (EVCU)",
+    "name": "Electric vehicle control module (EVCU)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18384,7 +18396,7 @@
     }
    },
    {
-    "name": "Radio Frequency Hub Node (RFHM)",
+    "name": "Radio frequency hub module (RFHM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18398,7 +18410,7 @@
     }
    },
    {
-    "name": "Power Inverter Node (PIM)",
+    "name": "Power inverter module (PIM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18412,7 +18424,7 @@
     }
    },
    {
-    "name": "Drive Train Control Node (DTCM)",
+    "name": "Drivetrain control module (DTCM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18426,7 +18438,7 @@
     }
    },
    {
-    "name": "Battery Pack Control Node (BPCM)",
+    "name": "Battery pack control module (BPCM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18440,7 +18452,7 @@
     }
    },
    {
-    "name": "Electric Air Compressor Node (EAC)",
+    "name": "Electric air compressor module (EAC)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18454,7 +18466,7 @@
     }
    },
    {
-    "name": "Onboard Battery Charger Node (OBCM)",
+    "name": "Onboard battery charger module (OBCM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18468,7 +18480,7 @@
     }
    },
    {
-    "name": "Regenerative Brakes Control Node (RBC)",
+    "name": "Regenerative brakes control module (RBC)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18496,7 +18508,7 @@
     }
    },
    {
-    "name": "Auto Headlamp Leveling Node (AHLM)",
+    "name": "Automatic headlamp leveling module (AHLM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18510,7 +18522,7 @@
     }
    },
    {
-    "name": "Passenger Occupant Classification Node (OCM)",
+    "name": "Passenger occupant classification module (OCM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18566,7 +18578,7 @@
     }
    },
    {
-    "name": "Engine control Module 2 (ECM2)",
+    "name": "Engine control module 2 (ECM2)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18580,7 +18592,7 @@
     }
    },
    {
-    "name": "Security Gateway Module (SGW)",
+    "name": "Security gateway module (SGW)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18594,7 +18606,7 @@
     }
    },
    {
-    "name": "Integrated Dual Charger Module (IDCM)",
+    "name": "Integrated dual charger module (IDCM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18608,7 +18620,7 @@
     }
    },
    {
-    "name": "Receiver Radio (NRR)",
+    "name": "Radio receiver module (RRM/NRR)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18622,7 +18634,7 @@
     }
    },
    {
-    "name": "Driver Door Node (NPG)",
+    "name": "Driver door module (DDM/FDM/UDM/NPG)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18636,7 +18648,7 @@
     }
    },
    {
-    "name": "Climate Control Node (HVAC/NCL)",
+    "name": "Climate control module (ECC/ACM/MCM/NCL)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18650,7 +18662,7 @@
     }
    },
    {
-    "name": "Parking Brake Control Node (NPB)",
+    "name": "Electric parking brake module (EPB/NPB)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18664,7 +18676,7 @@
     }
    },
    {
-    "name": "Passenger Door Node (NPP)",
+    "name": "Passenger door module (PDM/NPP)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18678,7 +18690,7 @@
     }
    },
    {
-    "name": "Driver Seat Node (NAG)",
+    "name": "Driver seat module (DSM/NAG)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18692,7 +18704,7 @@
     }
    },
    {
-    "name": "Passive Entry Node (NPE)",
+    "name": "Passive entry/Tag reader module (PEM/TRM/NPE)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18706,7 +18718,7 @@
     }
    },
    {
-    "name": "Passenger Seat Node (NAP)",
+    "name": "Passenger seat module (PSM/NAP)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18720,7 +18732,7 @@
     }
    },
    {
-    "name": "Display Screen Module (DSM)",
+    "name": "Display screen module (DSM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18734,7 +18746,7 @@
     }
    },
    {
-    "name": "Convergence Telematic Node (CTM)",
+    "name": "Convergence telematic/Bluetooth module (CTM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18748,7 +18760,7 @@
     }
    },
    {
-    "name": "Additional Heater Node (CTM)",
+    "name": "Additional heater module (AHM/HCM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18762,7 +18774,7 @@
     }
    },
    {
-    "name": "Entertainment Telematic Node (ETM)",
+    "name": "Entertainment telematic module (ETM/LTM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18776,7 +18788,7 @@
     }
    },
    {
-    "name": "Receiver Radio/Radio Navigator Node (NRR/RMN)",
+    "name": "Radio map nav module (RMN/NRR)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18804,7 +18816,7 @@
     }
    },
    {
-    "name": "Satellite Receiver Node (SRM)",
+    "name": "Satellite receiver module (SRM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18818,7 +18830,7 @@
     }
    },
    {
-    "name": "Amplifier Node (AMP)",
+    "name": "Amplifier module (AMP)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18832,7 +18844,7 @@
     }
    },
    {
-    "name": "Compact Disk Node (CDM)",
+    "name": "Compact disk module (CDM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18846,7 +18858,7 @@
     }
    },
    {
-    "name": "Comfort Seat and Wheel Node (CSWM)",
+    "name": "Comfort seat and wheel module (CSWM/HMSM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18860,7 +18872,7 @@
     }
    },
    {
-    "name": "Integrated Center Stack Node (ICS)",
+    "name": "Integrated center stack/Climate control panel module (ICS/HCPM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18874,7 +18886,7 @@
     }
    },
    {
-    "name": "Left Blind Spot Sensor Node (LBSS)",
+    "name": "Left blind spot sensor module (LBSS)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18888,7 +18900,7 @@
     }
    },
    {
-    "name": "Right Blind Spot Sensor Node (RBSS)",
+    "name": "Right blind spot sensor module (RBSS)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18902,7 +18914,7 @@
     }
    },
    {
-    "name": "Steering Column Control Node (SCCM)",
+    "name": "Steering column control module (SCCM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18916,7 +18928,7 @@
     }
    },
    {
-    "name": "Driver Door Latch Module (DDML)",
+    "name": "Driver door latch module (DDML/LSMD)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18930,7 +18942,7 @@
     }
    },
    {
-    "name": "Passenger Door Latch Module (PDML)",
+    "name": "Passenger door latch module (PDML/LSMP)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18944,7 +18956,7 @@
     }
    },
    {
-    "name": "Comfort Rear Seat Module (CRSM)",
+    "name": "Comfort rear seat module (CRSM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18958,7 +18970,7 @@
     }
    },
    {
-    "name": "Trailer Tow Node (TTM)",
+    "name": "Trailer tow module (TTM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18972,7 +18984,7 @@
     }
    },
    {
-    "name": "Front View Camera Node (FVCM)",
+    "name": "Front view camera module (FVCM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -18986,7 +18998,7 @@
     }
    },
    {
-    "name": "Power Lift Gate Node (PLGM)",
+    "name": "Power liftgate module (PLGM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -19056,7 +19068,7 @@
     }
    },
    {
-    "name": "Electric Steering Node (EPS/NGE)",
+    "name": "Electric power steering module (EPS/NGE)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -19070,7 +19082,7 @@
     }
    },
    {
-    "name": "Brake System Node (ABS/BSM/NFR)",
+    "name": "Brake system module (ABS/BSM/NFR)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -19084,7 +19096,7 @@
     }
    },
    {
-    "name": "Steering Lock Node (NBS)",
+    "name": "Electric steering lock module (ESL/NBS)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -19098,7 +19110,7 @@
     }
    },
    {
-    "name": "Parking Sensor Node (PAM/NSP)",
+    "name": "Parking assistant module (PAM/NSP)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -19112,7 +19124,7 @@
     }
    },
    {
-    "name": "Airbag Node (NAB/ORC)",
+    "name": "Airbag module (ORC/SDM/NAB)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -19126,7 +19138,7 @@
     }
    },
    {
-    "name": "Air Suspension Node (NMA/ASM)",
+    "name": "Air suspension module (ASM/NMA)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -19140,7 +19152,7 @@
     }
    },
    {
-    "name": "Self-adaptive Headlamps Node (AFLS/NFA)",
+    "name": "Adaptive front light module (AFLS/NFA)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -19154,7 +19166,7 @@
     }
    },
    {
-    "name": "Haptical Lane Feedback Node (HALF)",
+    "name": "Haptic lane feedback module (HALF)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -19168,7 +19180,7 @@
     }
    },
    {
-    "name": "Suspension Controlled Node (DCM)",
+    "name": "Controlled suspension module (DCM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -19182,7 +19194,7 @@
     }
    },
    {
-    "name": "Tire Pressure Node (TPMS)",
+    "name": "Tire pressure monitoring system module (TPMS)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -19196,7 +19208,7 @@
     }
    },
    {
-    "name": "Roll Control Node (NRC)",
+    "name": "Roll control module (RCM/NRC)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -19210,7 +19222,7 @@
     }
    },
    {
-    "name": "Video Parking Aid Node (VPAM)",
+    "name": "Vision park assist module (VPAM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -19224,7 +19236,7 @@
     }
    },
    {
-    "name": "Overweight Monitoring Node (OMM)",
+    "name": "Overweight monitoring module (OMM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -19238,7 +19250,7 @@
     }
    },
    {
-    "name": "Vehicle Tracking Module (VTM)",
+    "name": "Vehicle tracking module (VTM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -19252,7 +19264,7 @@
     }
    },
    {
-    "name": "Collision Mitigation Module (CMM)",
+    "name": "Collision mitigation module (CMM)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -19294,7 +19306,7 @@
     }
    },
    {
-    "name": "Active aerodynamic module Right (AAMR)",
+    "name": "Right active aerodynamic module (AAMR)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
@@ -19308,13 +19320,69 @@
     }
    },
    {
-    "name": "Active aerodynamic module Left (AAML)",
+    "name": "Left active aerodynamic module (AAML)",
     "did": "2023",
     "commands": "03222023",
     "spec": {
      "bytes": 1,
      "start": 2,
      "format": "3F500x",
+     "options": [
+      "2020Present",
+      "2000Not present"
+     ]
+    }
+   },
+   {
+    "name": "Auxiliary power module (APM)",
+    "did": "2023",
+    "commands": "03222023",
+    "spec": {
+     "bytes": 1,
+     "start": 3,
+     "format": "00500",
+     "options": [
+      "0808Present",
+      "0800Not present"
+     ]
+    }
+   },
+   {
+    "name": "Motor control processor (MCPB)",
+    "did": "2023",
+    "commands": "03222023",
+    "spec": {
+     "bytes": 1,
+     "start": 4,
+     "format": "00500",
+     "options": [
+      "0202Present",
+      "0200Not present"
+     ]
+    }
+   },
+   {
+    "name": "Digital television module (DTV)",
+    "did": "2023",
+    "commands": "03222023",
+    "spec": {
+     "bytes": 1,
+     "start": 10,
+     "format": "88125",
+     "options": [
+      "0101Present",
+      "0100Not present"
+     ]
+    }
+   },
+   {
+    "name": "Trailer tow electric bar module (TTEBM)",
+    "did": "2023",
+    "commands": "03222023",
+    "spec": {
+     "bytes": 1,
+     "start": 1,
+     "format": "4E125",
      "options": [
       "2020Present",
       "2000Not present"
@@ -21620,6 +21688,1913 @@
      "offset": 0,
      "signed": true,
      "unit": "ms"
+    }
+   }
+  ],
+  "BODY33V2": [
+   {
+    "name": "ECU ISO code",
+    "did": "F1A5",
+    "commands": "0322F1A5",
+    "spec": {
+     "bytes": 5,
+     "start": 0,
+     "format": "hex"
+    }
+   },
+   {
+    "name": "VIN code",
+    "did": "F190",
+    "commands": "0322F190",
+    "spec": {
+     "bytes": 17,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "ECU serial number",
+    "did": "F18C",
+    "commands": "0322F18C",
+    "spec": {
+     "bytes": 15,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "FIAT drawing number",
+    "did": "F187",
+    "commands": "0322F187",
+    "spec": {
+     "bytes": 11,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "Hardware number",
+    "did": "F192",
+    "commands": "0322F192",
+    "spec": {
+     "bytes": 11,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "Hardware version",
+    "did": "F193",
+    "commands": "0322F193",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "hex2"
+    }
+   },
+   {
+    "name": "Software number",
+    "did": "F194",
+    "commands": "0322F194",
+    "spec": {
+     "bytes": 11,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "Software version",
+    "did": "F195",
+    "commands": "0322F195",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "hex2"
+    }
+   },
+   {
+    "name": "Homologation number",
+    "did": "F196",
+    "commands": "0322F196",
+    "spec": {
+     "bytes": 6,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "Functioning time (EEPROM)",
+    "did": "2008",
+    "commands": "03222008",
+    "spec": {
+     "bytes": 4,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0,
+     "unit": "min"
+    }
+   },
+   {
+    "name": "Operating time",
+    "did": "1008",
+    "commands": "03221008",
+    "spec": {
+     "bytes": 4,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0,
+     "unit": "min"
+    }
+   },
+   {
+    "name": "Startups counter",
+    "did": "200A",
+    "commands": "0322200A",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0
+    }
+   },
+   {
+    "name": "VIN lock status",
+    "did": "2013",
+    "commands": "03222013",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
+    }
+   },
+   {
+    "name": "PROXI configuration write counter",
+    "did": "292E",
+    "commands": "0322292E",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0
+    }
+   },
+   {
+    "name": "Power supply mode (Logistic mode)",
+    "did": "2949",
+    "commands": "03222949",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "FF01Low power (logistic)",
+      "FF00Normal power"
+     ]
+    }
+   },
+   {
+    "name": "Fuel level sensor",
+    "did": "013B",
+    "commands": "0322013B",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0,
+     "unit": "%"
+    }
+   },
+   {
+    "name": "Fuel level sensor 2",
+    "did": "013B",
+    "commands": "0322013B",
+    "spec": {
+     "bytes": 1,
+     "start": 1,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0,
+     "unit": "%"
+    }
+   },
+   {
+    "name": "Battery voltage",
+    "did": "1004",
+    "commands": "03221004",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "num,1",
+     "decimals": 1,
+     "scale": 1,
+     "offset": 0,
+     "unit": "V"
+    }
+   },
+   {
+    "name": "IBS Battery charge status",
+    "did": "1005",
+    "commands": "03221005",
+    "spec": {
+     "bytes": 1,
+     "start": 1,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0,
+     "unit": "%"
+    }
+   },
+   {
+    "name": "Battery voltage from IBS",
+    "did": "1005",
+    "commands": "03221005",
+    "spec": {
+     "bytes": 2,
+     "start": 9,
+     "format": "num,3,0.9765,3000",
+     "decimals": 3,
+     "scale": 0.9765,
+     "offset": 3000.0,
+     "unit": "V"
+    }
+   },
+   {
+    "name": "Battery current from IBS",
+    "did": "1005",
+    "commands": "03221005",
+    "spec": {
+     "bytes": 2,
+     "start": 11,
+     "format": "num,0,1,-32768",
+     "decimals": 0,
+     "scale": 1.0,
+     "offset": -32768.0,
+     "unit": "A"
+    }
+   },
+   {
+    "name": "Battery temperature from IBS",
+    "did": "1005",
+    "commands": "03221005",
+    "spec": {
+     "bytes": 1,
+     "start": 6,
+     "format": "num,0,1,-40",
+     "decimals": 0,
+     "scale": 1.0,
+     "offset": -40.0,
+     "unit": "°C"
+    }
+   },
+   {
+    "name": "External temperature",
+    "did": "013C",
+    "commands": "0322013C",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "num,1,5,-400",
+     "decimals": 1,
+     "scale": 5.0,
+     "offset": -400.0,
+     "unit": "°C"
+    }
+   },
+   {
+    "name": "Driver door",
+    "did": "0130",
+    "commands": "03220130",
+    "spec": {
+     "bytes": 1,
+     "start": 1,
+     "format": "bits",
+     "options": [
+      "3000Open",
+      "3010Closed",
+      "3020Error on switch"
+     ]
+    }
+   },
+   {
+    "name": "Passenger door",
+    "did": "0130",
+    "commands": "03220130",
+    "spec": {
+     "bytes": 1,
+     "start": 1,
+     "format": "bits",
+     "options": [
+      "C000Open",
+      "C040Closed",
+      "C080Error on switch"
+     ]
+    }
+   },
+   {
+    "name": "Rear left door",
+    "did": "0130",
+    "commands": "03220130",
+    "spec": {
+     "bytes": 1,
+     "start": 2,
+     "format": "bits",
+     "options": [
+      "0800Open",
+      "0808Closed"
+     ]
+    }
+   },
+   {
+    "name": "Rear right door",
+    "did": "0130",
+    "commands": "03220130",
+    "spec": {
+     "bytes": 1,
+     "start": 2,
+     "format": "bits",
+     "options": [
+      "0100Open",
+      "0101Closed"
+     ]
+    }
+   },
+   {
+    "name": "Bonnet",
+    "did": "0130",
+    "commands": "03220130",
+    "spec": {
+     "bytes": 1,
+     "start": 2,
+     "format": "bits",
+     "options": [
+      "0600Open",
+      "0602Closed",
+      "0604Error on switch"
+     ]
+    }
+   },
+   {
+    "name": "Boot lid",
+    "did": "0130",
+    "commands": "03220130",
+    "spec": {
+     "bytes": 1,
+     "start": 2,
+     "format": "bits",
+     "options": [
+      "1000Open",
+      "1010Closed"
+     ]
+    }
+   },
+   {
+    "name": "Exterior lights switch",
+    "did": "0133",
+    "commands": "03220133",
+    "spec": {
+     "bytes": 1,
+     "start": 1,
+     "format": "bits",
+     "options": [
+      "3808Auto",
+      "0702Auto",
+      "3818ON",
+      "0703ON",
+      "3810Parking",
+      "2020Error on switch",
+      "0404Error on switch",
+      "0701DRL",
+      "3800OFF"
+     ]
+    }
+   },
+   {
+    "name": "High beam switch",
+    "did": "0133",
+    "commands": "03220133",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "0301ON",
+      "0302Flash",
+      "0303Not valid",
+      "0300OFF"
+     ]
+    }
+   },
+   {
+    "name": "Fog lights button",
+    "did": "0133",
+    "commands": "03220133",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "0808ON",
+      "0800OFF"
+     ]
+    }
+   },
+   {
+    "name": "Rear fog lights button",
+    "did": "0133",
+    "commands": "03220133",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "1010ON",
+      "1000OFF"
+     ]
+    }
+   },
+   {
+    "name": "Emergency lights button",
+    "did": "0137",
+    "commands": "03220137",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "0202ON",
+      "0200OFF"
+     ]
+    }
+   },
+   {
+    "name": "Turn signal (left)",
+    "did": "0133",
+    "commands": "03220133",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "7040ON",
+      "7030Flash",
+      "7050Error on switch",
+      "7000OFF"
+     ]
+    }
+   },
+   {
+    "name": "Turn signal (right)",
+    "did": "0133",
+    "commands": "03220133",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "7010ON",
+      "7020Flash",
+      "7050Error on switch",
+      "7000OFF"
+     ]
+    }
+   },
+   {
+    "name": "Windscreen wiper switch",
+    "did": "0136",
+    "commands": "03220136",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "0E0CError on switch",
+      "0E001",
+      "0E022",
+      "0E043",
+      "0E064",
+      "0E085",
+      "0E00OFF"
+     ]
+    }
+   },
+   {
+    "name": "Cruise control switch",
+    "did": "0162",
+    "commands": "03220162",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "bitw",
+     "options": [
+      "00020002ON/FF",
+      "00010001Resume",
+      "00040004ACC ON/OFF",
+      "20002000-",
+      "40004000--",
+      "04000400+",
+      "08000800++",
+      "00000000No request"
+     ]
+    }
+   },
+   {
+    "name": "Dynamic control selector",
+    "did": "0137",
+    "commands": "03220137",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "1800Eco",
+      "1810Dynamic",
+      "1808Normal",
+      "1818Race"
+     ]
+    }
+   },
+   {
+    "name": "Inertia switch (FIS) status",
+    "did": "2920",
+    "commands": "03222920",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "FF00Normal",
+      "FFCCStop"
+     ]
+    }
+   },
+   {
+    "name": "Brake fluid level",
+    "did": "0132",
+    "commands": "03220132",
+    "spec": {
+     "bytes": 1,
+     "start": 1,
+     "format": "bits",
+     "options": [
+      "0C00Normal",
+      "0C04Low",
+      "0C08Error on switch"
+     ]
+    }
+   },
+   {
+    "name": "Brake contact 2",
+    "did": "0132",
+    "commands": "03220132",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "0101Active",
+      "0100Not active"
+     ]
+    }
+   },
+   {
+    "name": "Ignition key position",
+    "did": "0131",
+    "commands": "03220131",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "0202ON",
+      "0200OFF"
+     ]
+    }
+   },
+   {
+    "name": "Transponder comm. line",
+    "did": "40A3",
+    "commands": "032240A3",
+    "spec": {
+     "bytes": 1,
+     "start": 1,
+     "format": "bits",
+     "options": [
+      "0808B-CAN",
+      "0800C-CAN"
+     ]
+    }
+   },
+   {
+    "name": "Immo coded by",
+    "did": "40A3",
+    "commands": "032240A3",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "FF00Virgin",
+      "FF01Factory",
+      "FF02Spare parts"
+     ]
+    }
+   },
+   {
+    "name": "Engine ECU status",
+    "did": "40A3",
+    "commands": "032240A3",
+    "spec": {
+     "bytes": 1,
+     "start": 1,
+     "format": "bits",
+     "options": [
+      "0703Virgin",
+      "0705Programmed",
+      "0707Faulty"
+     ]
+    }
+   }
+  ],
+  "CDCM1": [
+   {
+    "name": "ECU ISO code",
+    "did": "F1A5",
+    "commands": "0322F1A5",
+    "spec": {
+     "bytes": 5,
+     "start": 0,
+     "format": "hex"
+    }
+   },
+   {
+    "name": "VIN code",
+    "did": "F190",
+    "commands": "0322F190",
+    "spec": {
+     "bytes": 17,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "ECU serial number",
+    "did": "F18C",
+    "commands": "0322F18C",
+    "spec": {
+     "bytes": 15,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "FIAT drawing number",
+    "did": "F187",
+    "commands": "0322F187",
+    "spec": {
+     "bytes": 11,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "Hardware number",
+    "did": "F192",
+    "commands": "0322F192",
+    "spec": {
+     "bytes": 11,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "Hardware version",
+    "did": "F193",
+    "commands": "0322F193",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "hex2"
+    }
+   },
+   {
+    "name": "Software number",
+    "did": "F194",
+    "commands": "0322F194",
+    "spec": {
+     "bytes": 11,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "Software version",
+    "did": "F195",
+    "commands": "0322F195",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "hex2"
+    }
+   },
+   {
+    "name": "Homologation number",
+    "did": "F196",
+    "commands": "0322F196",
+    "spec": {
+     "bytes": 6,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "Functioning time (EEPROM)",
+    "did": "2008",
+    "commands": "03222008",
+    "spec": {
+     "bytes": 4,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0,
+     "unit": "min"
+    }
+   },
+   {
+    "name": "Operating time",
+    "did": "1008",
+    "commands": "03221008",
+    "spec": {
+     "bytes": 4,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0,
+     "unit": "min"
+    }
+   },
+   {
+    "name": "Startups counter",
+    "did": "200A",
+    "commands": "0322200A",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0
+    }
+   },
+   {
+    "name": "VIN lock status",
+    "did": "2013",
+    "commands": "03222013",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
+    }
+   },
+   {
+    "name": "PROXI configuration write counter",
+    "did": "292E",
+    "commands": "0322292E",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0
+    }
+   },
+   {
+    "name": "Odometer",
+    "did": "2001",
+    "commands": "03222001",
+    "spec": {
+     "bytes": 3,
+     "start": 0,
+     "format": "num,1",
+     "decimals": 1,
+     "scale": 1,
+     "offset": 0,
+     "unit": "km"
+    }
+   },
+   {
+    "name": "Battery voltage",
+    "did": "1004",
+    "commands": "03221004",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0,
+     "unit": "V"
+    }
+   },
+   {
+    "name": "Engine speed",
+    "did": "1000",
+    "commands": "03221000",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "num,0",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0,
+     "unit": "rpm"
+    }
+   },
+   {
+    "name": "Front left wheel speed",
+    "did": "152F",
+    "commands": "0322152F",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "nums,2,6.25",
+     "decimals": 2,
+     "scale": 6.25,
+     "offset": 0,
+     "signed": true,
+     "unit": "km/h"
+    }
+   },
+   {
+    "name": "Front right wheel speed",
+    "did": "1530",
+    "commands": "03221530",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "nums,2,6.25",
+     "decimals": 2,
+     "scale": 6.25,
+     "offset": 0,
+     "signed": true,
+     "unit": "km/h"
+    }
+   },
+   {
+    "name": "Rear left wheel speed",
+    "did": "1531",
+    "commands": "03221531",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "nums,2,6.25",
+     "decimals": 2,
+     "scale": 6.25,
+     "offset": 0,
+     "signed": true,
+     "unit": "km/h"
+    }
+   },
+   {
+    "name": "Rear right wheel speed",
+    "did": "1532",
+    "commands": "03221532",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "nums,2,6.25",
+     "decimals": 2,
+     "scale": 6.25,
+     "offset": 0,
+     "signed": true,
+     "unit": "km/h"
+    }
+   },
+   {
+    "name": "Dynamic control selector",
+    "did": "1589",
+    "commands": "03221589",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "0F01City",
+      "0F02Sport",
+      "0F03Winter/Sport",
+      "0F04Eco",
+      "0F05Trac+",
+      "0F06Trekking",
+      "0F07Auto",
+      "0F08Snow",
+      "0F09Sand",
+      "0F0AMud",
+      "0F0BRock",
+      "0F00Normal"
+     ]
+    }
+   },
+   {
+    "name": "Steering angle",
+    "did": "1557",
+    "commands": "03221557",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "num,1,1,-7200",
+     "decimals": 1,
+     "scale": 1.0,
+     "offset": -7200.0,
+     "unit": "deg."
+    }
+   },
+   {
+    "name": "Lateral acceleration",
+    "did": "1543",
+    "commands": "03221543",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "nums,2",
+     "decimals": 2,
+     "scale": 1,
+     "offset": 0,
+     "signed": true,
+     "unit": "m/sec²"
+    }
+   },
+   {
+    "name": "Vertical acceleration",
+    "did": "1544",
+    "commands": "03221544",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "nums,2",
+     "decimals": 2,
+     "scale": 1,
+     "offset": 0,
+     "signed": true,
+     "unit": "m/sec²"
+    }
+   },
+   {
+    "name": "Brake pedal pressure",
+    "did": "155D",
+    "commands": "0322155D",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "num,1,2.5",
+     "decimals": 1,
+     "scale": 2.5,
+     "offset": 0,
+     "unit": "bar"
+    }
+   },
+   {
+    "name": "Front left valve",
+    "did": "1514",
+    "commands": "03221514",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "nums",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0,
+     "signed": true,
+     "unit": "mA"
+    }
+   },
+   {
+    "name": "Front right valve",
+    "did": "1515",
+    "commands": "03221515",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "nums",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0,
+     "signed": true,
+     "unit": "mA"
+    }
+   },
+   {
+    "name": "Rear left valve",
+    "did": "1516",
+    "commands": "03221516",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "nums",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0,
+     "signed": true,
+     "unit": "mA"
+    }
+   },
+   {
+    "name": "Rear right valve",
+    "did": "1517",
+    "commands": "03221517",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "nums",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0,
+     "signed": true,
+     "unit": "mA"
+    }
+   }
+  ],
+  "DASH29TFT": [
+   {
+    "name": "ECU ISO code",
+    "did": "F1A5",
+    "commands": "0322F1A5",
+    "spec": {
+     "bytes": 5,
+     "start": 0,
+     "format": "hex"
+    }
+   },
+   {
+    "name": "VIN code",
+    "did": "F190",
+    "commands": "0322F190",
+    "spec": {
+     "bytes": 17,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "FIAT drawing number",
+    "did": "F187",
+    "commands": "0322F187",
+    "spec": {
+     "bytes": 11,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "Hardware number",
+    "did": "F192",
+    "commands": "0322F192",
+    "spec": {
+     "bytes": 11,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "Hardware version",
+    "did": "F193",
+    "commands": "0322F193",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "hex2"
+    }
+   },
+   {
+    "name": "Software number",
+    "did": "F194",
+    "commands": "0322F194",
+    "spec": {
+     "bytes": 11,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "Software version",
+    "did": "F195",
+    "commands": "0322F195",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "hex2"
+    }
+   },
+   {
+    "name": "Homologation number",
+    "did": "F196",
+    "commands": "0322F196",
+    "spec": {
+     "bytes": 6,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "Functioning time (EEPROM)",
+    "did": "2008",
+    "commands": "03222008",
+    "spec": {
+     "bytes": 4,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0,
+     "unit": "min"
+    }
+   },
+   {
+    "name": "Operating time",
+    "did": "1008",
+    "commands": "03221008",
+    "spec": {
+     "bytes": 4,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0,
+     "unit": "min"
+    }
+   },
+   {
+    "name": "Startups counter",
+    "did": "200A",
+    "commands": "0322200A",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0
+    }
+   },
+   {
+    "name": "VIN lock status",
+    "did": "2013",
+    "commands": "03222013",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
+    }
+   },
+   {
+    "name": "PROXI configuration write counter",
+    "did": "292E",
+    "commands": "0322292E",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0
+    }
+   },
+   {
+    "name": "Odometer",
+    "did": "2001",
+    "commands": "03222001",
+    "spec": {
+     "bytes": 3,
+     "start": 0,
+     "format": "num,1",
+     "decimals": 1,
+     "scale": 1,
+     "offset": 0,
+     "unit": "km"
+    }
+   },
+   {
+    "name": "Audible signal (Buzzer) volume",
+    "did": "0105",
+    "commands": "03220105",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "FF00Low",
+      "FF01Middle",
+      "FF02High"
+     ]
+    }
+   },
+   {
+    "name": "External temperature",
+    "did": "1005",
+    "commands": "03221005",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "num,1,5,-850",
+     "decimals": 1,
+     "scale": 5.0,
+     "offset": -850.0,
+     "unit": "°C"
+    }
+   },
+   {
+    "name": "Battery voltage",
+    "did": "1004",
+    "commands": "03221004",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "num,1",
+     "decimals": 1,
+     "scale": 1,
+     "offset": 0,
+     "unit": "V"
+    }
+   },
+   {
+    "name": "Fuel level",
+    "did": "1001",
+    "commands": "03221001",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0,
+     "unit": "%"
+    }
+   },
+   {
+    "name": "Engine speed",
+    "did": "1000",
+    "commands": "03221000",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "num,0,0.25",
+     "decimals": 0,
+     "scale": 0.25,
+     "offset": 0,
+     "unit": "rpm"
+    }
+   },
+   {
+    "name": "Vehicle speed",
+    "did": "1002",
+    "commands": "03221002",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0,
+     "unit": "km/h"
+    }
+   },
+   {
+    "name": "Seat belt alarm",
+    "did": "2805",
+    "commands": "03222805",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "0100Disabled",
+      "0101Enabled"
+     ]
+    }
+   },
+   {
+    "name": "Gear engaged",
+    "did": "0108",
+    "commands": "03220108",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "FF00P",
+      "FF01Recovery",
+      "FF02R",
+      "FF03N",
+      "FF111",
+      "FF122",
+      "FF133",
+      "FF144",
+      "FF155",
+      "FF166",
+      "FF177",
+      "FF188",
+      "FF199",
+      "FF00D"
+     ]
+    }
+   },
+   {
+    "name": "Front wheels pressure reference",
+    "did": "31C6",
+    "commands": "032231C6",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "num,3",
+     "decimals": 3,
+     "scale": 1,
+     "offset": 0,
+     "unit": "bar"
+    }
+   },
+   {
+    "name": "Rear wheels pressure reference",
+    "did": "31C7",
+    "commands": "032231C7",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "num,3",
+     "decimals": 3,
+     "scale": 1,
+     "offset": 0,
+     "unit": "bar"
+    }
+   }
+  ],
+  "TBM1": [
+   {
+    "name": "ECU ISO code",
+    "did": "F1A5",
+    "commands": "0322F1A5",
+    "spec": {
+     "bytes": 5,
+     "start": 0,
+     "format": "hex"
+    }
+   },
+   {
+    "name": "VIN code",
+    "did": "F190",
+    "commands": "0322F190",
+    "spec": {
+     "bytes": 17,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "ECU serial number",
+    "did": "F18C",
+    "commands": "0322F18C",
+    "spec": {
+     "bytes": 15,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "Spare part number",
+    "did": "F187",
+    "commands": "0322F187",
+    "spec": {
+     "bytes": 11,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "Hardware number",
+    "did": "F192",
+    "commands": "0322F192",
+    "spec": {
+     "bytes": 11,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "Hardware version",
+    "did": "F193",
+    "commands": "0322F193",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "hex2"
+    }
+   },
+   {
+    "name": "Software number",
+    "did": "F194",
+    "commands": "0322F194",
+    "spec": {
+     "bytes": 11,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "Software version",
+    "did": "F195",
+    "commands": "0322F195",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "hex2"
+    }
+   },
+   {
+    "name": "Homologation number",
+    "did": "F196",
+    "commands": "0322F196",
+    "spec": {
+     "bytes": 6,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "FIAT drawing number",
+    "did": "F191",
+    "commands": "0322F191",
+    "spec": {
+     "bytes": 11,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "Functioning time (EEPROM)",
+    "did": "2008",
+    "commands": "03222008",
+    "spec": {
+     "bytes": 4,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0,
+     "unit": "min"
+    }
+   },
+   {
+    "name": "Operating time",
+    "did": "1008",
+    "commands": "03221008",
+    "spec": {
+     "bytes": 4,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0,
+     "unit": "min"
+    }
+   },
+   {
+    "name": "Startups counter",
+    "did": "200A",
+    "commands": "0322200A",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0
+    }
+   },
+   {
+    "name": "VIN lock status",
+    "did": "2013",
+    "commands": "03222013",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
+    }
+   },
+   {
+    "name": "PROXI configuration write counter",
+    "did": "292E",
+    "commands": "0322292E",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0
+    }
+   },
+   {
+    "name": "Vehicle speed",
+    "did": "1002",
+    "commands": "03221002",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0,
+     "unit": "km/h"
+    }
+   },
+   {
+    "name": "Battery voltage",
+    "did": "1004",
+    "commands": "03221004",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "num,1",
+     "decimals": 1,
+     "scale": 1,
+     "offset": 0,
+     "unit": "V"
+    }
+   }
+  ],
+  "TTM1": [
+   {
+    "name": "ECU ISO code",
+    "did": "F1A5",
+    "commands": "0322F1A5",
+    "spec": {
+     "bytes": 5,
+     "start": 0,
+     "format": "hex"
+    }
+   },
+   {
+    "name": "VIN code",
+    "did": "F190",
+    "commands": "0322F190",
+    "spec": {
+     "bytes": 17,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "ECU serial number",
+    "did": "F18C",
+    "commands": "0322F18C",
+    "spec": {
+     "bytes": 15,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "Spare part number",
+    "did": "F187",
+    "commands": "0322F187",
+    "spec": {
+     "bytes": 11,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "Hardware number",
+    "did": "F192",
+    "commands": "0322F192",
+    "spec": {
+     "bytes": 11,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "Hardware version",
+    "did": "F193",
+    "commands": "0322F193",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "hex2"
+    }
+   },
+   {
+    "name": "Software number",
+    "did": "F194",
+    "commands": "0322F194",
+    "spec": {
+     "bytes": 11,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "Software version",
+    "did": "F195",
+    "commands": "0322F195",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "hex2"
+    }
+   },
+   {
+    "name": "Homologation number",
+    "did": "F196",
+    "commands": "0322F196",
+    "spec": {
+     "bytes": 6,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "FIAT drawing number",
+    "did": "F191",
+    "commands": "0322F191",
+    "spec": {
+     "bytes": 11,
+     "start": 0,
+     "format": "str"
+    }
+   },
+   {
+    "name": "Functioning time (EEPROM)",
+    "did": "2008",
+    "commands": "03222008",
+    "spec": {
+     "bytes": 4,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0,
+     "unit": "min"
+    }
+   },
+   {
+    "name": "Operating time",
+    "did": "1008",
+    "commands": "03221008",
+    "spec": {
+     "bytes": 4,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0,
+     "unit": "min"
+    }
+   },
+   {
+    "name": "Startups counter",
+    "did": "200A",
+    "commands": "0322200A",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0
+    }
+   },
+   {
+    "name": "VIN lock status",
+    "did": "2013",
+    "commands": "03222013",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "FF00Not locked",
+      "FF01Locked by tool",
+      "FF02Locked by odometer",
+      "FF03Unknown"
+     ]
+    }
+   },
+   {
+    "name": "PROXI configuration write counter",
+    "did": "292E",
+    "commands": "0322292E",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "num",
+     "decimals": 0,
+     "scale": 1,
+     "offset": 0
+    }
+   },
+   {
+    "name": "Vehicle speed",
+    "did": "1002",
+    "commands": "03221002",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "num,1,0.078125",
+     "decimals": 1,
+     "scale": 0.078125,
+     "offset": 0,
+     "unit": "km/h"
+    }
+   },
+   {
+    "name": "Battery voltage",
+    "did": "1004",
+    "commands": "03221004",
+    "spec": {
+     "bytes": 2,
+     "start": 0,
+     "format": "num,3",
+     "decimals": 3,
+     "scale": 1,
+     "offset": 0,
+     "unit": "V"
+    }
+   },
+   {
+    "name": "Brake lights diagnosis",
+    "did": "FD01",
+    "commands": "0322FD01",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "0400Disabled",
+      "0404Enabled"
+     ]
+    }
+   },
+   {
+    "name": "Turn lights diagnosis",
+    "did": "FD01",
+    "commands": "0322FD01",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "0300Disabled",
+      "0303Enabled"
+     ]
+    }
+   },
+   {
+    "name": "Reversing lights diagnosis",
+    "did": "FD01",
+    "commands": "0322FD01",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "0800Disabled",
+      "0808Enabled"
+     ]
+    }
+   },
+   {
+    "name": "Rear fog lights diagnosis",
+    "did": "FD01",
+    "commands": "0322FD01",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "4000Disabled",
+      "4040Enabled"
+     ]
+    }
+   },
+   {
+    "name": "Rear tail lights diagnosis",
+    "did": "FD01",
+    "commands": "0322FD01",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "3000Disabled",
+      "3030Enabled"
+     ]
+    }
+   },
+   {
+    "name": "Brake lights diagnosis",
+    "did": "0100",
+    "commands": "0322FD01,042EFD0100",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "0400Disabled",
+      "0404Enabled"
+     ]
+    }
+   },
+   {
+    "name": "Turn lights diagnosis",
+    "did": "0100",
+    "commands": "0322FD01,042EFD0100",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "0300Disabled",
+      "0303Enabled"
+     ]
+    }
+   },
+   {
+    "name": "Reversing lights diagnosis",
+    "did": "0100",
+    "commands": "0322FD01,042EFD0100",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "0800Disabled",
+      "0808Enabled"
+     ]
+    }
+   },
+   {
+    "name": "Rear fog lights diagnosis",
+    "did": "0100",
+    "commands": "0322FD01,042EFD0100",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "4000Disabled",
+      "4040Enabled"
+     ]
+    }
+   },
+   {
+    "name": "Rear tail lights diagnosis",
+    "did": "0100",
+    "commands": "0322FD01,042EFD0100",
+    "spec": {
+     "bytes": 1,
+     "start": 0,
+     "format": "bits",
+     "options": [
+      "3000Disabled",
+      "3030Enabled"
+     ]
     }
    }
   ]

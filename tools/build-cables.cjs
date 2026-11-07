@@ -25,8 +25,8 @@ function readTsv(name) {
 }
 
 function build() {
-    const ecus = readTsv('ecu_list.tsv');
-    const params = readTsv('params_all.tsv');
+    const ecus = readTsv('ecu_list_55.tsv');
+    const params = readTsv('params_all_55.tsv');
 
     // 对齐项里 addr+baud → 是否换线
     const nodeSwap = new Map();   // "TX|baud" -> bool

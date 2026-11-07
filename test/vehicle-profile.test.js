@@ -33,11 +33,11 @@ function carWith(names, { platform = '952', actual = true, configured = true } =
 
 const profile = (names, opts) => carWith(names, opts);
 
-const BCM = 'Body Computer Node (BCM/NBC)';
-const IPC = 'Dashboard Node (IPC/NQS)';
-const ABS = 'Brake System Node (ABS/BSM/NFR)';
-const EPS = 'Electric Steering Node (EPS/NGE)';
-const SGW = 'Security Gateway Module (SGW)';
+const BCM = 'Body computer module (BCM/NBC)';
+const IPC = 'Instrument panel cluster module (IPC/NQS)';
+const ABS = 'Brake system module (ABS/BSM/NFR)';
+const EPS = 'Electric power steering module (EPS/NGE)';
+const SGW = 'Security gateway module (SGW)';
 
 console.log('数据自检：判据节点与地址映射');
 {
@@ -101,7 +101,7 @@ console.log('\n2.9 V6（有 ECM2）');
 
 console.log('\n平台过滤：949 只留 Stelvio 专属');
 {
-    const p = profile([BCM, IPC, 'Power Lift Gate Node (PLGM)'], { platform: '949' });
+    const p = profile([BCM, IPC, 'Power liftgate module (PLGM)'], { platform: '949' });
     const vis = new Set(p.visible.map((r) => r.code));
     check('949 显示 BODY30', vis.has('BODY30'), [...vis].join(','));
     check('949 隐藏 BODY33', !vis.has('BODY33'));

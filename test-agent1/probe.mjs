@@ -13,24 +13,27 @@ const readJson = (p) => JSON.parse(fs.readFileSync(new URL(p, import.meta.url), 
 
 /** 模拟车文档声明的未安装节点（giulia-car.mjs ABSENT_NODES，两边必须同步） */
 export const ABSENT_NODES = new Set([
-    'Compact Disk Node (CDM)',
-    'Amplifier Node (AMP)',                          // CRC 数字位 bit6 恒 0，只能未安装
-    'Selective Catalytic Reduction Module (SCRM)',   // 汽油车无 SCR；与 VPAM 同字节位冲突
+    'Compact disk module (CDM)',
+    'Amplifier module (AMP)',                          // CRC 数字位 bit6 恒 0，只能未安装
+    'Selective catalytic reduction module (SCRM)',   // 汽油车无 SCR；与 VPAM 同字节位冲突
     'Rear Left Climate Control Node (RLCM)',
-    'Additional Heater Node (CTM)',
+    'Additional heater module (AHM/HCM)',
     'Driver monitoring system module (DMSM)',
-    'Passenger Occupant Classification Node (OCM)',
-    'Left Blind Spot Sensor Node (LBSS)',
-    'Vehicle Tracking Module (VTM)',
-    'Collision Mitigation Module (CMM)',
-    'Drive Train Control Node (DTCM)',
-    'Passenger Door Latch Module (PDML)',
-    'Engine control Module 2 (ECM2)',
+    'Passenger occupant classification module (OCM)',
+    'Left blind spot sensor module (LBSS)',
+    'Vehicle tracking module (VTM)',
+    'Collision mitigation module (CMM)',
+    'Drivetrain control module (DTCM)',
+    'Passenger door latch module (PDML/LSMP)',
+    'Engine control module 2 (ECM2)',
     'Torque vectoring module (TVM)',
-    'Active aerodynamic module Left (AAML)',
-    'Active aerodynamic module Right (AAMR)',
-    'Haptical Lane Feedback Node (HALF)',
-    'Coupling Control Node (CCM)',
+    'Left active aerodynamic module (AAML)',
+    'Right active aerodynamic module (AAMR)',
+    'Haptic lane feedback module (HALF)',
+    'Coupling control module (CCM)',
+    'Trailer tow module (TTM)',
+    'Trailer tow electric bar module (TTEBM)',
+    'Digital television module (DTV)',
     'Traffic message module (TMM)',
 ]);
 // SRM（卫星收音）不在清单：mask 0x20 落在 CRC 数字位 bit5（ASCII 恒 1），物理上无法标未安装

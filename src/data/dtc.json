@@ -662,11 +662,11 @@
    },
    "C001": {
     "name": "C1-CAN",
-    "desc": ""
+    "desc": "Communication fault with the vehicle CAN bus."
    },
    "D001": {
     "name": "C2-CAN",
-    "desc": ""
+    "desc": "Communication fault with the vehicle CAN bus."
    },
    "D700": {
     "name": "Body computer (BCM/NBC)",
@@ -686,7 +686,7 @@
    },
    "D711": {
     "name": "Automatic Transmission (NCA-NCR)",
-    "desc": ""
+    "desc": "Communication fault with the vehicle CAN bus."
    },
    "D726": {
     "name": "No communication with Airbag control unit",
@@ -694,7 +694,7 @@
    },
    "D757": {
     "name": "Drive assistant system module (DASM)",
-    "desc": ""
+    "desc": "Communication fault with the vehicle CAN bus."
    },
    "D766": {
     "name": "Lost communication with RF Hub module",
@@ -702,7 +702,7 @@
    },
    "D767": {
     "name": "Error in communication with Transfer Case Control Module/AWD",
-    "desc": ""
+    "desc": "Communication fault with the vehicle CAN bus."
    },
    "D768": {
     "name": "Electronic linear differential module (ELSDM)",
@@ -718,47 +718,47 @@
    },
    "D95A": {
     "name": "Drive assistant system module (DASM)",
-    "desc": ""
+    "desc": "Communication fault with the vehicle CAN bus."
    },
    "D95C": {
     "name": "Error in communication with Transfer Case Control Module/AWD",
-    "desc": ""
+    "desc": "Communication fault with the vehicle CAN bus."
    },
    "D95E": {
     "name": "EPS electric steering (NGE)",
-    "desc": ""
+    "desc": "Communication fault with the vehicle CAN bus."
    },
    "D960": {
     "name": "Error in communication with engine control unit (ECU)",
-    "desc": ""
+    "desc": "Communication fault with the vehicle CAN bus."
    },
    "D962": {
     "name": "Error in communication with engine control unit (ECU)",
-    "desc": ""
+    "desc": "Communication fault with the vehicle CAN bus."
    },
    "D964": {
     "name": "Error in communication with engine control unit (ECU)",
-    "desc": ""
+    "desc": "Communication fault with the vehicle CAN bus."
    },
    "D966": {
     "name": "EPS electric steering (NGE)",
-    "desc": ""
+    "desc": "Communication fault with the vehicle CAN bus."
    },
    "D970": {
     "name": "Error in communication with Automatic transmission",
-    "desc": ""
+    "desc": "Communication fault with the vehicle CAN bus."
    },
    "D972": {
     "name": "No communication with Airbag control unit",
-    "desc": ""
+    "desc": "Communication fault with the vehicle CAN bus."
    },
    "D97C": {
     "name": "Error in communication with Automatic transmission",
-    "desc": ""
+    "desc": "Communication fault with the vehicle CAN bus."
    },
    "D981": {
     "name": "Error in communication with Body Computer Module (BCM)",
-    "desc": ""
+    "desc": "Communication fault with the vehicle CAN bus."
    },
    "D983": {
     "name": "Electronic linear differential module (ELSDM)",
@@ -770,11 +770,23 @@
    },
    "D985": {
     "name": "Error in communication with Body Computer Module (BCM)",
-    "desc": ""
+    "desc": "Communication fault with the vehicle CAN bus."
    },
    "D990": {
     "name": "No communication with Airbag control unit",
-    "desc": ""
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "5222": {
+    "name": "Vehicle speed incoherence",
+    "desc": "No help available"
+   },
+   "404A": {
+    "name": "Brake fluid level low",
+    "desc": "No help available"
+   },
+   "D763": {
+    "name": "Trailer tow module (TTM)",
+    "desc": "Communication fault with the vehicle CAN bus."
    }
   },
   "ADBLU1": {
@@ -6758,7 +6770,7 @@
    },
    "C423": {
     "name": "Communication with Instrument Cluster (IPC/NQS)",
-    "desc": ""
+    "desc": "Communication fault with the vehicle CAN bus."
    },
    "C426": {
     "name": "Electronic key",
@@ -7746,7 +7758,7 @@
    },
    "D2A8": {
     "name": "Error in communication with ABS module",
-    "desc": ""
+    "desc": "Communication fault with the vehicle CAN bus."
    },
    "D43B": {
     "name": "Steering angle sensor",
@@ -15313,6 +15325,1976 @@
    "D479": {
     "name": "Electronic Shift Module (ESM)",
     "desc": ""
+   }
+  },
+  "BODY33V2": {
+   "9009": {
+    "name": "Left stop light",
+    "desc": "The indicated component managed by the Body Computer shows a defect. Ensure the device operation with an actuator test (if available). Check the wiring between the component and Body Computer for opens, shorts and weak connections, and the component itself. Ensure that the system is configured correctly."
+   },
+   "900F": {
+    "name": "Rear right direction indicators",
+    "desc": "No help available"
+   },
+   "9020": {
+    "name": "Rear left direction indicators",
+    "desc": "No help available"
+   },
+   "902E": {
+    "name": "Right rear foglight",
+    "desc": "No help available"
+   },
+   "D768": {
+    "name": "Communication with Drive train control module (DTCM)",
+    "desc": "No help available"
+   },
+   "9093": {
+    "name": "Right reversing light",
+    "desc": "No help available"
+   },
+   "9094": {
+    "name": "Left reversing light",
+    "desc": "No help available"
+   },
+   "9095": {
+    "name": "Stop&Start button",
+    "desc": "No help available"
+   },
+   "9721": {
+    "name": "Door lock signal (driver)",
+    "desc": "No help available"
+   },
+   "C249": {
+    "name": "Selective catalytic reduction module (SCRM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D745": {
+    "name": "Communication with Power lift gate module (PLGM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "9000": {
+    "name": "Body computer control unit",
+    "desc": "No help available"
+   },
+   "9001": {
+    "name": "Key transponder",
+    "desc": "A fault is present in the indicated component connected to the Body Computer via the CAN line. The problem can be caused by the node to which the component is linked, a bad connection, wrong or missing system configuration, or a defect in the device itself. Check the connections and wiring and the device itself, and ensure correct system configuration with the CAN Info function."
+   },
+   "9002": {
+    "name": "Transponder aerial",
+    "desc": "A fault is present in the indicated component connected to the Body Computer via the CAN line. The problem can be caused by the node to which the component is linked, a bad connection, wrong or missing system configuration, or a defect in the device itself. Check the connections and wiring and the device itself, and ensure correct system configuration with the CAN Info function."
+   },
+   "9003": {
+    "name": "RF receiver",
+    "desc": "No help available"
+   },
+   "9005": {
+    "name": "Battery voltage",
+    "desc": "No help available"
+   },
+   "9006": {
+    "name": "Fuel level sensor",
+    "desc": "A fault is present in the indicated component connected to the Body Computer via the CAN line. The problem can be caused by the node to which the component is linked, a bad connection, wrong or missing system configuration, or a defect in the device itself. Check the connections and wiring and the device itself, and ensure correct system configuration with the CAN Info function."
+   },
+   "9007": {
+    "name": "Front left direction indicators",
+    "desc": "The indicated component managed by the Body Computer shows a defect. Ensure the device operation with an actuator test (if available). Check the wiring between the component and Body Computer for opens, shorts and weak connections, and the component itself. Ensure that the system is configured correctly."
+   },
+   "9008": {
+    "name": "Front right direction indicators",
+    "desc": "The indicated component managed by the Body Computer shows a defect. Ensure the device operation with an actuator test (if available). Check the wiring between the component and Body Computer for opens, shorts and weak connections, and the component itself. Ensure that the system is configured correctly."
+   },
+   "900A": {
+    "name": "Rear left taillights",
+    "desc": "No help available"
+   },
+   "900B": {
+    "name": "Rear right taillights",
+    "desc": "No help available"
+   },
+   "900C": {
+    "name": "Brake lights",
+    "desc": "No help available"
+   },
+   "900D": {
+    "name": "Right stop light",
+    "desc": "No help available"
+   },
+   "900E": {
+    "name": "Number plate lights",
+    "desc": "The indicated component managed by the Body Computer shows a defect. Ensure the device operation with an actuator test (if available). Check the wiring between the component and Body Computer for opens, shorts and weak connections, and the component itself. Ensure that the system is configured correctly."
+   },
+   "9010": {
+    "name": "Brake pedal switch",
+    "desc": "The indicated component managed by the Body Computer shows a defect. Ensure the device operation with an actuator test (if available). Check the wiring between the component and Body Computer for opens, shorts and weak connections, and the component itself. Ensure that the system is configured correctly."
+   },
+   "9011": {
+    "name": "Reversing lights",
+    "desc": "The indicated component managed by the Body Computer shows a defect. Ensure the device operation with an actuator test (if available). Check the wiring between the component and Body Computer for opens, shorts and weak connections, and the component itself. Ensure that the system is configured correctly."
+   },
+   "9012": {
+    "name": "Right reversing light",
+    "desc": "The indicated component managed by the Body Computer shows a defect. Ensure the device operation with an actuator test (if available). Check the wiring between the component and Body Computer for opens, shorts and weak connections, and the component itself. Ensure that the system is configured correctly."
+   },
+   "9013": {
+    "name": "Third STOP light",
+    "desc": "The indicated component managed by the Body Computer shows a defect. Ensure the device operation with an actuator test (if available). Check the wiring between the component and Body Computer for opens, shorts and weak connections, and the component itself. Ensure that the system is configured correctly."
+   },
+   "9014": {
+    "name": "Right stop light",
+    "desc": "The indicated component managed by the Body Computer shows a defect. Ensure the device operation with an actuator test (if available). Check the wiring between the component and Body Computer for opens, shorts and weak connections, and the component itself. Ensure that the system is configured correctly."
+   },
+   "9015": {
+    "name": "Left stop light",
+    "desc": "The indicated component managed by the Body Computer shows a defect. Ensure the device operation with an actuator test (if available). Check the wiring between the component and Body Computer for opens, shorts and weak connections, and the component itself. Ensure that the system is configured correctly."
+   },
+   "9016": {
+    "name": "Rear left direction indicators",
+    "desc": "The indicated component managed by the Body Computer shows a defect. Ensure the device operation with an actuator test (if available). Check the wiring between the component and Body Computer for opens, shorts and weak connections, and the component itself. Ensure that the system is configured correctly."
+   },
+   "9017": {
+    "name": "Rear right direction indicators",
+    "desc": "The indicated component managed by the Body Computer shows a defect. Ensure the device operation with an actuator test (if available). Check the wiring between the component and Body Computer for opens, shorts and weak connections, and the component itself. Ensure that the system is configured correctly."
+   },
+   "9018": {
+    "name": "Rear tail lights",
+    "desc": "No help available"
+   },
+   "9019": {
+    "name": "Left stop light",
+    "desc": "No help available"
+   },
+   "901A": {
+    "name": "Rear left taillights",
+    "desc": "No help available"
+   },
+   "901B": {
+    "name": "Right stop light",
+    "desc": "No help available"
+   },
+   "901C": {
+    "name": "Rear right taillights",
+    "desc": "No help available"
+   },
+   "901D": {
+    "name": "Windscreen heated washers",
+    "desc": "No help available"
+   },
+   "901E": {
+    "name": "Rear window wiper control",
+    "desc": "No help available"
+   },
+   "901F": {
+    "name": "Right daylight",
+    "desc": "No help available"
+   },
+   "9021": {
+    "name": "Rear right direction indicators",
+    "desc": "No help available"
+   },
+   "9022": {
+    "name": "Left sidelight / Left day light driver",
+    "desc": "The indicated component managed by the Body Computer shows a defect. Ensure the device operation with an actuator test (if available). Check the wiring between the component and Body Computer for opens, shorts and weak connections, and the component itself. Ensure that the system is configured correctly."
+   },
+   "9023": {
+    "name": "Right sidelight / Right day light driver",
+    "desc": "The indicated component managed by the Body Computer shows a defect. Ensure the device operation with an actuator test (if available). Check the wiring between the component and Body Computer for opens, shorts and weak connections, and the component itself. Ensure that the system is configured correctly."
+   },
+   "9024": {
+    "name": "Rear left direction indicators",
+    "desc": "No help available"
+   },
+   "9025": {
+    "name": "Rear right direction indicators",
+    "desc": "No help available"
+   },
+   "9026": {
+    "name": "Left bending light",
+    "desc": "No help available"
+   },
+   "9027": {
+    "name": "Right bending light",
+    "desc": "No help available"
+   },
+   "902C": {
+    "name": "Right rear foglight",
+    "desc": "The indicated component managed by the Body Computer shows a defect. Ensure the device operation with an actuator test (if available). Check the wiring between the component and Body Computer for opens, shorts and weak connections, and the component itself. Ensure that the system is configured correctly."
+   },
+   "902D": {
+    "name": "Left rear foglight",
+    "desc": "The indicated component managed by the Body Computer shows a defect. Ensure the device operation with an actuator test (if available). Check the wiring between the component and Body Computer for opens, shorts and weak connections, and the component itself. Ensure that the system is configured correctly."
+   },
+   "9030": {
+    "name": "Rear left lighting unit",
+    "desc": "No help available"
+   },
+   "9031": {
+    "name": "Rear right lighting unit",
+    "desc": "No help available"
+   },
+   "9032": {
+    "name": "Rear left lighting unit",
+    "desc": "No help available"
+   },
+   "9033": {
+    "name": "Rear right lighting unit",
+    "desc": "No help available"
+   },
+   "9034": {
+    "name": "Fog lights switch",
+    "desc": "No help available"
+   },
+   "9035": {
+    "name": "Fog lights switch",
+    "desc": "No help available"
+   },
+   "9039": {
+    "name": "Night lights",
+    "desc": "The indicated component managed by the Body Computer shows a defect. Ensure the device operation with an actuator test (if available). Check the wiring between the component and Body Computer for opens, shorts and weak connections, and the component itself. Ensure that the system is configured correctly."
+   },
+   "903A": {
+    "name": "Front left LED unit feedback",
+    "desc": "No help available"
+   },
+   "903B": {
+    "name": "Front right LED unit feedback",
+    "desc": "No help available"
+   },
+   "9040": {
+    "name": "Left sidelight / Left day light driver",
+    "desc": "The indicated component managed by the Body Computer shows a defect. Ensure the device operation with an actuator test (if available). Check the wiring between the component and Body Computer for opens, shorts and weak connections, and the component itself. Ensure that the system is configured correctly."
+   },
+   "9041": {
+    "name": "Front left direction indicators",
+    "desc": "The indicated component managed by the Body Computer shows a defect. Ensure the device operation with an actuator test (if available). Check the wiring between the component and Body Computer for opens, shorts and weak connections, and the component itself. Ensure that the system is configured correctly."
+   },
+   "9042": {
+    "name": "Front left light command",
+    "desc": "No help available"
+   },
+   "9043": {
+    "name": "Right sidelight / Right day light driver",
+    "desc": "The indicated component managed by the Body Computer shows a defect. Ensure the device operation with an actuator test (if available). Check the wiring between the component and Body Computer for opens, shorts and weak connections, and the component itself. Ensure that the system is configured correctly."
+   },
+   "9044": {
+    "name": "Front right direction indicators",
+    "desc": "The indicated component managed by the Body Computer shows a defect. Ensure the device operation with an actuator test (if available). Check the wiring between the component and Body Computer for opens, shorts and weak connections, and the component itself. Ensure that the system is configured correctly."
+   },
+   "9045": {
+    "name": "Front right light command",
+    "desc": "No help available"
+   },
+   "9046": {
+    "name": "Front left light command",
+    "desc": "No help available"
+   },
+   "9047": {
+    "name": "Front right light command",
+    "desc": "No help available"
+   },
+   "9048": {
+    "name": "Heated rear window relay",
+    "desc": "The indicated component managed by the Body Computer shows a defect. Ensure the device operation with an actuator test (if available). Check the wiring between the component and Body Computer for opens, shorts and weak connections, and the component itself. Ensure that the system is configured correctly."
+   },
+   "9049": {
+    "name": "Headlamp washer relay",
+    "desc": "The indicated component managed by the Body Computer shows a defect. Ensure the device operation with an actuator test (if available). Check the wiring between the component and Body Computer for opens, shorts and weak connections, and the component itself. Ensure that the system is configured correctly."
+   },
+   "904A": {
+    "name": "Heated windscreen",
+    "desc": "No help available"
+   },
+   "904B": {
+    "name": "Left daylight",
+    "desc": "No help available"
+   },
+   "904C": {
+    "name": "Rear window wiper control",
+    "desc": "No help available"
+   },
+   "904D": {
+    "name": "Rear window wiper travel start switch",
+    "desc": "No help available"
+   },
+   "9050": {
+    "name": "Exterior light switch",
+    "desc": "No help available"
+   },
+   "9051": {
+    "name": "Direction indicators lever",
+    "desc": "No help available"
+   },
+   "9052": {
+    "name": "Windscreen wiper switch",
+    "desc": "No help available"
+   },
+   "9053": {
+    "name": "High-beam lights command",
+    "desc": "No help available"
+   },
+   "9054": {
+    "name": "Windscreen wash pump relay",
+    "desc": "No help available"
+   },
+   "9055": {
+    "name": "Dynamic control selector input",
+    "desc": "No help available"
+   },
+   "9056": {
+    "name": "High beam flash",
+    "desc": "No help available"
+   },
+   "905A": {
+    "name": "Door lock relay",
+    "desc": "No help available"
+   },
+   "905B": {
+    "name": "Door unlock relay",
+    "desc": "No help available"
+   },
+   "905D": {
+    "name": "Door unlock relay",
+    "desc": "No help available"
+   },
+   "905F": {
+    "name": "Boot opening relay",
+    "desc": "The indicated component managed by the Body Computer shows a defect. Ensure the device operation with an actuator test (if available). Check the wiring between the component and Body Computer for opens, shorts and weak connections, and the component itself. Ensure that the system is configured correctly."
+   },
+   "9060": {
+    "name": "Door open/close switch",
+    "desc": "No help available"
+   },
+   "9061": {
+    "name": "Roof Control Unit (RCU)",
+    "desc": "No help available"
+   },
+   "9062": {
+    "name": "Boot open switch",
+    "desc": "No help available"
+   },
+   "9063": {
+    "name": "Services relay 2",
+    "desc": "No help available"
+   },
+   "906A": {
+    "name": "Dynamic control selector Sport LED",
+    "desc": "No help available"
+   },
+   "906B": {
+    "name": "Dynamic control selector Ice LED",
+    "desc": "No help available"
+   },
+   "906C": {
+    "name": "Dynamic control selector input",
+    "desc": "No help available"
+   },
+   "906D": {
+    "name": "Dynamic control selector",
+    "desc": "No help available"
+   },
+   "9071": {
+    "name": "SBMT 1",
+    "desc": "No help available"
+   },
+   "9072": {
+    "name": "Tilt sensor",
+    "desc": "No help available"
+   },
+   "9073": {
+    "name": "Volumetric sensors",
+    "desc": "No help available"
+   },
+   "9074": {
+    "name": "Siren",
+    "desc": "No help available"
+   },
+   "9076": {
+    "name": "Power inverter enable control",
+    "desc": "No help available"
+   },
+   "9077": {
+    "name": "Fuel filter heater relay",
+    "desc": "No help available"
+   },
+   "9078": {
+    "name": "Brake fluid level switch",
+    "desc": "No help available"
+   },
+   "907B": {
+    "name": "External air temperature sensor",
+    "desc": "No help available"
+   },
+   "907C": {
+    "name": "Door lock signal (driver)",
+    "desc": "No help available"
+   },
+   "907D": {
+    "name": "Door lock signal (passenger)",
+    "desc": "No help available"
+   },
+   "907E": {
+    "name": "Rear left door lock",
+    "desc": "No help available"
+   },
+   "907F": {
+    "name": "Rear right door lock",
+    "desc": "No help available"
+   },
+   "9080": {
+    "name": "Inertia (FIS) switch command Airbag Node (NAB/ORC)",
+    "desc": "No help available"
+   },
+   "9081": {
+    "name": "Inertia (FIS) switch command Engine Control Node",
+    "desc": "No help available"
+   },
+   "9082": {
+    "name": "Inertia (FIS) switch command Airbag Node (NAB/ORC)",
+    "desc": "No help available"
+   },
+   "9083": {
+    "name": "Stop&Start button",
+    "desc": "No help available"
+   },
+   "9084": {
+    "name": "Stop&Start button",
+    "desc": "No help available"
+   },
+   "9085": {
+    "name": "Voltage stabilizer",
+    "desc": "No help available"
+   },
+   "9086": {
+    "name": "Stop&Start relay feedback (from NCM)",
+    "desc": "No help available"
+   },
+   "9087": {
+    "name": "Door lock signal (passenger)",
+    "desc": "No help available"
+   },
+   "9089": {
+    "name": "Inside lighting",
+    "desc": "No help available"
+   },
+   "908A": {
+    "name": "Inside lighting",
+    "desc": "No help available"
+   },
+   "908C": {
+    "name": "Boot light",
+    "desc": "No help available"
+   },
+   "908D": {
+    "name": "Hazard lights LED",
+    "desc": "No help available"
+   },
+   "908E": {
+    "name": "Parking sensors button LED",
+    "desc": "No help available"
+   },
+   "9091": {
+    "name": "Active suspension LED white",
+    "desc": "No help available"
+   },
+   "9092": {
+    "name": "Active suspension LED red",
+    "desc": "No help available"
+   },
+   "90AA": {
+    "name": "PROXI configuration control",
+    "desc": "No help available"
+   },
+   "9100": {
+    "name": "Control unit faulty (communication)",
+    "desc": "No help available"
+   },
+   "9101": {
+    "name": "Startup motor relay command",
+    "desc": "No help available"
+   },
+   "9104": {
+    "name": "Front right side lights",
+    "desc": "No help available"
+   },
+   "9105": {
+    "name": "Front left side lights",
+    "desc": "No help available"
+   },
+   "9106": {
+    "name": "Ignition key switch line",
+    "desc": "No help available"
+   },
+   "9107": {
+    "name": "Rear or side direction indicators (left)",
+    "desc": "No help available"
+   },
+   "9108": {
+    "name": "Rear or side direction indicators (right)",
+    "desc": "No help available"
+   },
+   "910E": {
+    "name": "Left front foglights relay",
+    "desc": "No help available"
+   },
+   "910F": {
+    "name": "Right front foglights relay",
+    "desc": "No help available"
+   },
+   "9112": {
+    "name": "Main relay command",
+    "desc": "No help available"
+   },
+   "9116": {
+    "name": "Fuel level sensor 2",
+    "desc": "Anomaly to the circuit for the connection to the fuel level sensor in the tank (floating), possible breakdown of the electric component or wiring problem (interrupted or shorted circuit to the + or to the ground) or breakdown of the board indicating instrument.  NOTE: In some models, due to the special shape of the tank, more sensors can be used ELECTRICALLY connected. This means that in case of breakdown of one sensor, the circuit is IN ANY CASE interrupted."
+   },
+   "9126": {
+    "name": "Fuel consumption info",
+    "desc": "No help available"
+   },
+   "9161": {
+    "name": "Hazard lights button",
+    "desc": "No help available"
+   },
+   "916C": {
+    "name": "CITY button",
+    "desc": "No help available"
+   },
+   "916D": {
+    "name": "ECO button",
+    "desc": "No help available"
+   },
+   "916E": {
+    "name": "ECO button LED",
+    "desc": "No help available"
+   },
+   "9170": {
+    "name": "Steering wheel buttons (1)",
+    "desc": "No help available"
+   },
+   "9173": {
+    "name": "Steering wheel buttons (1)",
+    "desc": "No help available"
+   },
+   "9174": {
+    "name": "Driver's side window riser motor",
+    "desc": "No help available"
+   },
+   "9175": {
+    "name": "Passenger's side window riser motor",
+    "desc": "No help available"
+   },
+   "9176": {
+    "name": "Rear left window riser",
+    "desc": "No help available"
+   },
+   "9177": {
+    "name": "Rear right window riser",
+    "desc": "No help available"
+   },
+   "9265": {
+    "name": "Windscreen wiper motor control",
+    "desc": "No help available"
+   },
+   "9266": {
+    "name": "Front passenger window riser button from driver",
+    "desc": "No help available"
+   },
+   "9267": {
+    "name": "Driver's side window riser switch",
+    "desc": "No help available"
+   },
+   "9268": {
+    "name": "UGDO (Universal Garage Door Opener)",
+    "desc": "No help available"
+   },
+   "9269": {
+    "name": "Driver's side window riser switch",
+    "desc": "No help available"
+   },
+   "926A": {
+    "name": "Driver's side window riser switch",
+    "desc": "No help available"
+   },
+   "92AD": {
+    "name": "Driver's door open/close switch",
+    "desc": "No help available"
+   },
+   "92AE": {
+    "name": "Driver's door open/close switch",
+    "desc": "No help available"
+   },
+   "92AF": {
+    "name": "Door open/close switch",
+    "desc": "No help available"
+   },
+   "92B0": {
+    "name": "Rear right door open/close switch",
+    "desc": "No help available"
+   },
+   "92B1": {
+    "name": "Rear left door open/close switch",
+    "desc": "No help available"
+   },
+   "92B2": {
+    "name": "Doors lock/unlock status led",
+    "desc": "No help available"
+   },
+   "92D3": {
+    "name": "Horn in S.C. to +Vbatt",
+    "desc": "No help available"
+   },
+   "92E3": {
+    "name": "Dynamic control selector Sport LED",
+    "desc": "No help available"
+   },
+   "962A": {
+    "name": "Left low beam headlight",
+    "desc": "No help available"
+   },
+   "962E": {
+    "name": "Right low beam headlight",
+    "desc": "No help available"
+   },
+   "9632": {
+    "name": "Left high beam headlight",
+    "desc": "No help available"
+   },
+   "9636": {
+    "name": "Right high beam headlight",
+    "desc": "No help available"
+   },
+   "965A": {
+    "name": "Intelligent alternator (IAM)",
+    "desc": "No help available"
+   },
+   "9701": {
+    "name": "Side lights",
+    "desc": "No help available"
+   },
+   "9702": {
+    "name": "Side lights",
+    "desc": "No help available"
+   },
+   "9711": {
+    "name": "Driver's side puddle light",
+    "desc": "No help available"
+   },
+   "9712": {
+    "name": "Passenger side puddle light",
+    "desc": "No help available"
+   },
+   "9713": {
+    "name": "Driver's side puddle light",
+    "desc": "No help available"
+   },
+   "9714": {
+    "name": "Passenger side puddle light",
+    "desc": "No help available"
+   },
+   "9715": {
+    "name": "Rear left and right puddle lights",
+    "desc": "No help available"
+   },
+   "9716": {
+    "name": "Rear left and right puddle lights",
+    "desc": "No help available"
+   },
+   "9717": {
+    "name": "Driver's door open signal for Autom. Gearbox",
+    "desc": "No help available"
+   },
+   "9718": {
+    "name": "Parking sensors button",
+    "desc": "No help available"
+   },
+   "9719": {
+    "name": "Rear electric windows inhibit button",
+    "desc": "No help available"
+   },
+   "9720": {
+    "name": "Bonnet switch",
+    "desc": "No help available"
+   },
+   "9A7D": {
+    "name": "Start button",
+    "desc": "No help available"
+   },
+   "C001": {
+    "name": "C1-CAN",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C010": {
+    "name": "BH-CAN",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C101": {
+    "name": "C2-CAN",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C151": {
+    "name": "Lost communication with Airbag control unit (ORC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C198": {
+    "name": "Communication with Telematic box module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C208": {
+    "name": "Comfort seat and wheel module (CSWM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C247": {
+    "name": "Comfort seat and wheel module (CSWM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C248": {
+    "name": "Communication with Comfort rear seat module (CRSM)",
+    "desc": "No help available"
+   },
+   "C254": {
+    "name": "Lost communication with Remote start module",
+    "desc": "No help available"
+   },
+   "C405": {
+    "name": "Error in communication with Cruise Control module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C418": {
+    "name": "Error in communication with ABS module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C419": {
+    "name": "Error in communication with ABS module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C420": {
+    "name": "Lost communication with RF Hub module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C426": {
+    "name": "Lost communication with ESL (Electric Steering Lock)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C427": {
+    "name": "Lost communication with RF Hub module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C432": {
+    "name": "Security access violation",
+    "desc": "No help available"
+   },
+   "C433": {
+    "name": "Minicrypt",
+    "desc": "No help available"
+   },
+   "C434": {
+    "name": "Stop&Start relay feedback (from NCM)",
+    "desc": "No help available"
+   },
+   "C435": {
+    "name": "Stop&Start relay feedback (from NCM)",
+    "desc": "No help available"
+   },
+   "D001": {
+    "name": "C2-CAN",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D411": {
+    "name": "Battery sensor (IBS)",
+    "desc": "No help available"
+   },
+   "D412": {
+    "name": "Alarm Siren Control Unit (ASU)",
+    "desc": "No help available"
+   },
+   "D413": {
+    "name": "Ultrasound/tilt sensor module (UAM)",
+    "desc": "No help available"
+   },
+   "D414": {
+    "name": "Rain Dusk Sensor (RLS)",
+    "desc": "No help available"
+   },
+   "D415": {
+    "name": "Rain Dusk Sensor (RLS)",
+    "desc": "No help available"
+   },
+   "D416": {
+    "name": "Rain Dusk Sensor (RLS)",
+    "desc": "No help available"
+   },
+   "D417": {
+    "name": "Rain Dusk Sensor (RLS)",
+    "desc": "No help available"
+   },
+   "D418": {
+    "name": "Rain/light/humidity Sensor (HRLS)",
+    "desc": "No help available"
+   },
+   "D419": {
+    "name": "Rain/light/humidity Sensor (HRLS)",
+    "desc": "No help available"
+   },
+   "D41A": {
+    "name": "Rain/light/humidity Sensor (HRLS)",
+    "desc": "No help available"
+   },
+   "D41B": {
+    "name": "Rain/light/humidity Sensor (HRLS)",
+    "desc": "No help available"
+   },
+   "D421": {
+    "name": "Driver's side window riser motor",
+    "desc": "No help available"
+   },
+   "D422": {
+    "name": "Passenger's side window riser motor",
+    "desc": "No help available"
+   },
+   "D423": {
+    "name": "Rear left window riser",
+    "desc": "No help available"
+   },
+   "D424": {
+    "name": "Rear right window riser",
+    "desc": "No help available"
+   },
+   "D425": {
+    "name": "Windscreen wiper motor control",
+    "desc": "No help available"
+   },
+   "D426": {
+    "name": "Engine control (NCM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D427": {
+    "name": "Battery sensor (IBS)",
+    "desc": "No help available"
+   },
+   "D446": {
+    "name": "Engine control (NCM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D451": {
+    "name": "Rear view camera module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D459": {
+    "name": "Cruise activation controls",
+    "desc": "Cruise control multi-function input circuit range/performance"
+   },
+   "D45E": {
+    "name": "Steering wheel controls (NVO)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D460": {
+    "name": "Driver Mirror control module (DMCM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D461": {
+    "name": "Passenger mirror control module (PMCM)",
+    "desc": "No help available"
+   },
+   "D462": {
+    "name": "Brake node (NFR)",
+    "desc": "No help available"
+   },
+   "D464": {
+    "name": "Brake node (NFR)",
+    "desc": "No help available"
+   },
+   "D466": {
+    "name": "Dynamic control selector",
+    "desc": "No help available"
+   },
+   "D468": {
+    "name": "Dynamic control selector",
+    "desc": "No help available"
+   },
+   "D46A": {
+    "name": "Lost communication with RF Hub module",
+    "desc": "No help available"
+   },
+   "D46C": {
+    "name": "Lost communication with Electric Power Steering module",
+    "desc": "No help available"
+   },
+   "D701": {
+    "name": "Engine control (NCM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D702": {
+    "name": "Electric Steering (NGE)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D703": {
+    "name": "Communication with Instrument Cluster (IPC/NQS)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D705": {
+    "name": "Radio Receiver",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D706": {
+    "name": "Error in communication with ABS module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D707": {
+    "name": "Error in communication with ABS module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D70A": {
+    "name": "Error in communication with climate control module (HVAC/NCL)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D710": {
+    "name": "Error in communication with climate control module (HVAC/NCL)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D711": {
+    "name": "Brake system (NFR)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D712": {
+    "name": "Brake system (NFR)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D713": {
+    "name": "Engine control (NCM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D714": {
+    "name": "Engine control (NCM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D715": {
+    "name": "Automatic Transmission (NCA-NCR)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D716": {
+    "name": "Electric Steering (NGE)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D718": {
+    "name": "No communication with Parking Control module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D71A": {
+    "name": "No communication with Airbag control unit",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D71E": {
+    "name": "Haptical Lane Feedback Node (HALF)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D721": {
+    "name": "Steering lock control unit",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D722": {
+    "name": "CAN data from Gearbox Selector (ESM/GSM/NSC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D724": {
+    "name": "Parking Sensor Node (NSP)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D726": {
+    "name": "Airbag Node (NAB)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D727": {
+    "name": "Trailer tow module (TTM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D728": {
+    "name": "Trailer tow module (TTM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D72E": {
+    "name": "Lost communication with Audio Amplifier module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D730": {
+    "name": "Haptical Lane Feedback Node (HALF)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D732": {
+    "name": "Tire pressure control unit (TPM)",
+    "desc": "No help available"
+   },
+   "D733": {
+    "name": "Lost communication with Blind spot detection module",
+    "desc": "No help available"
+   },
+   "D734": {
+    "name": "Lost communication with Blind spot detection module",
+    "desc": "No help available"
+   },
+   "D736": {
+    "name": "Entertainment Telematic Module (ETM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D737": {
+    "name": "Entertainment Multimedia Control Module (EMCM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D739": {
+    "name": "Drive assistant system module (DASM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D73D": {
+    "name": "Communication with Comfort rear seat module (CRSM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D73F": {
+    "name": "Trailer tow module (TTM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D741": {
+    "name": "Lost communication with RF Hub module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D746": {
+    "name": "Lost communication with Audio Amplifier module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D748": {
+    "name": "Drive style control module (DSCM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D751": {
+    "name": "Lost communication with Blind spot detection module",
+    "desc": "No help available"
+   },
+   "D752": {
+    "name": "Lost communication with Blind spot detection module",
+    "desc": "No help available"
+   },
+   "D757": {
+    "name": "Drive assistant system module (DASM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D763": {
+    "name": "Trailer tow module (TTM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D764": {
+    "name": "Trailer tow module (TTM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D765": {
+    "name": "Lost communication with RF Hub module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D766": {
+    "name": "Lost communication with RF Hub module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D767": {
+    "name": "Error in communication with engine control unit (ECU)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D76B": {
+    "name": "Error in communication with engine control unit (ECU)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D76C": {
+    "name": "Active aerodynamic module Right (AAMR)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D76D": {
+    "name": "Active aerodynamic module Left (AAML)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D76E": {
+    "name": "Engine sound enhancement module (ESEM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D770": {
+    "name": "Electronic linear differential module (ELSDM)",
+    "desc": "No help available"
+   },
+   "D772": {
+    "name": "Torque vectoring module (TVM)",
+    "desc": "No help available"
+   },
+   "D7C6": {
+    "name": "Communication with Telematic box module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D801": {
+    "name": "LIN 1 serial line faulty",
+    "desc": "No help available"
+   },
+   "D802": {
+    "name": "LIN 2 serial line faulty",
+    "desc": "No help available"
+   },
+   "D803": {
+    "name": "LIN 3 serial line faulty",
+    "desc": "No help available"
+   },
+   "D804": {
+    "name": "LIN 4 serial line faulty",
+    "desc": "No help available"
+   },
+   "D903": {
+    "name": "Communication with Instrument Cluster (IPC/NQS)",
+    "desc": "No help available"
+   },
+   "D906": {
+    "name": "Brake system (NFR)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D91A": {
+    "name": "Lost communication with Airbag control unit (ORC)",
+    "desc": "No help available"
+   },
+   "D930": {
+    "name": "CAN network",
+    "desc": "No help available"
+   },
+   "D931": {
+    "name": "Error in communication with Instrument Cluster (IPC/NQS)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D932": {
+    "name": "Brake system (NFR)",
+    "desc": "No help available"
+   },
+   "D933": {
+    "name": "Lost communication with Airbag control unit (ORC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D953": {
+    "name": "Error in communication with ABS module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D960": {
+    "name": "Error in communication with engine control unit (ECU)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D966": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D96A": {
+    "name": "Lost communication with Airbag control unit (ORC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D97C": {
+    "name": "Error in communication with Automatic transmission",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D990": {
+    "name": "Lost communication with RF Hub module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "DA01": {
+    "name": "Electronic Shift Module (ESM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "DA05": {
+    "name": "Error in communication with Automatic transmission",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "DA06": {
+    "name": "Lost communication with Adaptive front lighting control module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "DA07": {
+    "name": "Chassis domain control module (CDCM)",
+    "desc": "No help available"
+   },
+   "DA08": {
+    "name": "Error in communication with Automatic transmission",
+    "desc": "No help available"
+   },
+   "DA09": {
+    "name": "Lost communication with RF Hub module",
+    "desc": "No help available"
+   },
+   "DA10": {
+    "name": "Lost communication with ESL (Electric Steering Lock)",
+    "desc": "No help available"
+   },
+   "DA15": {
+    "name": "Error in communication with ABS module",
+    "desc": "No help available"
+   },
+   "DA16": {
+    "name": "Error in communication with Body Computer Module (BCM)",
+    "desc": "No help available"
+   },
+   "DA17": {
+    "name": "Engine sound enhancement module (ESEM)",
+    "desc": "No help available"
+   },
+   "DA18": {
+    "name": "Drive style control module (DSCM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "DA19": {
+    "name": "Drive style control module (DSCM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "DA50": {
+    "name": "Lost communication with RF Hub module",
+    "desc": "No help available"
+   },
+   "DA55": {
+    "name": "Passenger mirror control module (PMCM)",
+    "desc": "No help available"
+   },
+   "DA56": {
+    "name": "Driver Mirror control module (DMCM)",
+    "desc": "No help available"
+   }
+  },
+  "CDCM1": {
+   "6500": {
+    "name": "Front left body accelerometer",
+    "desc": "No help available"
+   },
+   "6501": {
+    "name": "Front right body accelerometer",
+    "desc": "No help available"
+   },
+   "6502": {
+    "name": "Vertical accelerometer",
+    "desc": "No help available"
+   },
+   "6503": {
+    "name": "Front left wheel accelerometer",
+    "desc": "No help available"
+   },
+   "6504": {
+    "name": "Front right wheel accelerometer",
+    "desc": "No help available"
+   },
+   "6505": {
+    "name": "Lateral acceleration sensor",
+    "desc": "No help available"
+   },
+   "6506": {
+    "name": "Longitudinal acceleration sensor",
+    "desc": "No help available"
+   },
+   "6507": {
+    "name": "Pitch sensor",
+    "desc": "No help available"
+   },
+   "6508": {
+    "name": "Roll sensor",
+    "desc": "No help available"
+   },
+   "6509": {
+    "name": "Yaw sensor",
+    "desc": "No help available"
+   },
+   "650A": {
+    "name": "Sensor power supply 1",
+    "desc": "No help available"
+   },
+   "650B": {
+    "name": "Sensor power supply 2",
+    "desc": "No help available"
+   },
+   "650C": {
+    "name": "Sensor power supply 3",
+    "desc": "No help available"
+   },
+   "650E": {
+    "name": "Battery voltage",
+    "desc": "No help available"
+   },
+   "650F": {
+    "name": "Battery voltage",
+    "desc": "No help available"
+   },
+   "6510": {
+    "name": "Front left valve",
+    "desc": "No help available"
+   },
+   "6511": {
+    "name": "Front right valve",
+    "desc": "No help available"
+   },
+   "6512": {
+    "name": "Rear left valve",
+    "desc": "No help available"
+   },
+   "6513": {
+    "name": "Rear right valve",
+    "desc": "No help available"
+   },
+   "6518": {
+    "name": "Vertical accelerometer (slave)",
+    "desc": "No help available"
+   },
+   "6519": {
+    "name": "Lateral acceleration sensor (slave)",
+    "desc": "No help available"
+   },
+   "651A": {
+    "name": "Longitudinal acceleration sensor (slave)",
+    "desc": "No help available"
+   },
+   "651B": {
+    "name": "Lateral acceleration sensor",
+    "desc": "No help available"
+   },
+   "651C": {
+    "name": "Longitudinal acceleration sensor",
+    "desc": "No help available"
+   },
+   "651D": {
+    "name": "Vertical acceleration",
+    "desc": "No help available"
+   },
+   "654D": {
+    "name": "Control unit fault",
+    "desc": "No help available"
+   },
+   "6558": {
+    "name": "LWS angle",
+    "desc": "No help available"
+   },
+   "6565": {
+    "name": "Vehicle speed",
+    "desc": "No help available"
+   },
+   "6566": {
+    "name": "Control unit calibrations",
+    "desc": "No help available"
+   },
+   "6567": {
+    "name": "No end of line configuration",
+    "desc": "No help available"
+   },
+   "656E": {
+    "name": "Front left wheel speed sensor",
+    "desc": "No help available"
+   },
+   "6577": {
+    "name": "Rear left wheel speed sensor",
+    "desc": "No help available"
+   },
+   "6578": {
+    "name": "Front right wheel speed sensor",
+    "desc": "No help available"
+   },
+   "6579": {
+    "name": "Rear right wheel speed sensor",
+    "desc": "No help available"
+   },
+   "657A": {
+    "name": "Lateral acceleration sensor",
+    "desc": "No help available"
+   },
+   "657B": {
+    "name": "Longitudinal acceleration sensor",
+    "desc": "No help available"
+   },
+   "657C": {
+    "name": "Yaw sensor",
+    "desc": "No help available"
+   },
+   "657D": {
+    "name": "Brake system master cylinder pressure",
+    "desc": "No help available"
+   },
+   "657E": {
+    "name": "Gas pedal position",
+    "desc": "No help available"
+   },
+   "657F": {
+    "name": "Engine speed",
+    "desc": "No help available"
+   },
+   "6590": {
+    "name": "Gas pedal position",
+    "desc": "No help available"
+   },
+   "6591": {
+    "name": "Engine torque",
+    "desc": "No help available"
+   },
+   "6600": {
+    "name": "Control unit fault",
+    "desc": "No help available"
+   },
+   "6601": {
+    "name": "Torque request TVM",
+    "desc": "No help available"
+   },
+   "6602": {
+    "name": "Control unit calibrations",
+    "desc": "No help available"
+   },
+   "C001": {
+    "name": "C1-CAN",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D001": {
+    "name": "C2-CAN",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D700": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D701": {
+    "name": "Error in communication with engine control unit (ECU)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D702": {
+    "name": "Lost communication with Electric Power Steering module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D703": {
+    "name": "Communication with Instrument Cluster (IPC/NQS)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D706": {
+    "name": "Error in communication with ABS module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D70B": {
+    "name": "Error in communication with Automatic transmission",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D71A": {
+    "name": "No communication with Airbag control unit",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D741": {
+    "name": "Lost communication with RF Hub module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D767": {
+    "name": "Error in communication with Transfer Case Control Module/AWD",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D768": {
+    "name": "Electronic linear differential module (ELSDM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D769": {
+    "name": "Torque vectoring module (TVM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D76C": {
+    "name": "Active aerodynamic module Right (AAMR)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "E700": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "E706": {
+    "name": "Error in communication with ABS module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   }
+  },
+  "DASH29TFT": {
+   "9000": {
+    "name": "Control unit fault",
+    "desc": "No help available"
+   },
+   "9001": {
+    "name": "Dasboard indicator lamp faulty",
+    "desc": "No help available"
+   },
+   "9002": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "No help available"
+   },
+   "9003": {
+    "name": "USB error",
+    "desc": "No help available"
+   },
+   "9004": {
+    "name": "Control unit hardware error",
+    "desc": "No help available"
+   },
+   "9005": {
+    "name": "Control unit faulty",
+    "desc": "No help available"
+   },
+   "9006": {
+    "name": "Battery voltage",
+    "desc": "No help available"
+   },
+   "9007": {
+    "name": "Key identification",
+    "desc": "No help available"
+   },
+   "9008": {
+    "name": "No configuration",
+    "desc": "No help available"
+   },
+   "9009": {
+    "name": "Auxiliary instrument cluster",
+    "desc": "No help available"
+   },
+   "9010": {
+    "name": "Key identification",
+    "desc": "No help available"
+   },
+   "9011": {
+    "name": "Key identification",
+    "desc": "No help available"
+   },
+   "9012": {
+    "name": "No end of line configuration",
+    "desc": "No help available"
+   },
+   "9013": {
+    "name": "Electronic key",
+    "desc": "No help available"
+   },
+   "9027": {
+    "name": "No communication with Airbag control unit",
+    "desc": "No help available"
+   },
+   "9028": {
+    "name": "Dasboard indicator lamp faulty",
+    "desc": "No help available"
+   },
+   "9900": {
+    "name": "Dasboard indicator lamp faulty",
+    "desc": "No help available"
+   },
+   "A206": {
+    "name": "VIN mismatch/missing",
+    "desc": "No help available"
+   },
+   "C001": {
+    "name": "C-CAN line error",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C010": {
+    "name": "BH-CAN",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C435": {
+    "name": "Error in communication with engine control unit (ECU)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C436": {
+    "name": "Error in communication with ABS module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C437": {
+    "name": "Error in communication with ABS module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C438": {
+    "name": "Error in communication with engine control unit (ECU)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C439": {
+    "name": "Error in communication with ABS module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C440": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C441": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C442": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C443": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C444": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C446": {
+    "name": "Error in communication with ABS module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C447": {
+    "name": "Error in communication with ABS module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C448": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C449": {
+    "name": "Error in communication with ABS module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C450": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C451": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C452": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C453": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C454": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C470": {
+    "name": "CAN network",
+    "desc": "No help available"
+   },
+   "C471": {
+    "name": "Ethernet network",
+    "desc": "No help available"
+   },
+   "D700": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D701": {
+    "name": "Error in communication with engine control unit (ECU)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D706": {
+    "name": "Error in communication with ABS module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D70B": {
+    "name": "Error in communication with Automatic transmission",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D716": {
+    "name": "Electronic Shift Module (ESM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D71A": {
+    "name": "No communication with Airbag control unit",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D723": {
+    "name": "Communication with Telematic box module (TBM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D724": {
+    "name": "Entertainment Telematic Module (ETM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D733": {
+    "name": "Lost communication with Blind spot detection module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D734": {
+    "name": "Lost communication with Blind spot detection module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D73F": {
+    "name": "Trailer tow module (TTM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D740": {
+    "name": "Communication with Heated memory seat module (HMSM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D743": {
+    "name": "Communication with Drive train control module (DTCM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D745": {
+    "name": "Communication with Power lift gate module (PLGM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D762": {
+    "name": "Communication with Hybrid control processor (HCP)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D766": {
+    "name": "Chassis domain control module (CDCM)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D801": {
+    "name": "LIN serial line",
+    "desc": "No help available"
+   }
+  },
+  "TBM1": {
+   "9401": {
+    "name": "Speakers outputs",
+    "desc": "No help available"
+   },
+   "943A": {
+    "name": "Microphone",
+    "desc": "No help available"
+   },
+   "9552": {
+    "name": "Emergency call button",
+    "desc": "No help available"
+   },
+   "9555": {
+    "name": "Emergency call button backlight LED",
+    "desc": "No help available"
+   },
+   "9556": {
+    "name": "Red emergency call LED",
+    "desc": "No help available"
+   },
+   "9557": {
+    "name": "Green emergency call LED",
+    "desc": "No help available"
+   },
+   "9560": {
+    "name": "GSM aerial",
+    "desc": "Check the following:  - Connections faulty  - Wiring faulty  Aerial faulty or disconnected"
+   },
+   "9562": {
+    "name": "GPS aerial",
+    "desc": "Check the following:  - Connections faulty  - Wiring faulty  Aerial faulty or disconnected"
+   },
+   "9E21": {
+    "name": "Backup battery",
+    "desc": "No help available"
+   },
+   "9E22": {
+    "name": "Backup battery",
+    "desc": "No help available"
+   },
+   "A10A": {
+    "name": "Control unit power supply",
+    "desc": "Check the following:  - control unit ground  - recharging system operating badly  - battery faulty"
+   },
+   "A2A9": {
+    "name": "Control unit faulty (Microprocessor)",
+    "desc": "ECU microprocessor error is indicated. Check that the ECU has ripple free voltage and solid ground supplies.  Clear the code and ensure that it does not reappear."
+   },
+   "A73C": {
+    "name": "Crash data line IN",
+    "desc": "No help available"
+   },
+   "C001": {
+    "name": "C1-CAN",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C010": {
+    "name": "BH-CAN",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C129": {
+    "name": "Lost communication with ABS module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C140": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C151": {
+    "name": "Lost communication with Airbag control unit (ORC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C155": {
+    "name": "Communication with Instrument Cluster (IPC/NQS)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "943D": {
+    "name": "Microphone",
+    "desc": "No help available"
+   },
+   "9553": {
+    "name": "Road assistance call button",
+    "desc": "No help available"
+   },
+   "9561": {
+    "name": "GSM aerial",
+    "desc": "Check the following:  - Connections faulty  - Wiring faulty  Aerial faulty or disconnected"
+   },
+   "9565": {
+    "name": "Red road assistance call LED",
+    "desc": "No help available"
+   },
+   "9566": {
+    "name": "Green road assistance call LED",
+    "desc": "No help available"
+   },
+   "9570": {
+    "name": "USB error",
+    "desc": "No help available"
+   },
+   "A10D": {
+    "name": "Battery Voltage too low",
+    "desc": "Check the following:  - control unit ground  - recharging system operating badly  - battery faulty"
+   },
+   "A10E": {
+    "name": "Battery Voltage too high",
+    "desc": "Check the following:  - control unit ground  - recharging system operating badly  - battery faulty"
+   },
+   "A206": {
+    "name": "VIN mismatch/missing",
+    "desc": "No help available"
+   },
+   "A22C": {
+    "name": "No configuration",
+    "desc": "No help available"
+   },
+   "C002": {
+    "name": "C1-CAN",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C011": {
+    "name": "BH-CAN",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C100": {
+    "name": "No communication with engine control unit (ECU)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C184": {
+    "name": "Lost communication with Radio module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C401": {
+    "name": "Error in communication with engine control unit (ECU)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C423": {
+    "name": "Communication with Instrument Cluster (IPC/NQS)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C452": {
+    "name": "No communication with Airbag control unit",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C485": {
+    "name": "Lost communication with Radio module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C418": {
+    "name": "Error in communication with ABS module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "C422": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D930": {
+    "name": "CAN network",
+    "desc": "No help available"
+   },
+   "D952": {
+    "name": "Error in communication with ABS module",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D932": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D933": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D934": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D96A": {
+    "name": "Lost communication with Airbag control unit (ORC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "F033": {
+    "name": "Security certificate missing or not valid",
+    "desc": "No help available"
+   }
+  },
+  "TTM1": {
+   "5005": {
+    "name": "Left direction indicators",
+    "desc": "No help available"
+   },
+   "5006": {
+    "name": "Right direction indicators",
+    "desc": "No help available"
+   },
+   "504B": {
+    "name": "Rear foglights",
+    "desc": "No help available"
+   },
+   "504C": {
+    "name": "Reversing lights",
+    "desc": "No help available"
+   },
+   "504D": {
+    "name": "Rear right taillights",
+    "desc": "No help available"
+   },
+   "504E": {
+    "name": "Rear left taillights",
+    "desc": "No help available"
+   },
+   "504F": {
+    "name": "Trailer connected status",
+    "desc": "No help available"
+   },
+   "505B": {
+    "name": "Left direction indicators",
+    "desc": "No help available"
+   },
+   "505C": {
+    "name": "Right direction indicators",
+    "desc": "No help available"
+   },
+   "505D": {
+    "name": "Vehicle speed",
+    "desc": "No help available"
+   },
+   "506D": {
+    "name": "Brake lights",
+    "desc": "No help available"
+   },
+   "9000": {
+    "name": "Control unit faulty",
+    "desc": "No help available"
+   },
+   "C010": {
+    "name": "BH-CAN",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D700": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D703": {
+    "name": "Communication with Instrument Cluster (IPC/NQS)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D930": {
+    "name": "CAN network",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D932": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D933": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "Communication fault with the vehicle CAN bus."
+   },
+   "D934": {
+    "name": "Communication with Body Computer (BCM/NBC)",
+    "desc": "Communication fault with the vehicle CAN bus."
    }
   }
  }

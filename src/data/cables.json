@@ -403,6 +403,61 @@
       "group": "swap",
       "cable": "adapter-6-gray",
       "hint": "请更换为 6 号灰色适配线"
+    },
+    "CDCM1": {
+      "code": "CDCM1",
+      "name": "Chassis domain control module (CDCM)",
+      "bus": "CCAN29",
+      "tx": "20",
+      "rx": "F1",
+      "baud": 500,
+      "group": "swap",
+      "cable": "adapter-6-gray",
+      "hint": "请更换为 6 号灰色适配线"
+    },
+    "DASH29TFT": {
+      "code": "DASH29TFT",
+      "name": "Instrument Panel Bosch TFT",
+      "bus": "CCAN29",
+      "tx": "60",
+      "rx": "F1",
+      "baud": 500,
+      "group": "none",
+      "cable": "none",
+      "hint": ""
+    },
+    "TBM1": {
+      "code": "TBM1",
+      "name": "Telematic box module (TBM)",
+      "bus": "BHCAN29",
+      "tx": "C6",
+      "rx": "F1",
+      "baud": 125,
+      "group": "comfort",
+      "cable": "adapter-5-blue",
+      "hint": "请接 5 号蓝色适配线"
+    },
+    "TTM1": {
+      "code": "TTM1",
+      "name": "Trailer tow module (TTM)",
+      "bus": "BHCAN29",
+      "tx": "4A",
+      "rx": "F1",
+      "baud": 125,
+      "group": "comfort",
+      "cable": "adapter-5-blue",
+      "hint": "请接 5 号蓝色适配线"
+    },
+    "BODY33V2": {
+      "code": "BODY33V2",
+      "name": "Body Computer Marelli MY19",
+      "bus": "CCAN29",
+      "tx": "40",
+      "rx": "F1",
+      "baud": 500,
+      "group": "none",
+      "cable": "none",
+      "hint": ""
     }
   }
 }

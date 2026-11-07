@@ -46,7 +46,8 @@ export const ENGINE_OF_MODULE = {
 
 /** 结构性判据用到的节点（名称取自 modules.json alignmentNodes，含容错正则） */
 export const MARKER_NODES = {
-    ecm: /^Engine Control Node \(ECM\/NCM\)$/i,
+    // 2026-11-07 数据源 5.5 节点改名（Node→module）：判据兼容新旧两种写法
+    ecm: /^Engine (Control Node|control module) \(ECM\/NCM\)$/i,
     ecm2: /^Engine control Module 2 \(ECM2\)$/i,
     scr: /^Selective Catalytic Reduction Module \(SCRM\)$/i,
 };

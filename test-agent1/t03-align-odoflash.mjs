@@ -67,7 +67,7 @@ check('补对齐后结论', '整车对齐正常，无里程表闪烁', stC2.verd
 console.log('--- D. 未安装节点写入行为 ---');
 let absentReject = false, absentMsg = '';
 try {
-    const r = await t.alignNodes((n) => n.name === 'Compact Disk Node (CDM)');   // 无 CD 换碟机
+    const r = await t.alignNodes((n) => n.name === 'Compact disk module (CDM)');   // 无 CD 换碟机
     absentReject = r.fail === 1 && r.done === 0;
     absentMsg = `done=${r.done} fail=${r.fail}`;
 } catch (e) { absentReject = true; absentMsg = '抛错: ' + e.message; }

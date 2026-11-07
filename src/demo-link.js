@@ -33,24 +33,27 @@ const SERVICE = {
  * ECM2 在 → 2.9 V6；否则 SCR 在 → 2.2 柴油；都没有 → 2.0 汽油。
  */
 const DEMO_ABSENT_NODES = new Set([
-    'Compact Disk Node (CDM)',                       // 无 CD 换碟机
-    'Amplifier Node (AMP)',                          // 无独立功放
-    'Selective Catalytic Reduction Module (SCRM)',   // 汽油车无 SCR/AdBlue
+    'Compact disk module (CDM)',                       // 无 CD 换碟机
+    'Amplifier module (AMP)',                          // 无独立功放
+    'Selective catalytic reduction module (SCRM)',   // 汽油车无 SCR/AdBlue
     'Rear Left Climate Control Node (RLCM)',         // 无后排独立空调
-    'Additional Heater Node (CTM)',                  // 无驻车加热器
+    'Additional heater module (AHM/HCM)',                  // 无驻车加热器
     'Driver monitoring system module (DMSM)',        // 无驾驶员监测
-    'Passenger Occupant Classification Node (OCM)',  // 无副驾占用识别
-    'Left Blind Spot Sensor Node (LBSS)',            // 无盲区监测
-    'Vehicle Tracking Module (VTM)',                 // 无车辆追踪
-    'Collision Mitigation Module (CMM)',             // 无碰撞缓解
-    'Drive Train Control Node (DTCM)',               // 后驱（无耦合控制）
-    'Passenger Door Latch Module (PDML)',            // 无电动门锁闩
-    'Engine control Module 2 (ECM2)',                // 4 缸单 ECU（V6 才有副 ECU）
+    'Passenger occupant classification module (OCM)',  // 无副驾占用识别
+    'Left blind spot sensor module (LBSS)',            // 无盲区监测
+    'Vehicle tracking module (VTM)',                 // 无车辆追踪
+    'Collision mitigation module (CMM)',             // 无碰撞缓解
+    'Drivetrain control module (DTCM)',               // 后驱（无耦合控制）
+    'Passenger door latch module (PDML/LSMP)',            // 无电动门锁闩
+    'Engine control module 2 (ECM2)',                // 4 缸单 ECU（V6 才有副 ECU）
     'Torque vectoring module (TVM)',                 // 无扭矩矢量
-    'Active aerodynamic module Left (AAML)',         // 无主动空气动力
-    'Active aerodynamic module Right (AAMR)',
-    'Haptical Lane Feedback Node (HALF)',            // 无车道保持触觉反馈
-    'Coupling Control Node (CCM)',                   // 后驱
+    'Left active aerodynamic module (AAML)',         // 无主动空气动力
+    'Right active aerodynamic module (AAMR)',
+    'Haptic lane feedback module (HALF)',            // 无车道保持触觉反馈
+    'Coupling control module (CCM)',                   // 后驱
+    'Trailer tow module (TTM)',
+    'Trailer tow electric bar module (TTEBM)',
+    'Digital television module (DTV)',
     'Traffic message module (TMM)',                  // 无 TMC
 ]);
 

@@ -1,5 +1,5 @@
 {
- "generatedFrom": "params_all.tsv CmdType=9（19 04 冻结帧）；取值口径见 tools/build-dtc-snapshots.cjs 头注释",
+ "generatedFrom": "params_all.tsv CmdType=9（19 04 冻结帧）；口径见 tools/build-dtc-snapshots.cjs",
  "note": "start 为 1-based：无 did 时相对 19 04 数据区（59 04+DTC3+记录号=6 字节之后）；有 did 时相对该 DID 的值区",
  "modules": {
   "AAML1": [
@@ -19,8 +19,8 @@
     "bytes": 2,
     "format": "num,1,1,-500",
     "decimals": 1,
-    "scale": 1,
-    "offset": -500,
+    "scale": 1.0,
+    "offset": -500.0,
     "unit": "A"
    },
    {
@@ -29,8 +29,8 @@
     "bytes": 1,
     "format": "num,0,1,-100",
     "decimals": 0,
-    "scale": 1,
-    "offset": -100,
+    "scale": 1.0,
+    "offset": -100.0,
     "unit": "%"
    }
   ],
@@ -51,8 +51,8 @@
     "bytes": 2,
     "format": "num,1,1,-500",
     "decimals": 1,
-    "scale": 1,
-    "offset": -500,
+    "scale": 1.0,
+    "offset": -500.0,
     "unit": "A"
    },
    {
@@ -61,8 +61,8 @@
     "bytes": 1,
     "format": "num,0,1,-100",
     "decimals": 0,
-    "scale": 1,
-    "offset": -100,
+    "scale": 1.0,
+    "offset": -100.0,
     "unit": "%"
    }
   ],
@@ -127,7 +127,7 @@
     "bytes": 2,
     "format": "num,0,15",
     "decimals": 0,
-    "scale": 15,
+    "scale": 15.0,
     "offset": 0,
     "unit": "s"
    },
@@ -261,8 +261,8 @@
     "bytes": 2,
     "format": "num,2,8,-16384",
     "decimals": 2,
-    "scale": 8,
-    "offset": -16384,
+    "scale": 8.0,
+    "offset": -16384.0,
     "unit": "deg./sec."
    },
    {
@@ -272,8 +272,8 @@
     "bytes": 2,
     "format": "num,2,2,-4096",
     "decimals": 2,
-    "scale": 2,
-    "offset": -4096,
+    "scale": 2.0,
+    "offset": -4096.0,
     "unit": "m/sec²"
    },
    {
@@ -283,8 +283,8 @@
     "bytes": 2,
     "format": "num,2,2,-4096",
     "decimals": 2,
-    "scale": 2,
-    "offset": -4096,
+    "scale": 2.0,
+    "offset": -4096.0,
     "unit": "m/sec²"
    },
    {
@@ -505,8 +505,8 @@
     "bytes": 1,
     "format": "num,0,1,-40",
     "decimals": 0,
-    "scale": 1,
-    "offset": -40,
+    "scale": 1.0,
+    "offset": -40.0,
     "unit": "°C"
    },
    {
@@ -571,7 +571,7 @@
     "bytes": 2,
     "format": "num,0,15",
     "decimals": 0,
-    "scale": 15,
+    "scale": 15.0,
     "offset": 0,
     "unit": "s"
    },
@@ -652,7 +652,7 @@
     "bytes": 2,
     "format": "num,0,15",
     "decimals": 0,
-    "scale": 15,
+    "scale": 15.0,
     "offset": 0,
     "unit": "s"
    },
@@ -714,6 +714,99 @@
     ]
    }
   ],
+  "BODY33V2": [
+   {
+    "name": "Operating time",
+    "did": "1008",
+    "start": 1,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   },
+   {
+    "name": "Operating time (since key-ON)",
+    "did": "1009",
+    "start": 1,
+    "bytes": 2,
+    "format": "num,0,15",
+    "decimals": 0,
+    "scale": 15.0,
+    "offset": 0,
+    "unit": "s"
+   },
+   {
+    "name": "Startups counter",
+    "did": "200A",
+    "start": 1,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
+   },
+   {
+    "name": "Failure type",
+    "did": "6082",
+    "start": 1,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Battery voltage",
+    "did": "1004",
+    "start": 1,
+    "bytes": 1,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Vehicle speed",
+    "did": "1002",
+    "start": 1,
+    "bytes": 1,
+    "format": "num,0",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "km/h"
+   },
+   {
+    "name": "Operational Mode Status",
+    "did": "1921",
+    "start": 1,
+    "bytes": 9,
+    "format": "hex"
+   },
+   {
+    "name": "Hazard lights",
+    "did": "0137",
+    "start": 1,
+    "bytes": 1,
+    "format": "bits",
+    "options": [
+     "1010ON",
+     "1000OFF"
+    ]
+   }
+  ],
+  "CDCM1": [
+   {
+    "name": "Operating time",
+    "start": 8,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   }
+  ],
   "CLIMA33": [
    {
     "name": "Operating time",
@@ -741,8 +834,8 @@
     "bytes": 2,
     "format": "num,1,5,-400",
     "decimals": 1,
-    "scale": 5,
-    "offset": -400,
+    "scale": 5.0,
+    "offset": -400.0,
     "unit": "°C"
    }
   ],
@@ -850,6 +943,109 @@
     "scale": 1,
     "offset": 0,
     "unit": "km/h"
+   }
+  ],
+  "DASH29TFT": [
+   {
+    "name": "Operating time",
+    "did": "1008",
+    "start": 1,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   },
+   {
+    "name": "Odometer",
+    "did": "2001",
+    "start": 1,
+    "bytes": 3,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "km"
+   },
+   {
+    "name": "Engine speed",
+    "did": "1000",
+    "start": 1,
+    "bytes": 2,
+    "format": "num,0,0.25",
+    "decimals": 0,
+    "scale": 0.25,
+    "offset": 0,
+    "unit": "rpm"
+   },
+   {
+    "name": "Fuel level",
+    "did": "1001",
+    "start": 1,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "%"
+   },
+   {
+    "name": "External temperature",
+    "did": "1005",
+    "start": 1,
+    "bytes": 2,
+    "format": "num,1,5,-850",
+    "decimals": 1,
+    "scale": 5.0,
+    "offset": -850.0,
+    "unit": "°C"
+   },
+   {
+    "name": "Vehicle speed",
+    "did": "1002",
+    "start": 1,
+    "bytes": 1,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "km/h"
+   },
+   {
+    "name": "Battery voltage",
+    "did": "1004",
+    "start": 1,
+    "bytes": 1,
+    "format": "num,1",
+    "decimals": 1,
+    "scale": 1,
+    "offset": 0,
+    "unit": "V"
+   },
+   {
+    "name": "Operational Mode Status",
+    "did": "1921",
+    "start": 1,
+    "bytes": 9,
+    "format": "hex"
+   },
+   {
+    "name": "Failure type",
+    "did": "6082",
+    "start": 1,
+    "bytes": 1,
+    "format": "hex"
+   },
+   {
+    "name": "Startups counter",
+    "did": "200A",
+    "start": 1,
+    "bytes": 2,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0
    }
   ],
   "DASM1": [
@@ -1063,8 +1259,8 @@
     "bytes": 1,
     "format": "num,0,1,-40",
     "decimals": 0,
-    "scale": 1,
-    "offset": -40,
+    "scale": 1.0,
+    "offset": -40.0,
     "unit": "°C"
    },
    {
@@ -1085,7 +1281,7 @@
     "bytes": 2,
     "format": "num,0,15",
     "decimals": 0,
-    "scale": 15,
+    "scale": 15.0,
     "offset": 0,
     "unit": "s"
    },
@@ -1220,8 +1416,8 @@
     "bytes": 1,
     "format": "num,0,1,-40",
     "decimals": 0,
-    "scale": 1,
-    "offset": -40,
+    "scale": 1.0,
+    "offset": -40.0,
     "unit": "°C"
    },
    {
@@ -1460,8 +1656,8 @@
     "bytes": 2,
     "format": "num,0,1,-84",
     "decimals": 0,
-    "scale": 1,
-    "offset": -84,
+    "scale": 1.0,
+    "offset": -84.0,
     "unit": "°C"
    },
    {
@@ -1501,7 +1697,7 @@
     "bytes": 1,
     "format": "num,2,4",
     "decimals": 2,
-    "scale": 4,
+    "scale": 4.0,
     "offset": 0,
     "unit": "bar"
    }
@@ -1547,8 +1743,8 @@
     "bytes": 2,
     "format": "num,2,2,-4000",
     "decimals": 2,
-    "scale": 2,
-    "offset": -4000,
+    "scale": 2.0,
+    "offset": -4000.0,
     "unit": "°C"
    },
    {
@@ -1558,7 +1754,7 @@
     "bytes": 2,
     "format": "num,0,15",
     "decimals": 0,
-    "scale": 15,
+    "scale": 15.0,
     "offset": 0,
     "unit": "s"
    },
@@ -1570,7 +1766,7 @@
     "format": "num,2,0.305185,-10000",
     "decimals": 2,
     "scale": 0.305185,
-    "offset": -10000,
+    "offset": -10000.0,
     "unit": "%"
    },
    {
@@ -1581,7 +1777,7 @@
     "format": "num,2,0.305185,-10000",
     "decimals": 2,
     "scale": 0.305185,
-    "offset": -10000,
+    "offset": -10000.0,
     "unit": "%"
    },
    {
@@ -1592,7 +1788,7 @@
     "format": "num,2,0.305185,-10000",
     "decimals": 2,
     "scale": 0.305185,
-    "offset": -10000,
+    "offset": -10000.0,
     "unit": "%"
    },
    {
@@ -1603,7 +1799,7 @@
     "format": "num,2,0.305185,-10000",
     "decimals": 2,
     "scale": 0.305185,
-    "offset": -10000,
+    "offset": -10000.0,
     "unit": "%"
    },
    {
@@ -1614,7 +1810,7 @@
     "format": "num,2,0.305185,-10000",
     "decimals": 2,
     "scale": 0.305185,
-    "offset": -10000,
+    "offset": -10000.0,
     "unit": "%"
    },
    {
@@ -1624,8 +1820,8 @@
     "bytes": 2,
     "format": "num,4,2,-65535",
     "decimals": 4,
-    "scale": 2,
-    "offset": -65535,
+    "scale": 2.0,
+    "offset": -65535.0,
     "unit": "hPa/m³/h"
    },
    {
@@ -1752,7 +1948,7 @@
     "bytes": 2,
     "format": "nums,3,3",
     "decimals": 3,
-    "scale": 3,
+    "scale": 3.0,
     "offset": 0,
     "signed": true,
     "unit": "mm³/i"
@@ -1764,7 +1960,7 @@
     "bytes": 2,
     "format": "nums,3,3",
     "decimals": 3,
-    "scale": 3,
+    "scale": 3.0,
     "offset": 0,
     "signed": true,
     "unit": "mm³/i"
@@ -1776,7 +1972,7 @@
     "bytes": 2,
     "format": "nums,3,3",
     "decimals": 3,
-    "scale": 3,
+    "scale": 3.0,
     "offset": 0,
     "signed": true,
     "unit": "mm³/i"
@@ -1795,8 +1991,8 @@
     "bytes": 2,
     "format": "num,2,2,-4000",
     "decimals": 2,
-    "scale": 2,
-    "offset": -4000,
+    "scale": 2.0,
+    "offset": -4000.0,
     "unit": "°C"
    },
    {
@@ -1806,8 +2002,8 @@
     "bytes": 2,
     "format": "num,0,1,-32767",
     "decimals": 0,
-    "scale": 1,
-    "offset": -32767,
+    "scale": 1.0,
+    "offset": -32767.0,
     "unit": "mbar"
    },
    {
@@ -1839,8 +2035,8 @@
     "bytes": 2,
     "format": "num,2,2,-4000",
     "decimals": 2,
-    "scale": 2,
-    "offset": -4000,
+    "scale": 2.0,
+    "offset": -4000.0,
     "unit": "°C"
    },
    {
@@ -1990,8 +2186,8 @@
     "bytes": 2,
     "format": "num,2,2,-4000",
     "decimals": 2,
-    "scale": 2,
-    "offset": -4000,
+    "scale": 2.0,
+    "offset": -4000.0,
     "unit": "°C"
    },
    {
@@ -2012,8 +2208,8 @@
     "bytes": 2,
     "format": "num,1,5,-2000",
     "decimals": 1,
-    "scale": 5,
-    "offset": -2000,
+    "scale": 5.0,
+    "offset": -2000.0,
     "unit": "mg/i"
    },
    {
@@ -2023,8 +2219,8 @@
     "bytes": 2,
     "format": "num,1,5,-2000",
     "decimals": 1,
-    "scale": 5,
-    "offset": -2000,
+    "scale": 5.0,
+    "offset": -2000.0,
     "unit": "mg/i"
    },
    {
@@ -2034,8 +2230,8 @@
     "bytes": 2,
     "format": "num,2,2,-4000",
     "decimals": 2,
-    "scale": 2,
-    "offset": -4000,
+    "scale": 2.0,
+    "offset": -4000.0,
     "unit": "°C"
    },
    {
@@ -2056,7 +2252,7 @@
     "bytes": 2,
     "format": "num,2,5",
     "decimals": 2,
-    "scale": 5,
+    "scale": 5.0,
     "offset": 0,
     "unit": "bar"
    },
@@ -2067,7 +2263,7 @@
     "bytes": 2,
     "format": "num,2,5",
     "decimals": 2,
-    "scale": 5,
+    "scale": 5.0,
     "offset": 0,
     "unit": "bar"
    },
@@ -2103,8 +2299,8 @@
     "bytes": 2,
     "format": "num,0,1,-32767",
     "decimals": 0,
-    "scale": 1,
-    "offset": -32767,
+    "scale": 1.0,
+    "offset": -32767.0,
     "unit": "mbar"
    },
    {
@@ -2114,8 +2310,8 @@
     "bytes": 2,
     "format": "num,0,1,-32767",
     "decimals": 0,
-    "scale": 1,
-    "offset": -32767,
+    "scale": 1.0,
+    "offset": -32767.0,
     "unit": "mbar"
    },
    {
@@ -2125,8 +2321,8 @@
     "bytes": 2,
     "format": "num,0,1,-32767",
     "decimals": 0,
-    "scale": 1,
-    "offset": -32767,
+    "scale": 1.0,
+    "offset": -32767.0,
     "unit": "mbar"
    },
    {
@@ -2323,8 +2519,8 @@
     "bytes": 2,
     "format": "num,2,2,-4000",
     "decimals": 2,
-    "scale": 2,
-    "offset": -4000,
+    "scale": 2.0,
+    "offset": -4000.0,
     "unit": "°C"
    },
    {
@@ -2333,6 +2529,39 @@
     "start": 1,
     "bytes": 1,
     "format": "hex"
+   },
+   {
+    "name": "Low pressure EGR target position",
+    "did": "2071",
+    "start": 1,
+    "bytes": 2,
+    "format": "num,2",
+    "decimals": 2,
+    "scale": 1,
+    "offset": 0,
+    "unit": "mm"
+   },
+   {
+    "name": "Low pressure EGR actual position",
+    "did": "2072",
+    "start": 1,
+    "bytes": 2,
+    "format": "num,2",
+    "decimals": 2,
+    "scale": 1,
+    "offset": 0,
+    "unit": "mm"
+   },
+   {
+    "name": "EGR valve last offset learnt",
+    "did": "2074",
+    "start": 1,
+    "bytes": 2,
+    "format": "num,2",
+    "decimals": 2,
+    "scale": 1,
+    "offset": 0,
+    "unit": "mm"
    },
    {
     "name": "Odometer",
@@ -2372,8 +2601,8 @@
     "bytes": 2,
     "format": "num,2,2,-4000",
     "decimals": 2,
-    "scale": 2,
-    "offset": -4000,
+    "scale": 2.0,
+    "offset": -4000.0,
     "unit": "°C"
    },
    {
@@ -2393,8 +2622,8 @@
     "bytes": 2,
     "format": "num,2,2,-4000",
     "decimals": 2,
-    "scale": 2,
-    "offset": -4000,
+    "scale": 2.0,
+    "offset": -4000.0,
     "unit": "°C"
    },
    {
@@ -2441,37 +2670,15 @@
     "format": "hex"
    },
    {
-    "name": "Low pressure EGR target position",
-    "did": "2071",
+    "name": "Throttle position (target)",
+    "did": "1964",
     "start": 1,
     "bytes": 2,
-    "format": "num,2",
+    "format": "num,2,0.152590219",
     "decimals": 2,
-    "scale": 1,
+    "scale": 0.152590219,
     "offset": 0,
-    "unit": "mm"
-   },
-   {
-    "name": "Low pressure EGR actual position",
-    "did": "2072",
-    "start": 1,
-    "bytes": 2,
-    "format": "num,2",
-    "decimals": 2,
-    "scale": 1,
-    "offset": 0,
-    "unit": "mm"
-   },
-   {
-    "name": "EGR valve last offset learnt",
-    "did": "2074",
-    "start": 1,
-    "bytes": 2,
-    "format": "num,2",
-    "decimals": 2,
-    "scale": 1,
-    "offset": 0,
-    "unit": "mm"
+    "unit": "%"
    },
    {
     "name": "Fuel level",
@@ -2501,8 +2708,8 @@
     "bytes": 2,
     "format": "num,2,2,-4000",
     "decimals": 2,
-    "scale": 2,
-    "offset": -4000,
+    "scale": 2.0,
+    "offset": -4000.0,
     "unit": "°C"
    },
    {
@@ -2524,17 +2731,6 @@
     "format": "num,1,3.92157",
     "decimals": 1,
     "scale": 3.92157,
-    "offset": 0,
-    "unit": "%"
-   },
-   {
-    "name": "Throttle position (target)",
-    "did": "1964",
-    "start": 1,
-    "bytes": 2,
-    "format": "num,2,0.152590219",
-    "decimals": 2,
-    "scale": 0.152590219,
     "offset": 0,
     "unit": "%"
    }
@@ -2592,8 +2788,8 @@
     "bytes": 1,
     "format": "num,0,1,-40",
     "decimals": 0,
-    "scale": 1,
-    "offset": -40,
+    "scale": 1.0,
+    "offset": -40.0,
     "unit": "°C"
    },
    {
@@ -2614,7 +2810,7 @@
     "bytes": 2,
     "format": "num,0,15",
     "decimals": 0,
-    "scale": 15,
+    "scale": 15.0,
     "offset": 0,
     "unit": "s"
    },
@@ -2637,7 +2833,7 @@
     "bytes": 1,
     "format": "nums,2,75",
     "decimals": 2,
-    "scale": 75,
+    "scale": 75.0,
     "offset": 0,
     "signed": true,
     "unit": "deg."
@@ -2711,7 +2907,7 @@
     "bytes": 1,
     "format": "num,0,10",
     "decimals": 0,
-    "scale": 10,
+    "scale": 10.0,
     "offset": 0,
     "unit": "mbar"
    },
@@ -2773,8 +2969,8 @@
     "bytes": 1,
     "format": "num,0,1,-40",
     "decimals": 0,
-    "scale": 1,
-    "offset": -40,
+    "scale": 1.0,
+    "offset": -40.0,
     "unit": "°C"
    },
    {
@@ -2876,7 +3072,7 @@
     "bytes": 1,
     "format": "num,0,6",
     "decimals": 0,
-    "scale": 6,
+    "scale": 6.0,
     "offset": 0,
     "unit": "deg."
    },
@@ -2894,7 +3090,7 @@
     "bytes": 1,
     "format": "nums,2,75",
     "decimals": 2,
-    "scale": 75,
+    "scale": 75.0,
     "offset": 0,
     "signed": true,
     "unit": "deg."
@@ -2906,7 +3102,7 @@
     "bytes": 1,
     "format": "nums,2,75",
     "decimals": 2,
-    "scale": 75,
+    "scale": 75.0,
     "offset": 0,
     "signed": true,
     "unit": "deg."
@@ -2918,7 +3114,7 @@
     "bytes": 1,
     "format": "nums,2,75",
     "decimals": 2,
-    "scale": 75,
+    "scale": 75.0,
     "offset": 0,
     "signed": true,
     "unit": "deg."
@@ -2930,7 +3126,7 @@
     "bytes": 1,
     "format": "nums,2,75",
     "decimals": 2,
-    "scale": 75,
+    "scale": 75.0,
     "offset": 0,
     "signed": true,
     "unit": "deg."
@@ -3008,8 +3204,8 @@
     "bytes": 1,
     "format": "num,0,5,-50",
     "decimals": 0,
-    "scale": 5,
-    "offset": -50,
+    "scale": 5.0,
+    "offset": -50.0,
     "unit": "°C"
    },
    {
@@ -3031,8 +3227,8 @@
     "bytes": 1,
     "format": "num,0,5,-50",
     "decimals": 0,
-    "scale": 5,
-    "offset": -50,
+    "scale": 5.0,
+    "offset": -50.0,
     "unit": "°C"
    },
    {
@@ -3210,8 +3406,8 @@
     "bytes": 1,
     "format": "num,0,1,-40",
     "decimals": 0,
-    "scale": 1,
-    "offset": -40,
+    "scale": 1.0,
+    "offset": -40.0,
     "unit": "°C"
    },
    {
@@ -3241,7 +3437,7 @@
     "bytes": 1,
     "format": "num,0,10",
     "decimals": 0,
-    "scale": 10,
+    "scale": 10.0,
     "offset": 0,
     "unit": "mbar"
    },
@@ -3284,7 +3480,7 @@
     "format": "num,2,2.3438,-27315",
     "decimals": 2,
     "scale": 2.3438,
-    "offset": -27315,
+    "offset": -27315.0,
     "unit": "°C"
    },
    {
@@ -3402,7 +3598,7 @@
     "format": "num,1,7.5,-480",
     "decimals": 1,
     "scale": 7.5,
-    "offset": -480,
+    "offset": -480.0,
     "unit": "°C"
    },
    {
@@ -3546,7 +3742,7 @@
     "bytes": 1,
     "format": "nums,2,75",
     "decimals": 2,
-    "scale": 75,
+    "scale": 75.0,
     "offset": 0,
     "signed": true,
     "unit": "deg."
@@ -3558,7 +3754,7 @@
     "bytes": 1,
     "format": "nums,2,75",
     "decimals": 2,
-    "scale": 75,
+    "scale": 75.0,
     "offset": 0,
     "signed": true,
     "unit": "deg."
@@ -3638,8 +3834,8 @@
     "bytes": 1,
     "format": "num,0,1,-40",
     "decimals": 0,
-    "scale": 1,
-    "offset": -40,
+    "scale": 1.0,
+    "offset": -40.0,
     "unit": "°C"
    },
    {
@@ -3660,8 +3856,8 @@
     "bytes": 1,
     "format": "num,0,1,-40",
     "decimals": 0,
-    "scale": 1,
-    "offset": -40,
+    "scale": 1.0,
+    "offset": -40.0,
     "unit": "°C"
    },
    {
@@ -3671,7 +3867,7 @@
     "bytes": 2,
     "format": "num,0,15",
     "decimals": 0,
-    "scale": 15,
+    "scale": 15.0,
     "offset": 0,
     "unit": "s"
    },
@@ -3701,7 +3897,7 @@
     "bytes": 1,
     "format": "nums,2,75",
     "decimals": 2,
-    "scale": 75,
+    "scale": 75.0,
     "offset": 0,
     "signed": true,
     "unit": "deg."
@@ -3821,8 +4017,8 @@
     "bytes": 1,
     "format": "num,0,5,-50",
     "decimals": 0,
-    "scale": 5,
-    "offset": -50,
+    "scale": 5.0,
+    "offset": -50.0,
     "unit": "°C"
    },
    {
@@ -3832,7 +4028,7 @@
     "bytes": 1,
     "format": "num,0,6",
     "decimals": 0,
-    "scale": 6,
+    "scale": 6.0,
     "offset": 0,
     "unit": "deg."
    },
@@ -3843,7 +4039,7 @@
     "bytes": 1,
     "format": "nums,2,75",
     "decimals": 2,
-    "scale": 75,
+    "scale": 75.0,
     "offset": 0,
     "signed": true,
     "unit": "deg."
@@ -3855,7 +4051,7 @@
     "bytes": 1,
     "format": "nums,2,75",
     "decimals": 2,
-    "scale": 75,
+    "scale": 75.0,
     "offset": 0,
     "signed": true,
     "unit": "deg."
@@ -3867,7 +4063,7 @@
     "bytes": 1,
     "format": "nums,2,75",
     "decimals": 2,
-    "scale": 75,
+    "scale": 75.0,
     "offset": 0,
     "signed": true,
     "unit": "deg."
@@ -3879,7 +4075,7 @@
     "bytes": 1,
     "format": "nums,2,75",
     "decimals": 2,
-    "scale": 75,
+    "scale": 75.0,
     "offset": 0,
     "signed": true,
     "unit": "deg."
@@ -3955,8 +4151,8 @@
     "bytes": 1,
     "format": "num,0,5,-50",
     "decimals": 0,
-    "scale": 5,
-    "offset": -50,
+    "scale": 5.0,
+    "offset": -50.0,
     "unit": "°C"
    },
    {
@@ -4082,8 +4278,8 @@
     "bytes": 1,
     "format": "num,0,1,-40",
     "decimals": 0,
-    "scale": 1,
-    "offset": -40,
+    "scale": 1.0,
+    "offset": -40.0,
     "unit": "°C"
    },
    {
@@ -4093,7 +4289,7 @@
     "bytes": 1,
     "format": "num,0,10",
     "decimals": 0,
-    "scale": 10,
+    "scale": 10.0,
     "offset": 0,
     "unit": "mbar"
    },
@@ -4138,7 +4334,7 @@
     "bytes": 1,
     "format": "num,0,10",
     "decimals": 0,
-    "scale": 10,
+    "scale": 10.0,
     "offset": 0,
     "unit": "mbar"
    },
@@ -4444,7 +4640,7 @@
     "format": "num,2,2.3438,-27315",
     "decimals": 2,
     "scale": 2.3438,
-    "offset": -27315,
+    "offset": -27315.0,
     "unit": "°C"
    },
    {
@@ -4544,7 +4740,7 @@
     "format": "num,1,7.5,-480",
     "decimals": 1,
     "scale": 7.5,
-    "offset": -480,
+    "offset": -480.0,
     "unit": "°C"
    },
    {
@@ -4583,7 +4779,7 @@
     "bytes": 1,
     "format": "nums,2,75",
     "decimals": 2,
-    "scale": 75,
+    "scale": 75.0,
     "offset": 0,
     "signed": true,
     "unit": "deg."
@@ -4595,7 +4791,7 @@
     "bytes": 1,
     "format": "nums,2,75",
     "decimals": 2,
-    "scale": 75,
+    "scale": 75.0,
     "offset": 0,
     "signed": true,
     "unit": "deg."
@@ -4756,7 +4952,7 @@
     "bytes": 2,
     "format": "num,0,15",
     "decimals": 0,
-    "scale": 15,
+    "scale": 15.0,
     "offset": 0,
     "unit": "s"
    },
@@ -4826,6 +5022,30 @@
     "scale": 1,
     "offset": 0,
     "unit": "V"
+   }
+  ],
+  "TBM1": [
+   {
+    "name": "Operating time",
+    "start": 8,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
+   }
+  ],
+  "TTM1": [
+   {
+    "name": "Operating time",
+    "start": 8,
+    "bytes": 4,
+    "format": "num",
+    "decimals": 0,
+    "scale": 1,
+    "offset": 0,
+    "unit": "min"
    }
   ],
   "TVM1": [
@@ -4899,7 +5119,7 @@
     "bytes": 2,
     "format": "num,0,-2500",
     "decimals": 0,
-    "scale": -2500,
+    "scale": -2500.0,
     "offset": 0,
     "unit": "Nm"
    },
@@ -4909,7 +5129,7 @@
     "bytes": 2,
     "format": "num,0,-2500",
     "decimals": 0,
-    "scale": -2500,
+    "scale": -2500.0,
     "offset": 0,
     "unit": "Nm"
    }

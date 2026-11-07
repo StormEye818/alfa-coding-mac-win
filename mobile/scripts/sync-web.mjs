@@ -82,3 +82,16 @@ try {
     console.log('[sync] iOS packageClassList 已补 MfiSerialPlugin');
   }
 } catch { /* ios 工程未生成时跳过 */ }
+
+// SPM 清单修正：cap sync 生成的 CapApp-SPM/Package.swift 按部署目标写 `.iOS(.v18)`，
+// 但 tools-version 仍是 5.9（.v18 是 PackageDescription 6.0 才有的枚举）→ xcodebuild
+// 解析依赖直接失败（2026-11-07 装机踩过）。把 tools-version 抬到 6.0 对齐。
+try {
+  const spm = path.join(MOBILE, 'ios', 'App', 'CapApp-SPM', 'Package.swift');
+  let s = fs.readFileSync(spm, 'utf8');
+  if (/swift-tools-version:\s*5\.\d+/.test(s) && /iOS\(\.v1[89]\)|iOS\(\.v2\d\)/.test(s)) {
+    s = s.replace(/swift-tools-version:\s*5\.\d+/, 'swift-tools-version: 6.0');
+    fs.writeFileSync(spm, s);
+    console.log('[sync] CapApp-SPM tools-version 已抬到 6.0（配合 .v18+ 部署目标）');
+  }
+} catch { /* 工程未生成时跳过 */ }

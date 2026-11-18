@@ -279,6 +279,22 @@ class Uds {
     }
 
     /**
+     * 只读 DATA3（`22 40 A2`）。
+     *
+     * 用途：当调用方只需要 DATA3 时，直接使用本方法；不要走 readProxiAll()。
+     * readProxiAll() 会顺序读 DATA1（289B 多帧）→ DATA2 → DATA3 并把前两块丢弃，
+     * 在半双工链路上多出两次无用的多帧往返（每帧含流控等待），慢 ECU 上会放大耗时。
+     * MES 5.5 协议文档 docs/05-protocol.md:75,77 记载：前置读 DATA1+DATA1S+3E00，
+     * 三读（DATA1/DATA2/DATA3）的用途是三者比对，不是取其中一块后丢弃另外两块。
+     *
+     * 沿用 readDataByIdentifier 的既有 DID 校验、负响应与会话语义，不另造路径。
+     * readProxiAll() 行为保持不变——其调用方可能需要三块一起用。
+     */
+    async readProxiData3() {
+        return this.readDataByIdentifier(DID.DATA3);
+    }
+
+    /**
      * 对齐前言 —— 与标准流程步骤 0 **逐条一致**：
      *   `03 22 20 23` 读 DATA1
      *   `03 22 20 24` 读 DATA1S   ← 我们此前没有

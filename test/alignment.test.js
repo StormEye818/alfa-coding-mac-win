@@ -89,23 +89,28 @@ console.log('\n整车统计：Added / Removed / Ok / 未安装');
     check('consistent = false', res.consistent === false);
 }
 
-console.log('\n可写范围：只有实际位图置位的节点才 alignable');
+console.log('\n可写范围：实际位图 + EOL 期望位都置位才 alignable（A4：MES 严格 E 门槛）');
 {
     const others = mods.alignmentNodes.filter((n) => n.name !== sgw.name).slice(0, 3);
     const [a, b2, c] = others;
     const b = mk();
-    putCfg(b.d1, sgw); putAct(b.d3, sgw);          // Ok      → 可写
-    putAct(b.d3, a);                                // Added   → 可写
-    putCfg(b.d1, b2);                               // Removed → 不可写（车上没有）
+    putCfg(b.d1, sgw); putAct(b.d3, sgw); putEol(b.d3, sgw);   // Ok + E → 可写
+    putAct(b.d3, a); putEol(b.d3, a);                            // Added + E → 可写
+    putCfg(b.d1, b2);                                            // Removed → 不可写（车上没有）
     putCfg(b.d1, c); putAct(b.d3, c); putEol(b.d3, c); putDone(b.d3, c);  // EOL Ok → 可写
 
     const res = computeAlignment(b.d1, b.d3, mods.alignmentNodes);
     const row = (n) => res.byName.get(n.name);
     check('counts.present = 3（在位）', res.counts.present === 3, String(res.counts.present));
-    check('counts.eolExpected = 1', res.counts.eolExpected === 1, String(res.counts.eolExpected));
-    check('Ok → alignable', row(sgw).alignable === true, JSON.stringify(row(sgw)));
-    check('Added → alignable', row(a).alignable === true, JSON.stringify(row(a)));
+    check('counts.eolExpected = 3', res.counts.eolExpected === 3, String(res.counts.eolExpected));
+    check('Ok + E → alignable', row(sgw).alignable === true, JSON.stringify(row(sgw)));
+    check('Added + E → alignable', row(a).alignable === true, JSON.stringify(row(a)));
     check('Removed → 不可写', row(b2).alignable === false, JSON.stringify(row(b2)));
+    // A4 反例：实际在位但 E 位为 0 → 不可写（MES continue 语义）
+    const bNoE = mk(); putCfg(bNoE.d1, sgw); putAct(bNoE.d3, sgw);
+    const noE = computeAlignment(bNoE.d1, bNoE.d3, [sgw]);
+    check('A4：C=1 / E=0 → alignable=false', noE.byName.get(sgw.name).alignable === false,
+        JSON.stringify(noE.byName.get(sgw.name)));
     const absentNode = mods.alignmentNodes.find((n) => !res.rows.some((r) => r.name === n.name && r.listed));
     if (absentNode) {
         const r = res.byName.get(absentNode.name);

@@ -234,6 +234,15 @@
           <div class="stat"><b id="stPending">0</b><span>待处理</span></div>
         </div>
         <div id="alignVerdict" class="verdict hidden"></div>
+        <!-- UX3：五类清单（MES 的 CURRENTLY CONFIGURED / AVAILABLE / NEW / REMOVED / EOL）+ 一句话结论 -->
+        <div id="alignClasses" class="align-classes hidden" style="display:flex;flex-wrap:wrap;gap:8px;margin:8px 0">
+          <div class="cls" style="flex:1;min-width:92px;text-align:center;padding:8px;border:1px solid #333;border-radius:10px"><b id="clsConfigured" style="display:block;font-size:20px">0</b><span style="font-size:11px">CURRENTLY CONFIGURED<br><small>已配置</small></span></div>
+          <div class="cls" style="flex:1;min-width:92px;text-align:center;padding:8px;border:1px solid #333;border-radius:10px"><b id="clsAvailable" style="display:block;font-size:20px">0</b><span style="font-size:11px">AVAILABLE<br><small>在位可用</small></span></div>
+          <div class="cls" style="flex:1;min-width:92px;text-align:center;padding:8px;border:1px solid #333;border-radius:10px"><b id="clsNew" style="display:block;font-size:20px;color:#e74c3c">0</b><span style="font-size:11px">NEW<br><small>待添加</small></span></div>
+          <div class="cls" style="flex:1;min-width:92px;text-align:center;padding:8px;border:1px solid #333;border-radius:10px"><b id="clsRemoved" style="display:block;font-size:20px;color:#e67e22">0</b><span style="font-size:11px">REMOVED<br><small>待移除</small></span></div>
+          <div class="cls" style="flex:1;min-width:92px;text-align:center;padding:8px;border:1px solid #333;border-radius:10px"><b id="clsEol" style="display:block;font-size:20px">0</b><span style="font-size:11px">EOL<br><small>期望 / 未完成</small></span></div>
+        </div>
+        <div id="alignOneLiner" class="align-oneliner hidden" style="padding:8px 12px;margin:0 0 8px;border-left:3px solid var(--accent,#4aa3df);background:rgba(255,255,255,.03);font-size:13px"></div>
         <div class="warn-box">
           <strong>关于对齐方式（依据诊断协议实现核实）</strong>
           <ul>
@@ -267,6 +276,12 @@
           <div class="actions">
             <select id="liveModule"><option value="">选择模块</option></select>
             <input id="liveSearch" placeholder="搜索参数 / DID" spellcheck="false" style="max-width:190px">
+            <select id="liveSort" title="按名称 / 单位排序（置顶项优先）"><option value="default">默认顺序</option><option value="name">按名称</option><option value="unit">按单位</option></select>
+            <button id="liveSelAll" class="ghost" title="全选当前筛选出的参数">全选</button>
+            <button id="liveSelInv" class="ghost" title="反选当前筛选出的参数">反选</button>
+            <button id="liveTplSave" class="ghost" title="把当前勾选存为该模块的模板">存模板</button>
+            <button id="liveTplLoad" class="ghost" title="载入该模块的勾选模板">读模板</button>
+            <button id="liveMonitorDtc" class="ghost" title="Monitor DTC：跳到故障码页读当前模块">Monitor DTC</button>
             <button id="btnLiveEnter" class="primary">进入模块</button>
             <button id="btnLiveExit" class="ghost hidden">退出模块</button>
             <button id="btnLiveCsv" class="ghost">导出 CSV</button>

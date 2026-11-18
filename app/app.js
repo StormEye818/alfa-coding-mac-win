@@ -59,6 +59,7 @@ const state = {
   engineOverride: '',           // 用户手动指定的发动机版本（按 VIN 记住）
   showAllModules: false,        // 模块清单是否显示本车未配置的模块
   aligning: false,
+  fnRunning: false,             // 特殊功能并发闸（S3）：入口即置，第一个 await 之前
   busy: null,                   // 长任务（对齐状态扫描等）并发闸：非 null = 正在跑的任务名
   bitEditIndex: null,
   ifaces: null, bridge: null, tester: null,
@@ -135,21 +136,47 @@ function currentIface() {
   return state.ifaces.find((x) => x.id === $('ifaceType').value) || null;
 }
 
+/**
+ * M3：由 identify()（ATZ/ATE0/ATI 应答）推断适配器类别，不再让用户手选接头。
+ * 与 connect() 里 autoBus 的判定口径一致：只有 vLinker MS / CANtieCAR 免换线。
+ */
+function inferAdapterKind(identity) {
+  const s = String((identity && (identity.name || identity.expect || identity.id || identity.kind)) || '').toUpperCase();
+  if (/VLINKER|V-LINKER|VGEN?LINK/.test(s)) return 'vlinker';
+  if (/CANTIECAR|CANTIE/.test(s)) return 'cantiecar';
+  if (/OBDKEY/.test(s)) return 'obdkey';
+  if (/VAGCOM|KKL|K-LINE/.test(s)) return 'vagcom';
+  return 'elm';
+}
+
+/** M3：把所有接口收敛成 3–5 个粗类别（设备/端口/波特率交给 autoConnect 自动发现） */
+function ifaceCategory(i) {
+  if (i.transport === 'auto') return '自动连接（推荐）';
+  if (i.transport === 'wifi') return 'WiFi';
+  if (i.transport === 'bluetooth') return '蓝牙 / BLE';
+  return '有线（USB / 串口）';
+}
+
 function renderIfaceTypes() {
   const sel = $('ifaceType');
   sel.innerHTML = '';
-  const opt = document.createElement('option');
-  opt.value = 'sim'; opt.textContent = '模拟模式（演示，不连车）';
-  sel.appendChild(opt);
+  // M3：默认选中「自动连接」大类；有显式 spec 的手工项保留为兜底（扫描/测试按钮仍可用）。
+  const auto = document.createElement('option');
+  auto.value = 'auto-elm'; auto.textContent = '自动连接（设备 / 端口 / 波特率全自动）';
+  sel.appendChild(auto);
   const groups = {};
   const isMobile = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
   for (const i of state.ifaces) {
     // 手机端只留无线接口（USB/串口/K线/自动扫描在手机上不可用）
-    if (isMobile && !['wifi', 'bluetooth'].includes(i.transport)) continue;
-    const k = { usb: 'USB', bluetooth: '蓝牙', wifi: 'WiFi', serial: '串口', auto: '自动' }[i.transport] || i.transport;
+    if (isMobile && !['wifi', 'bluetooth', 'auto'].includes(i.transport)) continue;
+    if (i.transport === 'auto') continue;   // 已在顶部单列
+    const k = ifaceCategory(i);
     (groups[k] = groups[k] || []).push(i);
   }
-  for (const [g, list] of Object.entries(groups)) {
+  // 粗类别固定顺序：自动 / WiFi / 蓝牙 / 有线
+  for (const g of ['自动连接（推荐）', 'WiFi', '蓝牙 / BLE', '有线（USB / 串口）']) {
+    const list = groups[g];
+    if (!list || !list.length) continue;
     const og = document.createElement('optgroup');
     og.label = g;
     for (const i of list) {
@@ -160,14 +187,14 @@ function renderIfaceTypes() {
     }
     sel.appendChild(og);
   }
-  sel.value = 'sim';
+  sel.value = 'auto-elm';
   syncIfaceUI();
 }
 
 function syncIfaceUI() {
   const spec = currentIface();
   const isWifi = spec && spec.transport === 'wifi';
-  const isAuto = !spec;                        // 模拟模式
+  const isAuto = !spec || spec.transport === 'auto';   // 模拟模式 / 自动大类都不需要手填端口
   $('portLabel').textContent = isWifi ? 'IP:端口' : '串口';
   $('baudField').style.display = (isWifi || isAuto) ? 'none' : '';
   const input = $('ifacePort'), dl = $('ifacePortList');
@@ -484,7 +511,11 @@ async function ensureRead() {
 }
 
 async function connect(forceSim) {
+  // Q2：入口即加锁（旧实现在长 await 之后才置 connected/busy，快速双击会交错）。
+  if (state.busy) return;   // 入口即锁：任何运行中的任务（含另一次 connect）都不重入
+  state.busy = '连接适配器';
   const spec = forceSim ? null : currentIface();
+  const isAuto = !!(spec && (spec.transport === 'auto' || spec.id === 'auto' || spec.autoConnect));
   try {
     stage(spec ? `正在连接适配器：${spec.name}…` : '正在进入模拟模式…');
     $('connState').textContent = '连接中…';
@@ -499,20 +530,42 @@ async function connect(forceSim) {
     } else {
       // 真实适配器：经串口桥打开端口，用同一套 ELM327 协议层
       await ensureBridge();
-      const opts = spec.transport === 'wifi'
-        ? wifiTargetOf(spec)
-        : { port: $('ifacePort').value, baud: Number($('ifaceBaud').value) };
-      if (spec.transport === 'wifi') await state.bridge.tcpOpen(opts.host, opts.port);
-      else {
-        if (!opts.port) throw new Error('请先选择串口');
-        await state.bridge.open(opts.port, opts.baud);
+      // M3：无显式接口（自动大类）时走 mobile-bridge.autoConnect()（G3 在
+      // mobile/src/mobile-bridge.js 提供），由 identify() 的 ATZ/ATE0/ATI 探针自动选路；
+      // 识别出的 kind 由 identify 结果推断，而不是让用户手选接头。
+      let autoInfo = null;
+      if (isAuto) {
+        if (!state.bridge || typeof state.bridge.autoConnect !== 'function') {
+          throw new Error('当前传输层不支持自动连接（autoConnect 未就绪）');
+        }
+        autoInfo = await state.bridge.autoConnect({ log: (m) => log(m) });
+        if (!autoInfo || autoInfo.ok === false) {
+          throw new Error('自动连接失败：' + ((autoInfo && autoInfo.error) || '未找到可用适配器'));
+        }
+        stageDone(`自动连接成功：${autoInfo.name || autoInfo.path || '已发现适配器'}`);
+      }
+      const opts = isAuto
+        ? null
+        : (spec.transport === 'wifi' ? wifiTargetOf(spec)
+          : { port: $('ifacePort').value, baud: Number($('ifaceBaud').value) });
+      // autoConnect 已经打开选中候选的端口，这里不再重复 open/tcpOpen
+      if (!isAuto) {
+        if (spec.transport === 'wifi') await state.bridge.tcpOpen(opts.host, opts.port);
+        else {
+          if (!opts.port) throw new Error('请先选择串口');
+          await state.bridge.open(opts.port, opts.baud);
+        }
       }
       // 适配器能力：多通道能自动切总线的，对齐时免换线。
       // 实证（2026-10-10）：CANtieCAR（USB/BT/WiFi）与 vLinker MS 免换线；
       //   其余（ELM327/OBDKey/OBDLink 等）要按线号换适配线。
-      const autoBus = spec.kind === 'vlinker' || spec.kind === 'cantiecar';
+      // M3：自动连接时 kind 由 identify() 结果推断，不再依赖用户手选的 spec。
+      const adapterKind = isAuto
+        ? inferAdapterKind(autoInfo && (autoInfo.identify || autoInfo))
+        : spec.kind;
+      const autoBus = adapterKind === 'vlinker' || adapterKind === 'cantiecar';
       state.link = new Elm327(new BridgePort(state.bridge), {
-        adapter: autoBus ? (spec.kind === 'vlinker' ? 'vlinker-ms' : 'cantiecar') : 'elm327',
+        adapter: autoBus ? (adapterKind === 'vlinker' ? 'vlinker-ms' : 'cantiecar') : 'elm327',
         log: (m) => log(m),
       });
       state.realAdapter = true;
@@ -573,6 +626,9 @@ async function connect(forceSim) {
     $('connState').className = 'pill offline';
     stageFail('连接失败：' + e.message);
     alert('连接失败：' + e.message);
+  } finally {
+    // Q2：入口置的 busy 必须在所有出口（含失败）复位，否则后续操作被永久闸住
+    if (state.busy === '连接适配器') state.busy = null;
   }
 }
 
@@ -1143,6 +1199,27 @@ $('btnRevert').addEventListener('click', () => {
 async function writeToEcu() {
   if (!(await ensureRead())) return;
   if (operationBlocked()) return;
+  // C3：SGW bypass（拆/装网关）会改 DATA3 的 CAN 在场位；此前「写入 ECU」只把
+  // 当前字节块下发，不走对齐的 mergeData3，DATA3 变更没并进 DATA1 镜像区 →
+  // 写下去的是旧镜像。这里与对齐路径同口径：写前先读 DATA3 并合并，否则明确拒绝。
+  try {
+    const d3 = await state.uds.readDataByIdentifier(DID.DATA3);
+    if (d3 && state.block) {
+      const m = state.block.mergeData3(d3);
+      if (m.merged && m.changed > 0) {
+        const go = confirm(`DATA3 与当前配置块镜像区不一致，已合并 ${m.changed} 处。\n\n`
+          + '与 PROXI 对齐写前步骤一致，这是保证 SGW 在场位正确的必要步骤。继续写入？');
+        if (!go) return;
+        renderEditor();
+      } else if (!m.merged && m.reason) {
+        log('DATA3 合并跳过：' + m.reason);
+      }
+    }
+  } catch (e) {
+    const go = confirm('DATA3 读取失败，无法确认 SGW/在场位镜像是否与车上一致：' + e.message
+      + '\n\n点「确定」仍按当前块写入，点「取消」改走 PROXI 对齐流程（会先 mergeData3）。');
+    if (!go) return;
+  }
   // 定长块保护：导入的备份若与车上块长度不同，2E 请求长度就不对，必须拦在写之前
   if (state.baseline && state.block.length !== state.baseline.length) {
     return alert(`当前配置块 ${state.block.length} 字节，与车上读取的 ${state.baseline.length} 字节不一致。\n\n`
@@ -1246,6 +1323,11 @@ function nodeGroupOf(n) {
  * 节点 startByte 是位图索引（1..16），不是 PROXI 字节号 —— SGW 节点 startByte=2
  * 对应命名项「SGW」Byte40 已交叉验证。判定集中在 src/alignment.js。
  */
+/** A4：MES 的 EOL 门槛 —— E 位为 0 的节点直接 continue，不可写 */
+function eolWritableRow(row) {
+  return !!(row && row.eol);
+}
+
 function nodeRow(node) {
   return (state.alignment && state.alignment.byName.get(node.name)) || null;
 }
@@ -1295,7 +1377,13 @@ function applyAlignment(data1, data3, opts = {}) {
 async function refreshAlignment(opts = {}) {
   await state.session.ensureModule(state.session.bodyModule);
   const d1a = await state.uds.readProxi();
-  const data3 = await state.uds.readDataByIdentifier(DID.DATA3);
+  // A1：DATA3 是写目标判定来源，却只单次读 —— 与 DATA1 的双读口径不一致。
+  // 按 DATA1 同样双读并做一致性校验：总线抖动时宁可中止，也不拿脏位图判"已对齐"。
+  const d3a = await state.uds.readDataByIdentifier(DID.DATA3);
+  const d3b = await state.uds.readDataByIdentifier(DID.DATA3);
+  const same3 = d3a && d3b && d3a.length === d3b.length && d3a.every((b, i) => b === d3b[i]);
+  if (!same3) throw new Error('连续两次读取 DATA3 不一致（总线抖动），请重试');
+  const data3 = d3a;
   // 双读一致性（车端流程同样会重读比对）：连续两次 DATA1 不一致 = 总线抖动，不用脏数据判状态
   const d1b = await state.uds.readProxi();
   const same = d1a.length === d1b.length && d1a.every((b, i) => b === d1b[i]);
@@ -1359,6 +1447,34 @@ function removeNonParticipating() {
     .filter((c) => c.items.length)
     .map((c) => ({ ...c, count: c.items.length }));
   state.funcs.total = state.funcs.categories.reduce((n, c) => n + c.items.length, 0);
+}
+
+/** A6：回读统计文案 —— 未回读节点单列，绝不并入「已回读成功」 */
+function alignReadbackNote(verifiedDone, unverifiedDone) {
+  return `（已回读成功 ${verifiedDone} / 已写入未回读 ${unverifiedDone}）`;
+}
+
+/**
+ * UX3：把位图统计收敛成 MES 风格的五类清单 + 一句话结论。
+ * 五类口径（可并存、可重叠，故求和不一定等于节点总数）：
+ *   CONFIGURED = 已配置且已对齐（ok + eol-ok）
+ *   AVAILABLE  = DATA3 实际在位
+ *   NEW        = 只在实际位图（待添加）
+ *   REMOVED    = 只在配置位图（待移除）
+ *   EOL        = EOL 期望 / 未完成
+ */
+function proxiFiveClasses(counts) {
+  const c = counts || {};
+  const configured = (c.ok || 0) + (c.eolOk || 0);
+  const available = c.present || 0;
+  const add = c.added || 0;
+  const removed = c.removed || 0;
+  const eol = (c.eolOk || 0) + (c.eolFailed || 0) + (c.eolExpected || 0);
+  const totalNeed = (c.needs || 0) + (c.eolFailed || 0);
+  const line = totalNeed
+    ? `一句话：还有 ${totalNeed} 个节点需对齐（新增 ${add} / 移除 ${removed}${c.eolFailed ? ` / EOL 未完成 ${c.eolFailed}` : ''}），里程表可能闪烁。`
+    : `一句话：配置位图一致，${available} 个在位节点无新增/移除；若里程表仍闪，执行一次「全部对齐」重写存储块。`;
+  return { configured, available, add, removed, eol, totalNeed, line };
 }
 
 function renderAlign() {
@@ -1464,6 +1580,19 @@ function renderAlign() {
     if (c.removed) parts.push(`移除 ${c.removed}`);
     if (c.eolFailed) parts.push(`EOL 未完成 ${c.eolFailed}`);
     verdict.textContent = `⚠ ${c.needs + c.eolFailed} 个节点需要对齐（${parts.join(' / ')}）→ 里程表会闪烁`;
+  }
+  // UX3：五类清单 + 一句话结论（缓解「里程表闪不闪」焦虑）
+  const five = proxiFiveClasses(c);
+  const clsBox = $('alignClasses'), oneLiner = $('alignOneLiner');
+  if (clsBox && oneLiner) {
+    $('clsConfigured').textContent = five.configured;
+    $('clsAvailable').textContent = five.available;
+    $('clsNew').textContent = five.add;
+    $('clsRemoved').textContent = five.removed;
+    $('clsEol').textContent = five.eol;
+    oneLiner.textContent = five.line;
+    clsBox.classList.remove('hidden');
+    oneLiner.classList.remove('hidden');
   }
   if (al.sgwPresent) log('检测到 SGW（安全网关）实际在位');
 
@@ -1750,34 +1879,40 @@ $('btnAlign').addEventListener('click', async () => {
     .filter((el) => chosenIdx.has(Number(el.dataset.idx)));
 
   // —— 与车端全量口径核对 ——
-  // 车端写入循环对每个节点先查 EOL 期望位图（DATA3[48..63]），位为 0 直接跳过
-  // 车端全量写入循环里就有这道过滤。量产车该位图可能全 0（无 EOL 数据），那时等价于不过滤；
-  // 只有它确实有数据时，才把「实际在位但不在 EOL 位图」的节点单独确认，
-  // 避免与官方全量口径悄悄分叉（多见于后加装件）。
-  const eolKnown = state.alignment.counts.eolExpected > 0;
-  if (eolKnown) {
-    const extra = chosenNodes.filter((el) => {
-      const row = nodeRow(state.modules.alignmentNodes[Number(el.dataset.idx)]);
-      return !!(row && row.actual && !row.eol);
-    });
-    if (extra.length) {
-      const names = extra.slice(0, 8).map((el) => '· ' + el.querySelector('.nm').textContent.trim());
-      const more = extra.length > 8 ? `\n…等 ${extra.length} 个` : '';
-      const goOn = confirm(
-        `⚠ 有 ${extra.length} 个节点实际在位，但不在车端的 EOL 期望位图中：\n\n${names.join('\n')}${more}\n\n`
-        + '车端全量对齐按 EOL 位图取节点，通常不写它们（多见于后加装件）。\n'
-        + '写入的是同一份配置块，不会影响其它节点，只是比官方多写这一部分。\n\n'
-        + '点「确定」= 照常写入（保证车上在位节点全部对齐）\n'
-        + '点「取消」= 去掉这些节点，只写 EOL 位图内的节点'
-      );
-      if (!goOn) {
-        for (const el of extra) { const cb = el.querySelector('.pick'); if (cb) cb.checked = false; }
-        chosenNodes = chosenNodes.filter((el) => !extra.includes(el));
-        log(`已去掉 ${extra.length} 个不在 EOL 期望位图中的节点`);
-        if (!chosenNodes.length) return alert('没有剩余可写节点。');
-      } else {
-        log(`按实际在位写入：其中 ${extra.length} 个不在 EOL 期望位图中（官方全量通常不写）`);
+  // —— A4：EOL 期望位图严格门槛（MES `--.cs:36940`：`(E[n-1] & b)==0 → continue`） ——
+  // 旧代码 `eolKnown = eolExpected>0` 语义反了：E 全 0 当成「不过滤」写全部；
+  // MES 在 E 全 0 时是**跳过全部**。删除「E 全 0 等价不过滤」的错误假设。
+  const eolExpected = state.alignment && state.alignment.counts ? state.alignment.counts.eolExpected : 0;
+  if (!eolExpected) {
+    stageFail('EOL 期望位图全 0：按车端全量语义跳过全部节点，未写入');
+    return alert('EOL 期望位图（DATA3[48..63]）全 0。\n\n'
+      + '车端全量写入循环对每个节点先查 E 位，位为 0 直接 continue；E 全 0 意味着没有可写节点。\n'
+      + '为与车端逐判定一致，本轮不写入任何节点。请重新读取对齐状态确认 EOL 位图是否已就绪。');
+  }
+  const eolExcluded = chosenNodes.filter((el) =>
+    !eolWritableRow(nodeRow(state.modules.alignmentNodes[Number(el.dataset.idx)])));
+  if (eolExcluded.length) {
+    // ③级扩展：后加装件实际在位但不在 E 位图里。默认按 MES 跳过；
+    // 只有用户显式确认才多写，且明确标注「非 MES 对齐语义」。
+    const names = eolExcluded.slice(0, 8).map((el) => '· ' + el.querySelector('.nm').textContent.trim());
+    const more = eolExcluded.length > 8 ? `\n…等 ${eolExcluded.length} 个` : '';
+    const includeAnyway = confirm(
+      `⚠ 有 ${eolExcluded.length} 个节点实际在位，但 EOL 期望位（E 位）为 0：\n\n${names.join('\n')}${more}\n\n`
+      + '车端全量写入按 E 位过滤，这些节点会被 continue 跳过（多见于后加装件）。\n\n'
+      + '点「取消」= 按车端语义跳过它们（推荐，与 MES 一致）\n'
+      + '点「确定」= 仍写入（③级扩展，不称对齐，仅保证在位节点全写）'
+    );
+    if (!includeAnyway) {
+      for (const el of eolExcluded) {
+        const cb = el.querySelector('.pick');
+        if (cb) cb.checked = false;
+        chosenIdx.delete(Number(el.dataset.idx));
       }
+      chosenNodes = chosenNodes.filter((el) => !eolExcluded.includes(el));
+      log(`按 MES EOL 门槛跳过 ${eolExcluded.length} 个 E 位为 0 的节点`);
+      if (!chosenNodes.length) return alert('没有剩余可写节点。');
+    } else {
+      log(`③级扩展：仍写入 ${eolExcluded.length} 个 E 位为 0 的节点（非 MES 对齐语义）`);
     }
   }
 
@@ -1815,6 +1950,7 @@ $('btnAlign').addEventListener('click', async () => {
     return cb && cb.checked && !cb.disabled;
   }).length;
   const failed = [];
+  let verifiedDone = 0, unverifiedDone = 0;   // A6：回读成功与「已写入未回读」分开统计
   let cableCancelled = false;   // 作用域必须在两个循环之外：旧写法在 for 块内声明，块外引用会 ReferenceError
   try {
     const nodes = chosenNodes;
@@ -1868,6 +2004,8 @@ $('btnAlign').addEventListener('click', async () => {
             ? '<b>✓ 对齐成功</b>'
             : '<b>✓ 已写入</b><br><span class="reason">该模块不支持 22 10 2A 回读，未做回读校验</span>';
           done++;
+          // A6：未回读的节点不计入「已回读成功」，只单独披露
+          if (verified) verifiedDone++; else unverifiedDone++;
           stage(verified
             ? `✓ ${idx}/${total} · ${nodeName} 对齐成功`
             : `✓ ${idx}/${total} · ${nodeName} 已写入（未回读）`);
@@ -1892,19 +2030,48 @@ $('btnAlign').addEventListener('click', async () => {
     }
     // 全部节点完成后留 ECU 收尾时间（标准流程 1 秒）
     await stageWait(1000);
+    // —— A5：选择性对齐必须逐节点做「存储块回读」，不能只看位图 needs=0 ——
+    // 位图正常但存储块是旧块的节点（换过模块）不会被 needs 发现；勾选子集时它没被写，
+    // 却一样会让里程表闪。对未勾选的在位节点逐个回读 22 10 2A 存储块，
+    // 与车身基准块比对，发现差异就明确报出来（③级扩展：只验选择流程自身正确性）。
+    if (isSubset && !cableCancelled) {
+      const unselected = presentEls.filter((el) => !chosenIdx.has(Number(el.dataset.idx)));
+      const staleBlocks = [];
+      for (const el of unselected) {
+        const node = state.modules.alignmentNodes[Number(el.dataset.idx)];
+        const nm = el.querySelector('.nm').textContent.trim();
+        try {
+          stage(`选择性对齐：正在对未勾选节点 ${nm} 做存储块回读…`);
+          await state.session.connectNode(node);
+          const rb = await state.uds.verifyProxi(state.block.bytes);
+          if (!rb.ok) staleBlocks.push(`${nm}（回读有差异）`);
+          else if (rb.unverified) log(`节点 ${nm} 不支持 22 10 2A 回读，无法确认存储块`);
+        } catch (e) {
+          staleBlocks.push(`${nm}（回读失败：${e.message}）`);
+        }
+      }
+      if (staleBlocks.length) {
+        log(`⚠ 逐节点存储块回读发现 ${staleBlocks.length} 个未勾选节点与车身块不一致：${staleBlocks.slice(0, 6).join('、')}`);
+        alert('选择性对齐完成，但逐节点存储块回读发现以下未勾选节点与车身配置块不一致：\n\n'
+          + staleBlocks.slice(0, 10).join('\n') + '\n\n这些节点位图虽正常，但存储块是旧的，里程表仍会闪。请对它们单独对齐或执行「全部对齐」。');
+      } else {
+        log(`逐节点存储块回读：${unselected.length} 个未勾选节点存储块均与车身一致`);
+      }
+    }
     // 结论条改成“本次运行结果”，避免残留开跑前的“需对齐 N 个”造成误解
     const vd = $('alignVerdict');
+    const readbackNote = alignReadbackNote(verifiedDone, unverifiedDone);
     vd.classList.remove('hidden', 'ok', 'bad');
     if (failed.length) {
       vd.classList.add('bad');
-      vd.textContent = `对齐结束：成功 ${done} / 失败 ${fail}（失败节点可重试）`;
+      vd.textContent = `对齐结束：成功 ${done} / 失败 ${fail}（失败节点可重试）${readbackNote}`;
       stageFail(`对齐结束：成功 ${done} / 失败 ${fail}`);
       alert(`PROXI 对齐结束\n\n成功 ${done} 个节点\n失败 ${fail} 个节点：\n\n${failed.slice(0, 10).join('\n')}${failed.length > 10 ? '\n…' : ''}\n\n失败节点可重试。`);
     } else {
       vd.classList.add('ok');
-      vd.textContent = `✓ 对齐完成：${done} 个节点全部成功；可重新「读取对齐状态」确认`;
-      stageDone(`对齐完成：${done} 个节点全部成功`);
-      alert(`PROXI 对齐完成\n\n${done} 个节点全部对齐成功`);
+      vd.textContent = `✓ 对齐完成：${done} 个节点全部写入${readbackNote}；可重新「读取对齐状态」确认`;
+      stageDone(`对齐完成：${done} 个节点全部写入${readbackNote}`);
+      alert(`PROXI 对齐完成\n\n${done} 个节点全部写入成功\n回读成功 ${verifiedDone} 个，未回读 ${unverifiedDone} 个`);
     }
 
     // —— 对齐后自动复检：结论必须来自车身位图，而不是「本次勾选了谁」 ——
@@ -1927,9 +2094,23 @@ $('btnAlign').addEventListener('click', async () => {
               + `（新增 ${cc.added} / 移除 ${cc.removed}${cc.eolFailed ? ` / EOL 未完成 ${cc.eolFailed}` : ''}）`
             : `✓ 本次成功 ${done} / 失败 ${fail}；重读位图：${cc.present} 个在位节点，无新增/移除`;
           if (left) log(`⚠ 对齐后复检：仍有 ${left} 个节点需对齐（新增 ${cc.added} / 移除 ${cc.removed}）`);
+        } else {
+          // res.ok=false（位图不足/不可判定）也是复检失败，不能留着「对齐完成」的成功结论
+          vd.classList.remove('hidden', 'ok');
+          vd.classList.add('bad');
+          vd.textContent = `写入完成、复检未知：${res.reason || 'DATA1/DATA3 位图不足'}；本次写入成功 ${done} / 失败 ${fail}`;
+          log('⚠ 对齐后复检未知：' + (res.reason || '位图不足'));
         }
       } catch (e) {
-        log('对齐后重读状态失败（不影响已完成的写入）：' + e.message);
+        // A3：复检读取失败必须改判 —— 写入已完成，但整车是否对齐未知，
+        // 绝不保留「✓对齐完成」的成功结论（旧实现只 log 一句就吞掉）。
+        vd.classList.remove('hidden', 'ok');
+        vd.classList.add('bad');
+        vd.textContent = `写入完成、复检失败/未知：${e.message}；本次写入成功 ${done} / 失败 ${fail}，请重新读取对齐状态确认`;
+        stageFail(`写入完成，但复检失败/未知：${e.message}`);
+        log('⚠ 对齐后复检失败：' + e.message);
+        alert('PROXI 写入已完成，但对齐后复检失败/未知：\n' + e.message
+          + '\n\n请点「读取对齐状态」重新确认，不要以本次写入结论作为整车已对齐的依据。');
       }
     }
   } finally {
@@ -2091,11 +2272,13 @@ async function mergeRwUserEntry(item, picked) {
   const wlen = wraw[0];
   const wpay = wraw.slice(1, 1 + wlen);
   if (wpay[0] !== 0x2e || wpay.length < 4) return null;                    // 次条=写模板
-  const did = (wpay[1] << 8) | wpay[2];
-  // 车端已验证的读改写流程在读回长度 <4 时直接失败，不会拿全零模板继续写。
+  // S5：基线必须按 **Commands[0] 的读 DID** 读回（`--.cs:4689,4696-4712`）。
+  // 35 项读/写 DID 不同（如 VIN 读 F1B0 / 写 F190）：拿写模板 DID 去读，
+  // 轻则基线错位、重则把读不到的全零当成基线写坏 VIN。
+  const rdid = (rraw[2] << 8) | rraw[3];
   let base;
   try {
-    base = await state.uds.readDataByIdentifier(did);
+    base = await state.uds.readDataByIdentifier(rdid);
   } catch (e) {
     throw new Error('读改写前置读取失败：' + e.message);
   }
@@ -2109,10 +2292,17 @@ async function mergeRwUserEntry(item, picked) {
   return [parts[0], hex].join(',');
 }
 
-let fnAbort = false;   // 执行中取消标志（中止→发最后一条命令恢复，标准语义）
+// 旧全局取消标志仅作向后兼容：正常路径每路执行传自己的 {aborted} 令牌（S3）。
+let fnAbort = false;
 
-async function runCommandString(cmdStr, item) {
+/**
+ * @param opts.abortToken 独立取消令牌 {aborted:boolean}；不传时回落到布尔 fnAbort
+ *   （门禁里以 `fnAbort:false` 注入，故这里两种形态都要能判）。
+ */
+async function runCommandString(cmdStr, item, opts = {}) {
   const sent = [];
+  const abort = (opts && opts.abortToken) || fnAbort;
+  const isAborted = () => !!(abort && abort.aborted);
   const parts = cmdStr.split(',').map((p) => p.trim().replace(/\s/g, '')).filter(Boolean);
   // 延时 / 行为类旗标（已按车端实测行为定论）：
   //   NOWAIT=0 · 0.5SEC · 1SEC · 10SEC · 20SEC · 30SEC · 50SEC
@@ -2125,20 +2315,31 @@ async function runCommandString(cmdStr, item) {
   const funcPoll = /FUNC/.test(flags);
   // 基准间隔：默认 2s，0.5SEC→500ms，1SEC→1s。
   // 10/20/30/50SEC 在其它协议类的同一个链里（`:7647-7667`，tick 单位）。
+  // S6：权威值是数据侧结构化字段 intervalMs（build-functions.cjs 把 0.5SEC→500、
+  // 5SEC→5000 等写进 functions.json）。运行时必须真消费它，而不是从 resultFormat
+  // 文本二次解析 —— 否则数据改了字段、运行时却仍按旧旗标走（QA 反例：只给 intervalMs
+  // 不给 5SEC 旗标时必须按 5000 基准）。
   let interMs = 2000;
-  if (flags.includes('0.5SEC')) interMs = 500;
+  if (item && Number.isFinite(item.intervalMs) && item.intervalMs >= 0) {
+    interMs = item.intervalMs;
+  } else if (flags.includes('0.5SEC')) interMs = 500;
   else if (flags.includes('1SEC')) interMs = 1000;
+  // MES 5.5 字符串表有 0.5/1/5/10/20/30/50SEC（5.5 新增 5SEC，4 项 CDCM1 阀），
+  // 旗标仅作数据缺字段时的兼容兜底。
+  else if (flags.includes('5SEC')) interMs = 5000;
   else if (flags.includes('10SEC')) interMs = 10000;
   else if (flags.includes('20SEC')) interMs = 20000;
   else if (flags.includes('30SEC')) interMs = 30000;
   else if (flags.includes('50SEC')) interMs = 50000;
   if (flags.includes('NOWAIT')) interMs = 0;
-  // 「结果沉降」不是替代基准，而是**在基准之上加倍数**（车端实测节奏）：
-  //   1 条命令 → 基准 + 4×基准（2s → 10s）
-  //   2 条命令 → 基准 + 3×基准（2s → 8s），加在两条之间
-  //   ≥3 条    → 命令之间只等基准（2s）
+  // 沉降倍数按 MES `--.cs:4586-4592,4607-4610`：只有 num>1000 才在基准之上追加
+  // 4×基准（1 条）/ 3×基准（2 条）；num=500/1000 只睡一次基准。
+  // 旧实现无条件 ×5/×4，把 0.5SEC/1SEC 放大 4 倍（S2）。
+  const overSec = interMs > 1000;
   const rwUserEntry = flags.includes('RWUSERENTRY');
-  const gapMs = rwUserEntry ? 1000 : (parts.length === 1 ? interMs * 5 : parts.length === 2 ? interMs * 4 : interMs);
+  const gapMs = rwUserEntry ? 1000
+    : (parts.length === 1 ? (overSec ? interMs * 5 : interMs)
+      : parts.length === 2 ? (overSec ? interMs * 4 : interMs) : interMs);
   // RWUSERENTRY：车端已验证流程先在本地读一次、合并，然后 Sleep(1000) → 2E，
   // 成功后 Sleep(1000)；读帧已经由 mergeRwUserEntry 发出，这里从写帧开始。
   const startIndex = (item && item._rwReadDone) ? 1 : 0;
@@ -2167,14 +2368,14 @@ async function runCommandString(cmdStr, item) {
   const waitCancellable = async (ms) => {
     const t0 = Date.now();
     while (Date.now() - t0 < ms) {
-      if (fnAbort) return false;
+      if (isAborted()) return false;
       await new Promise((r) => setTimeout(r, Math.min(120, Math.max(1, ms - (Date.now() - t0)))));
     }
     return true;
   };
 
   for (let i = startIndex; i < parts.length; i++) {
-    if (fnAbort) {
+    if (isAborted()) {
       sent.push('[执行中止→恢复]');
       await restoreLast();
       return sent;
@@ -2273,6 +2474,7 @@ async function runCommandString(cmdStr, item) {
       const statusReq = new Uint8Array(2 + id.length);
       statusReq[0] = 0x31; statusReq[1] = 0x03; statusReq.set(id, 2);
       let polls = 0;
+      let finalStatus = null;
       for (let n = 0; n < 1800; n++) {
         if (!(await waitCancellable(500))) { sent.push('[例程轮询已中止]'); return sent; }
         let st = null;
@@ -2287,12 +2489,41 @@ async function runCommandString(cmdStr, item) {
         // 所以忙判定看 resp[2]（见 src/uds.js isRoutineBusy）。
         // 旧实现照搬 st[3]：`7F 31 21` 只有 3 字节 → 条件恒 false → 第一次忙就停止轮询。
         if (!isRoutineBusy(st)) {
-          const isStatus = !!(st && st[0] === 0x71 && st[1] === 0x03);
-          sent.push(`[例程状态：${st ? Array.from(st).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ') : '空'}`
-            + `${isStatus ? '' : '（非预期响应，停止轮询）'}（轮询 ${polls} 次）]`);
+          finalStatus = st;
           break;
         }
       }
+      // S1：车端 FUNC 只发 Commands[0]（31 01 启动），随后自造 31 03 轮询；
+      // commands[1..n]（含 31 02 StopRoutine、预置的 31 03）一律不再下发，也不要重开轮询。
+      // 旧实现逐条发并逐条轮询，DPF 再生等会被自己的 StopRoutine 提前打断。
+      const isStatus = !!(finalStatus && finalStatus[0] === 0x71 && finalStatus[1] === 0x03);
+      const rawStatus = finalStatus
+        ? Array.from(finalStatus).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ')
+        : '空';
+      // S4：BitResults（MES `_0091`，MMVV标签 格式，末项兜底）把结果字节翻成可读文本。
+      // MES `--.cs:4646-4679`：缓冲 array[4] = 剥前缀后的 resp[3]；无 BitResults 时
+      // 直接展示 `Completed correctly` + 结果字节 hex（温度/油位等原因在选项表里）。
+      let resultText = '';
+      if (finalStatus && finalStatus[0] === 0x71 && finalStatus.length > 3) {
+        const b = finalStatus[3];
+        const bitResults = (item && item.options) || [];
+        if (bitResults.length) {
+          for (let i = 0; i < bitResults.length; i++) {
+            const e = String(bitResults[i]);
+            const mask = parseInt(e.slice(0, 2), 16);
+            const want = parseInt(e.slice(2, 4), 16);
+            if (Number.isFinite(mask) && Number.isFinite(want)
+                && ((b & mask) === want || i === bitResults.length - 1)) {
+              resultText = e.slice(4);
+              break;
+            }
+          }
+        } else {
+          resultText = 'Completed correctly（' + rawStatus + '）';
+        }
+      }
+      sent.push(`[例程状态：${rawStatus}${isStatus ? '' : '（非预期响应，停止轮询）'}${resultText ? ' · ' + resultText : ''}（轮询 ${polls} 次）]`);
+      break;   // 只处理首条命令：commands[1..n] 不再发送
     }
     // 命令间沉降（FE/FF 节奏由 token 自带，真实命令之间按旗标等效等待）
     if (gapMs > 0 && (i < parts.length - 1 || parts.length === 1)) {
@@ -2413,47 +2644,53 @@ function renderFunctions() {
         return;
       }
       if (operationBlocked()) return;
+      // S3：并发闸 + 按钮禁用必须在第一个 await（安全访问）之前。
+      // 旧实现在 await securityAccess 之后才禁用按钮，快速双击会两路命令并发进半双工串口。
+      if (state.fnRunning) return alert('已有一项特殊功能正在执行，请等它结束。');
+      state.fnRunning = true;
+      state.busy = '执行特殊功能';   // 第一个 await 之前置闸：PIN 等待期也挡住别的操作
       stopLiveForOperation('执行特殊功能');
       if (state.session) state.session.resetCableAbort();
       const mName = modLabel(item.module);
       const bOld = b.textContent;
+      // 每路执行独立 abort 令牌：不再让并发的两路互相翻同一个全局 fnAbort。
+      // runCommandString 仍兼容布尔（门禁注入 false）与对象令牌两种形态。
+      const abortToken = { aborted: false };
+      b.disabled = true;                       // ← 必须在 await 之前
+      b.textContent = '执行中…';
       let picked = null;
-      // READNOTES：执行前展示说明（标准语义）
       const fnFlags = String(item.resultFormat || '').toUpperCase();
-      if (fnFlags.includes('READNOTES') && item.desc) {
-        const okNotes = confirm(`执行说明（${t(item.name)}）\n\n${tdesc(item.desc).slice(0, 600)}\n\n确认已阅读并继续？`);
-        if (!okNotes) return;
-      }
-      // 需 PIN 的项目：先安全访问（标准语义 SECURITY05xx）
-      if (item.security && item.security.level === 'pin') {
-        const pin = prompt('该项目需要安全访问\n\n请输入 5 位 PIN：', '');
-        if (!pin) { stageDone('已取消（未输入 PIN）'); return; }
-        try {
-          stage('正在安全访问…');
-          const sec = await state.uds.securityAccess(String(pin).trim());
-          if (sec && sec.alreadyUnlocked) {
-            stageDone('该模块已处于解锁状态（种子为 0），无需送密钥');
-          }
-        } catch (e) {
-          stageFail('安全访问失败：' + e.message);
-          alert('安全访问失败：' + e.message + (e.nrcText ? '（' + e.nrcText + '）' : ''));
-          return;
-        }
-      }
       const cancelBtn = document.createElement('button');
       cancelBtn.textContent = '取消执行';
       cancelBtn.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:118px;z-index:98;min-height:44px;padding:10px 22px;border-radius:12px;border:1px solid #b33;background:#2a1215;color:#f88;font-size:15px;';
-      cancelBtn.onclick = () => { fnAbort = true; cancelBtn.textContent = '正在取消…'; };
+      cancelBtn.onclick = () => { abortToken.aborted = true; cancelBtn.textContent = '正在取消…'; };
       document.body.appendChild(cancelBtn);
-      state.busy = '执行特殊功能';
       try {
         stage(`已连接 ${mName}（地址 0x${(state.cables.modules[item.module] || {}).tx || '??'}）`);
-        fnAbort = false;
-        const sent = await (async () => {
-          b.disabled = true;
-          b.textContent = '执行中…';
-          stage(`执行中：${t(item.name)}…`);
+        // READNOTES：执行前展示说明（标准语义）
+        if (fnFlags.includes('READNOTES') && item.desc) {
+          const okNotes = confirm(`执行说明（${t(item.name)}）\n\n${tdesc(item.desc).slice(0, 600)}\n\n确认已阅读并继续？`);
+          if (!okNotes) return;
+        }
+        // 需 PIN 的项目：先安全访问（标准语义 SECURITY05xx）
+        if (item.security && item.security.level === 'pin') {
+          const pin = prompt('该项目需要安全访问\n\n请输入 5 位 PIN：', '');
+          if (!pin) { stageDone('已取消（未输入 PIN）'); return; }
           try {
+            stage('正在安全访问…');
+            const sec = await state.uds.securityAccess(String(pin).trim());
+            if (sec && sec.alreadyUnlocked) {
+              stageDone('该模块已处于解锁状态（种子为 0），无需送密钥');
+            }
+          } catch (e) {
+            stageFail('安全访问失败：' + e.message);
+            alert('安全访问失败：' + e.message + (e.nrcText ? '（' + e.nrcText + '）' : ''));
+            return;
+          }
+        }
+        const sent = await (async () => {
+          stage(`执行中：${t(item.name)}…`);
+          {
             if (item.kind === '执行器') {
               const ok = confirm(`执行器测试安全须知\n\n「${t(item.name)}」会驱动真实执行器动作。\n请先按安全规范断开相关执行器并接入模拟电阻。\n\n确认已按规范操作并继续？`);
               if (!ok) return null;
@@ -2461,6 +2698,20 @@ function renderFunctions() {
             if (item.needsUserInput || item.input) {
               picked = await askInput(item);
               if (picked === null) return null;
+            }
+            // S7：EXECMANUAL（数据侧 154 项）是车端「手动执行」语义 —— 运行时必须真读这个字段，
+            // 让操作者显式选择 ON/OFF/Abort；选 Abort 直接不发车，不能把字段留成死数据。
+            if (item.execManual === true) {
+              const manualOpts = ((item.options || [])).map((o) => String(o).slice(4));
+              const manualPick = prompt(
+                `手动执行（EXECMANUAL）· ${t(item.name)}\n\n${tdesc(item.desc).slice(0, 400)}\n\n`
+                + manualOpts.map((o, i) => `${i + 1}. ${o}`).join('\n')
+                + '\n\n0 = 不执行 / Abort', '1');
+              const mi = Number(manualPick) - 1;
+              const manualLabel = manualOpts[mi] || '';
+              if (!manualPick || mi < 0 || /abort|取消|中止|退出/i.test(manualLabel)) return null;
+              stage(`手动执行：${manualLabel}`);
+              log(`EXECMANUAL：用户选择「${manualLabel}」`);
             }
             // 读改写合并（RWUSERENTRY 族）：选择值按掩码并进写模板——此前选择值从不落盘、
             // 模板零值直发（2026-10-17 审计：98 条读改写条目全中招）
@@ -2484,16 +2735,13 @@ function renderFunctions() {
                   const raw = Math.min(255, Math.max(0, Math.round(picked.value / 500)));  // 钳位 0..255，否则 toString(16) 出 3 位把模板切坏   // 单位 500km/步
                   cmd = cmd.slice(0, -2) + raw.toString(16).toUpperCase().padStart(2, '0');
                 }
-                await runCommandString(cmd, item);
+                await runCommandString(cmd, item, { abortToken });
                 out.push(`${st.step}（${cmd}）`);
                 await stageWait(360);
               }
               return out;
             }
-            return await runCommandString(cmdToSend, item);
-          } finally {
-            b.disabled = false;
-            b.textContent = bOld;
+            return await runCommandString(cmdToSend, item, { abortToken });
           }
         })();
 
@@ -2523,7 +2771,11 @@ function renderFunctions() {
         alert('执行失败：' + e.message + (e.nrcText ? '（' + e.nrcText + '）' : ''));
       } finally {
         cancelBtn.remove();
-        fnAbort = false;
+        // 每路独立令牌：只在自己这一路里复位，不碰其它执行（这里只有一路在跑）
+        abortToken.aborted = false;
+        state.fnRunning = false;
+        b.disabled = false;
+        b.textContent = bOld;
         if (state.busy === '执行特殊功能') state.busy = null;
       }
     });
@@ -2808,12 +3060,16 @@ function rebuildModuleSelects() {
     if (keep && (codes.includes(keep) || keep === modSess.code)) fnSel.value = keep;
     else if (keep) fnSel.value = '';
   }
-  // —— 故障码 / 实时数据的模块下拉 ——
+  // D3：无字典模块必须从读码/快照下拉排除（dtc.json 38 模块）
+  const dtcDict = (state.dtc && state.dtc.modules) || {};
   for (const id of ['dtcModule', 'liveModule']) {
     const sel = $(id);
     if (!sel) continue;
     const keep = sel.value;
-    const codes = state.modules.modules.filter((m) => moduleVisible(m.code)).map((m) => m.code);
+    // D3：故障码下拉只列有 DTC 字典的模块（SVCRST29 等无字典模块全显示「未知故障」）
+    const codes = id === 'dtcModule'
+      ? dtcModuleCodes(state.modules.modules, { modules: dtcDict }, (c) => moduleVisible(c))
+      : state.modules.modules.filter((m) => moduleVisible(m.code)).map((m) => m.code);
     sel.innerHTML = '<option value="">选择模块</option>' + codes.map((c) =>
       `<option value="${c}">${modLabel(c)}（${c}）</option>`).join('');
     sel.value = codes.includes(keep) ? keep : '';
@@ -2839,6 +3095,40 @@ function renderPending() {
 
 
 /* ================= 故障码（DTC） ================= */
+/**
+ * D1：ISO 14229 DTC 状态位必须按维度并存展示，不能只按「0x40 = 自检未运行」吞掉其余位。
+ *   bit0 testFailed / bit1 testFailedThisCycle → 当前故障
+ *   bit2 pending / bit3 confirmed / bit5 testFailedSinceLastClear → 已存储历史
+ *   bit7 warningIndicatorRequested → MIL 灯请求
+ *   bit4/bit6 → 本周期/自清码后自检未完成（不是故障，但可并存）
+ * 旧 UI 把 0x20/0x80 单独置位归进「自检未运行」，历史与 MIL 漏报。
+ */
+function decodeDtcStatus(status) {
+  const st = Number(status) || 0;
+  return {
+    testFailed: !!(st & 0x01),
+    failedThisCycle: !!(st & 0x02),
+    pending: !!(st & 0x04),
+    confirmed: !!(st & 0x08),
+    notCompletedSinceClear: !!(st & 0x10),
+    failedSinceClear: !!(st & 0x20),
+    notCompletedThisCycle: !!(st & 0x40),
+    mil: !!(st & 0x80),
+    active: !!(st & 0x03),
+    stored: !!(st & (0x04 | 0x08 | 0x20)),
+    untested: !!(st & (0x10 | 0x40)) && !(st & (0x03 | 0x04 | 0x08 | 0x20)),
+  };
+}
+
+/** D3：没有 DTC 字典的模块从读码/快照下拉排除，避免全显示「未知故障」 */
+function dtcModuleCodes(modules, dtcDictionary, isVisible) {
+  const dict = (dtcDictionary && dtcDictionary.modules) || {};
+  return (modules || [])
+    .filter((m) => isVisible ? isVisible(m.code) : true)
+    .filter((m) => Object.prototype.hasOwnProperty.call(dict, m.code))
+    .map((m) => m.code);
+}
+
 function dtcLookup(mod, code) {
   const m = state.dtc && state.dtc.modules && state.dtc.modules[mod];
   return (m && m[code]) || null;
@@ -2872,20 +3162,30 @@ $('btnReadDtc').addEventListener('click', async () => {
         stageDone('读取完成：无故障码');
         return;
       }
-      // 按状态分组：active = 当前活跃故障（testFailed / pendingDTC）；
-      // history = 已存储但当前不活跃（confirmedDTC / 本周期失败过）；
-      // 其余（如仅 0x40 = 本周期自检未运行）不是故障，不展示 —— 健康车 ECU 会把
-      // 全部定义项按 FF 掩码带回来，全是这种（2026-10-29 实车日志实证）。
-      const active = list.filter((d) => d.active);
-      const history = list.filter((d) => !d.active && d.stored);
-      const untested = list.length - active.length - history.length;
-      const renderDtc = (d) => {
+      // D1：逐条按 ISO 14229 状态位解码 —— active / stored / MIL / 自检未完成 四个维度并存。
+      // 旧实现用 stored=(st&0x0f) 把 0x20（自清码后失败过）和 0x80（MIL）吞掉，
+      // 并把「自检本周期未运行」写死成 0x40，导致历史与 MIL 漏报。
+      const decoded = list.map((d) => ({ d, s: decodeDtcStatus(d.status) }));
+      const active = decoded.filter((x) => x.s.active);
+      const history = decoded.filter((x) => !x.s.active && x.s.stored);
+      const milOnly = decoded.filter((x) => !x.s.active && !x.s.stored && x.s.mil);
+      const untested = decoded.filter((x) => x.s.untested);
+      const renderDtc = ({ d, s }) => {
         const rawHex = d.raw.map((x) => x.toString(16).toUpperCase().padStart(2, '0')).join('');
         const hit = dtcLookup(code, rawHex);
+        const tags = [
+          s.mil ? '<span class="state-tag failed">MIL 点亮请求</span>' : '',
+          s.confirmed ? '<span class="state-tag failed">已确认</span>' : '',
+          s.pending ? '<span class="state-tag pending">待定</span>' : '',
+          s.failedSinceClear ? '<span class="state-tag pending">自清码后失败过</span>' : '',
+          s.testFailed ? '<span class="state-tag failed">当前故障</span>' : '',
+          (s.notCompletedSinceClear || s.notCompletedThisCycle)
+            ? '<span class="state-tag">自检未完成</span>' : '',
+        ].join('');
         return `<div class="mrow">
           <div class="dtc-code">${d.code}</div>
           <div class="grow">
-            <div class="name">${hit ? hit.name : '未知故障'}${d.confirmed ? '<span class="state-tag failed">已确认</span>' : ''}${d.pending ? '<span class="state-tag pending">待定</span>' : ''}${d.testFailed ? '<span class="state-tag failed">当前故障</span>' : ''}</div>
+            <div class="name">${hit ? hit.name : '未知故障'}${tags}</div>
             ${hit && hit.desc ? `<div class="sub">${hit.desc}</div>` : ''}
             <div class="sub">原始码 ${rawHex} · 状态 0x${d.status.toString(16).toUpperCase().padStart(2, '0')}</div>
           </div>
@@ -2895,22 +3195,28 @@ $('btnReadDtc').addEventListener('click', async () => {
       if (active.length) {
         html += `<div style="padding:8px 12px;font-weight:600;color:#e74c3c">⚠ 当前故障（${active.length} 条）</div>`;
         html += active.map(renderDtc).join('');
-      } else if (history.length) {
+      } else if (history.length || milOnly.length) {
         html += '<div style="padding:8px 12px;color:#27ae60;font-weight:600">✓ 无当前活跃故障</div>';
       } else {
         html += '<div style="padding:8px 12px;color:#27ae60;font-weight:600">✓ 无故障码</div>';
-        if (untested > 0) {
-          html += `<div class="dim" style="padding:0 12px 8px;font-size:12px">另有 ${untested} 项定义的自检本周期尚未运行（状态 0x40），不是故障。</div>`;
-        }
       }
       if (history.length) {
         html += `<details style="margin-top:8px"><summary style="padding:8px 12px;cursor:pointer;color:#888;font-size:13px">📋 历史/已存储故障（${history.length} 条）— 点击展开</summary>`;
         html += history.map(renderDtc).join('');
         html += '</details>';
       }
+      if (milOnly.length) {
+        html += `<details open style="margin-top:8px"><summary style="padding:8px 12px;cursor:pointer;color:#e67e22;font-size:13px">💡 仅 MIL 点亮请求（${milOnly.length} 条）— 无当前/存储故障位，但警告灯被请求</summary>`;
+        html += milOnly.map(renderDtc).join('');
+        html += '</details>';
+      }
+      if (untested.length) {
+        html += `<div class="dim" style="padding:0 12px 8px;font-size:12px">另有 ${untested.length} 项仅「自检未完成（bit4 / bit6）」，不是故障。</div>`;
+      }
       wrap.innerHTML = html;
       stageDone(`读取完成：${active.length} 条当前故障${history.length ? ` / ${history.length} 条历史` : '，无历史'}`
-        + (untested ? `（另有 ${untested} 项自检未运行，非故障）` : ''));
+        + (milOnly.length ? ` / ${milOnly.length} 条仅 MIL 请求` : '')
+        + (untested.length ? `（另有 ${untested.length} 项自检未完成，非故障）` : ''));
     });
   } catch (e) {
     stageFail('读取失败：' + e.message);
@@ -3141,7 +3447,48 @@ function renderModuleSessionUI() {
 }
 
 /* ================= 实时数据 ================= */
-const live = { running: false, samples: [], lastItems: [], items: [], picks: [] };
+/** UX2：置顶/排序/模板纯前端偏好，localStorage 持久化（失败时退化为内存态） */
+const LIVE_PREFS_KEY = 'apx.live.prefs.v1';
+let livePrefsMemory = {};
+function loadLivePrefs() {
+  try {
+    if (typeof localStorage !== 'undefined' && localStorage.getItem) {
+      return JSON.parse(localStorage.getItem(LIVE_PREFS_KEY) || '{}') || {};
+    }
+  } catch {}
+  return livePrefsMemory;
+}
+function saveLivePrefs(p) {
+  livePrefsMemory = p;
+  try {
+    if (typeof localStorage !== 'undefined' && localStorage.setItem) {
+      localStorage.setItem(LIVE_PREFS_KEY, JSON.stringify(p));
+    }
+  } catch {}
+}
+function liveItemName(i) {
+  return String((typeof t === 'function' && t(i && i.name)) || (i && i.name) || '');
+}
+/** 置顶项优先，再按 name / unit 排序；default 保持原顺序 */
+function sortLiveItems(items, sortKey, pinned) {
+  const pins = pinned || {};
+  const arr = (items || []).slice();
+  const cmp = {
+    name: (a, b) => liveItemName(a).localeCompare(liveItemName(b), 'zh'),
+    unit: (a, b) => {
+      const ua = String((a.spec && a.spec.unit) || ''), ub = String((b.spec && b.spec.unit) || '');
+      return ua.localeCompare(ub, 'zh') || liveItemName(a).localeCompare(liveItemName(b), 'zh');
+    },
+  }[sortKey];
+  arr.sort((a, b) => {
+    const pa = pins[liveItemName(a)] ? 1 : 0, pb = pins[liveItemName(b)] ? 1 : 0;
+    if (pa !== pb) return pb - pa;
+    return cmp ? cmp(a, b) : 0;
+  });
+  return arr;
+}
+
+const live = { running: false, samples: [], lastItems: [], items: [], picks: [], generation: 0 };
 
 /**
  * 任何会切模块 / 写车 / 长扫的操作开始前，先停掉实时轮询。
@@ -3217,7 +3564,12 @@ function renderLiveParams() {
   const isRawBlock = (i) => (i.spec && i.spec.bytes >= 100)
     || /^DATA\d[S]?$/i.test(String(i.name || '').trim());
   const q = ($('liveSearch') && $('liveSearch').value) || '';
-  const items = all.filter((i) => !isRawBlock(i) && hit(q, i.name, t(i.name), i.did, i.spec && i.spec.unit));
+  const baseItems = all.filter((i) => !isRawBlock(i) && hit(q, i.name, t(i.name), i.did, i.spec && i.spec.unit));
+  // UX2：置顶优先 + 按名/按单位排序；排序结果就是 state.liveItems，data-idx 才不会错位
+  const prefs = loadLivePrefs();
+  const pins = prefs.pins || {};
+  const sortKey = ($('liveSort') && $('liveSort').value) || 'default';
+  const items = sortLiveItems(baseItems, sortKey, pins);
   state.liveItems = items;
   $('liveCount').textContent = items.length === all.filter((i) => !isRawBlock(i)).length
     ? items.length
@@ -3226,6 +3578,7 @@ function renderLiveParams() {
   wrap.innerHTML = items.slice(0, CAP).map((i, idx) => `
     <div class="mrow">
       <input type="checkbox" class="live-pick" data-idx="${idx}" ${modSess.code ? '' : 'disabled'} style="accent-color:var(--accent)">
+      <button class="live-pin" data-idx="${idx}" title="置顶 / 取消置顶" style="border:0;background:none;cursor:pointer;font-size:16px;color:#e8b84b">${pins[liveItemName(i)] ? '★' : '☆'}</button>
       <div class="grow">
         <div class="name">${tSpan(i.name)}</div>
         <div class="sub">DID ${i.did} · ${i.spec && i.spec.unit ? '单位 ' + i.spec.unit + ' · ' : ''}${i.spec && i.spec.scale && i.spec.scale !== 1 ? '换算 ×' + i.spec.scale : ''}</div>
@@ -3243,6 +3596,68 @@ $('liveSearch') && $('liveSearch').addEventListener('input', () => {
     live.running = false; live.picks = []; live.items = [];
   }
   renderLiveParams();
+});
+
+/* UX2：置顶 / 排序 / 全选反选 / 模板存取 / Monitor DTC（纯前端） */
+function stopLiveForRelayout() {
+  if (live.running) { stopLiveLoop(); live.running = false; live.picks = []; live.items = []; }
+}
+$('liveSort') && $('liveSort').addEventListener('change', () => { stopLiveForRelayout(); renderLiveParams(); });
+$('liveParams') && $('liveParams').addEventListener('click', (e) => {
+  const pb = e.target.closest && e.target.closest('.live-pin');
+  if (!pb) return;
+  const it = state.liveItems[Number(pb.dataset.idx)];
+  if (!it) return;
+  const name = liveItemName(it);
+  const p = loadLivePrefs();
+  p.pins = p.pins || {};
+  if (p.pins[name]) delete p.pins[name]; else p.pins[name] = true;
+  saveLivePrefs(p);
+  stopLiveForRelayout();
+  renderLiveParams();
+});
+$('liveSelAll') && $('liveSelAll').addEventListener('click', () => {
+  [...document.querySelectorAll('.live-pick')].forEach((el) => { if (!el.disabled) el.checked = true; });
+  syncLiveAuto();
+});
+$('liveSelInv') && $('liveSelInv').addEventListener('click', () => {
+  [...document.querySelectorAll('.live-pick')].forEach((el) => { if (!el.disabled) el.checked = !el.checked; });
+  syncLiveAuto();
+});
+$('liveTplSave') && $('liveTplSave').addEventListener('click', () => {
+  const mod = $('liveModule').value;
+  if (!mod) return alert('请先选择模块');
+  const names = pickedLiveItems().map((p) => liveItemName(p.it));
+  const p = loadLivePrefs();
+  p.templates = p.templates || {};
+  p.templates[mod] = names;
+  saveLivePrefs(p);
+  alert(`已把当前 ${names.length} 项勾选存为 ${mod} 的模板`);
+});
+$('liveTplLoad') && $('liveTplLoad').addEventListener('click', () => {
+  const mod = $('liveModule').value;
+  if (!mod) return alert('请先选择模块');
+  const p = loadLivePrefs();
+  const names = (p.templates && p.templates[mod]) || [];
+  if (!names.length) return alert('该模块还没有保存过模板');
+  stopLiveForRelayout();
+  let hit = 0;
+  [...document.querySelectorAll('.live-pick')].forEach((el) => {
+    const it = state.liveItems[Number(el.dataset.idx)];
+    const on = !el.disabled && names.includes(liveItemName(it));
+    el.checked = on;
+    if (on) hit++;
+  });
+  log(`已载入 ${mod} 模板（${hit}/${names.length} 项）`);
+  syncLiveAuto();
+});
+$('liveMonitorDtc') && $('liveMonitorDtc').addEventListener('click', async () => {
+  const mod = $('liveModule').value;
+  if (!mod) return alert('请先选择模块并进入，再 Monitor DTC');
+  document.querySelector('.tab[data-tab="dtc"]')?.click();
+  const sel = $('dtcModule');
+  if (sel && [...sel.options].some((o) => o.value === mod)) sel.value = mod;
+  $('btnReadDtc')?.click();
 });
 
 $('btnLiveEnter') && $('btnLiveEnter').addEventListener('click', async () => {
@@ -3293,16 +3708,20 @@ async function syncLiveAuto() {
   live.running = true;
   live.items = live.lastItems;
   stage(`正在读取实时数据（${picked.length} 项）…`);
+  // C2：本轮持有独立 generation。取消/重启会递增 live.generation，
+  // 旧 while 在 await 返回后发现令牌已变，就丢弃这一轮采样，不再写 DOM/统计。
+  const myGeneration = live.generation;
   const t0 = Date.now();
   let n = 0;
   try {
-    while (live.running) {
+    while (live.running && live.generation === myGeneration) {
       const items = live.items;
       const row = { t: new Date().toISOString(), v: [] };
       for (const it of items) {
         try { row.v.push(applyScale(await state.uds.readDataByIdentifier(parseInt(it.did, 16)), it)); }
         catch { row.v.push(null); }
       }
+      if (!live.running || live.generation !== myGeneration) break;   // 在途请求已过期，丢弃
       live.samples.push(row);
       n++;
       $('liveSamples').textContent = live.samples.length;
@@ -3311,14 +3730,21 @@ async function syncLiveAuto() {
       // 轮询节奏对齐：滚动连续读（间隔只留总线呼吸口），不整轮大睡
       await new Promise((r) => setTimeout(r, 120));
     }
-    stageDone(`实时数据结束，共 ${live.samples.length} 个采样点`);
+    if (live.generation === myGeneration) stageDone(`实时数据结束，共 ${live.samples.length} 个采样点`);
   } catch (e) {
-    stageFail('实时读取失败：' + e.message);
-    live.running = false;
+    if (live.generation === myGeneration) {
+      stageFail('实时读取失败：' + e.message);
+      live.running = false;
+    }
   }
 }
 
-function stopLiveLoop() { live.running = false; }
+function stopLiveLoop() {
+  live.running = false;
+  // C2：取消后等在途请求结束 / 用 generation 丢弃旧采样。
+  // 递增令牌让仍在 await 的旧 while 拿到的采样不再渲染，避免与新轮询并跑贴错参数。
+  live.generation++;
+}
 
 $('liveParams') && $('liveParams').addEventListener('change', (e) => {
   if (!e.target.classList.contains('live-pick')) return;

@@ -115,13 +115,13 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
             JSON.stringify(list.map((d) => d.status)));
     }
 
-    console.log('\nDTC legacy 兼容：3 字节/条（总长不按 4 对齐时退回）');
+    console.log('\nDTC legacy 兼容：3 字节/条（由调用方显式声明，不再按整除猜测）');
     {
         const list = parseDtcList(Uint8Array.from([
             0x59, 0x02, 0xff,
             0x90, 0x00, 0x08,         // confirmed
             0xaa, 0x55, 0x04,         // pending
-        ]));
+        ]), { recordBytes: 3 });
         check('legacy 3 字节解析出 2 条', list.length === 2, `got ${list.length}`);
         check('legacy 状态位正确', list[0].confirmed === true && list[1].pending === true);
     }

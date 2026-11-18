@@ -30,7 +30,13 @@ function walk(dir, out = []) {
 }
 
 const files = [];
-for (const t of TARGETS) files.push(...walk(path.join(ROOT, t)));
+const missingTargets = [];
+for (const t of TARGETS) {
+    const dir = path.join(ROOT, t);
+    // 缺依赖不得静默跳过：目标目录缺失时整体失败，避免「少查几个目录也算绿」
+    if (!fs.existsSync(dir)) { missingTargets.push(t); continue; }
+    files.push(...walk(dir));
+}
 // 根目录的独立脚本（*.mjs）
 for (const e of fs.readdirSync(ROOT)) {
     if (EXTS.has(path.extname(e)) && fs.statSync(path.join(ROOT, e)).isFile()) files.push(path.join(ROOT, e));
@@ -46,5 +52,6 @@ for (const f of files) {
         console.log(`✗ ${rel}\n    ${err || (r.stderr || '').trim().split('\n')[0]}`);
     }
 }
+for (const t of missingTargets) console.error(`✗ 语法检查目标目录缺失（缺依赖不得静默跳过）：${t}`);
 console.log(`语法检查：${files.length - bad}/${files.length} 通过`);
-process.exit(bad ? 1 : 0);
+process.exit(bad || missingTargets.length ? 1 : 0);

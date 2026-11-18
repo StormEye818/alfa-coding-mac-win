@@ -4,9 +4,19 @@
 import { Tool } from '../sandbox/drive.mjs';
 import { probeSnapshot } from './probe.mjs';
 
+// 前置：bridge/server.js（ws :8850）与 sandbox/harness.mjs（模拟车 :35001）须在别处已启动；
+// 本脚本不启动/清理它们。连接失败等异常一律 exit 1，并打印明确前置提示。
+process.on('uncaughtException', (e) => {
+    console.error('[test-agent1] 运行异常（若连接被拒，请先启动 node bridge/server.js 与 node sandbox/harness.mjs）：'
+        + (e && e.message ? e.message : String(e)));
+    process.exit(1);
+});
+
+let pass = 0, fail = 0;
 const results = [];
 const check = (name, expected, actual, ok) => {
     results.push({ name, expected, actual, ok });
+    if (ok) pass++; else fail++;
     console.log(`${ok ? 'PASS' : 'FAIL'} | ${name}\n     期望: ${expected}\n     实际: ${actual}`);
 };
 
@@ -93,5 +103,5 @@ check('写入后里程表仍闪烁（§九 反向：未对齐→闪）', 'true�
 
 console.log('\n=== 汇总 ===');
 for (const r of results) console.log(`${r.ok ? 'PASS' : 'FAIL'} ${r.name}`);
-console.log(`通过 ${results.filter(r => r.ok).length}/${results.length}`);
-process.exit(0);   // BridgeClient 连接不关闭会挂住事件循环
+console.log(`通过 ${pass}/${results.length}`);
+process.exit(fail ? 1 : 0);   // BridgeClient 连接不关闭会挂住事件循环

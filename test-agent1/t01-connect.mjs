@@ -4,9 +4,19 @@
 import { Tool } from '../sandbox/drive.mjs';
 import { probeSnapshot } from './probe.mjs';
 
+// 前置：bridge/server.js（ws :8850）与 sandbox/harness.mjs（模拟车 :35001）须在别处已启动；
+// 本脚本不启动/清理它们。连接失败等异常一律 exit 1，并打印明确前置提示。
+process.on('uncaughtException', (e) => {
+    console.error('[test-agent1] 运行异常（若连接被拒，请先启动 node bridge/server.js 与 node sandbox/harness.mjs）：'
+        + (e && e.message ? e.message : String(e)));
+    process.exit(1);
+});
+
+let pass = 0, fail = 0;
 const results = [];
 const check = (name, expected, actual, ok) => {
     results.push({ name, expected, actual, ok });
+    if (ok) pass++; else fail++;
     console.log(`${ok ? 'PASS' : 'FAIL'} | ${name}\n     期望: ${expected}\n     实际: ${actual}`);
 };
 
@@ -46,6 +56,6 @@ check('未对齐节点识别', '3 个未对齐（ABS 0x28 / EPS 0x30 / DASM 0x2A
 
 console.log('\n=== 汇总 ===');
 for (const r of results) console.log(`${r.ok ? 'PASS' : 'FAIL'} ${r.name}`);
-console.log(`通过 ${results.filter(r => r.ok).length}/${results.length}`);
+console.log(`通过 ${pass}/${results.length}`);
 await t.close();                 // P3-6：关闭桥接连接，避免进程不退出
-process.exit(0);
+process.exit(fail ? 1 : 0);

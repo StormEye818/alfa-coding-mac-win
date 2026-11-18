@@ -492,6 +492,11 @@ function parseDtcList(resp, opts) {
         const ftb = stride === 4 ? resp[i + 2] : 0;
         const st = resp[i + stride - 1];
         if (hi === 0 && lo === 0 && st === 0) continue;
+        // stored = 带存储含义的位：bit2 待定 / bit3 已确认 / bit5 自上次清码后失败过。
+        // 此前只取 bit0-3，单独的 bit5(0x20)=历史故障被漏、且会被 0x40 口径吞掉；
+        // 现在 bit5 归 stored，仅 bit4/bit6 的（如 0x40 本周期自检未运行）stored=false。
+        // mil = bit7 警告灯请求，单独成字段，不再没有承载位。
+        // active 口径保持不变（bit0 testFailed | bit2 pending），不影响既有判定。
         out.push({
             code: dtcCodeToString(hi, lo),
             raw: [hi, lo],
@@ -501,9 +506,8 @@ function parseDtcList(resp, opts) {
             pending: (st & 0x04) !== 0,
             confirmed: (st & 0x08) !== 0,
             active: (st & 0x05) !== 0,
-            // stored = 带实际存储含义的位（bit0-3：当前失败/本周期失败过/待定/已确认）。
-            // 只剩 bit4-7 的（如 0x40 = 本周期自检未运行）不是故障，界面不当作故障展示。
-            stored: (st & 0x0f) !== 0,
+            stored: (st & 0x2c) !== 0,
+            mil: (st & 0x80) !== 0,
         });
     }
     return out;

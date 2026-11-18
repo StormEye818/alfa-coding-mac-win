@@ -19,12 +19,25 @@ class BridgePort extends Emitter {
             this.emit('data', out);
         };
     }
+    /**
+     * 写入字节。
+     * Q3：写失败必须**双通道暴露**——
+     *   1) emit('error') 给已注册的监听者（Elm327 构造时会挂，记进 lastPortError/日志）；
+     *   2) 上抛为 rejected promise 交给调用方（app 侧）处理。
+     * 旧实现只有 1) 没有 2)，且当时 Elm327 根本没监听 'error' → 静默吞掉
+     * （写 PROXI 实际没发出去却一路报成功）。现在 Elm327.#send 会 await 并转成
+     * Elm327Error('WRITE')，链路与 UI 都能拿到真实错误。
+     * @returns {Promise} 桥接写入结果；失败时 reject
+     */
     write(data) {
         const bytes = typeof data === 'string'
             ? Array.from(data).map((c) => c.charCodeAt(0) & 0xff)
             : Array.from(data);
         const hex = bytes.map((b) => b.toString(16).padStart(2, '0')).join('');
-        this.bridge.writeHex(hex).catch((e) => this.emit('error', e));
+        return this.bridge.writeHex(hex).catch((e) => {
+            this.emit('error', e);
+            throw e;
+        });
     }
 }
 

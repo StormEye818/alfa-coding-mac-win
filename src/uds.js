@@ -12,7 +12,7 @@
  *   0x27 0x03/0x04 → 安全访问（5 位 PIN，BCD）；0x05/0x06 为服务器算密钥，不用
  */
 
-import { bytesToHex, hexToBytes, Elm327Error } from './elm327.js';
+import { bytesToHex, hexToBytes, Elm327Error, ELM_TIMEOUT_MS } from './elm327.js';
 
 const DID = {
     PROXI_DATA1: 0x2023,
@@ -54,6 +54,34 @@ const NRC = {
     0x7E: '子功能在当前会话不支持',
     0x7F: '服务在当前会话不支持',
 };
+
+/**
+ * D4 读码超时（②等价路径，非 MES ①级对齐）：
+ *  - 链路单段基准 = ELM_TIMEOUT_MS = 5000ms（elm327.js:16 现有常量）；
+ *  - 连续帧背靠背档 = ATST03 = 12ms（MES 5.5 协议文档 docs/05-protocol.md:40
+ *    「ATST03=12ms 连续帧背靠背」；elm327.js:164 同口径）；
+ *  - 实车最大应答 = 859B ≈ 108 帧（本文件 parseDtcList 注释的 IAW 10JA 日志）。
+ * 推导：T = 5000 + 108 × 12 = 6296ms。不是拍脑袋选整数档，也不改判定数据。
+ */
+const DTC_READ_TIMEOUT_MS = ELM_TIMEOUT_MS + 108 * 12;
+
+/**
+ * D2 记录长度字典（③扩展自身的正确性，不称对齐）：
+ * UDS 19 02 FF 标准 = 4 字节/条（<DTC高><DTC低><FTB><状态>）；
+ * MES 5.5 协议文档 docs/05-protocol.md:56-57 同口径。legacy 3 字节/条只在
+ * 调用方显式给出 recordBytes=3 或模块字典登记为 3 时启用。
+ * 严禁按 payload % 4 / % 3 整除猜测 —— 3B/条且条数为 4 倍数时会被误判成 4B。
+ */
+const DTC_RECORD_BYTES = Object.freeze({ STANDARD: 4, LEGACY: 3 });
+/** 952/949 平台 dtc.json 的 38 模块均为 UDS 标准 4 字节；新增 legacy 模块必须在此登记。 */
+const DTC_RECORD_BYTES_BY_MODULE = Object.freeze([
+    'AAML1', 'AAMR1', 'ABG28', 'ABSMMKC1', 'ADBLU1', 'AMP2', 'ANC1',
+    'BODY30', 'BODY33', 'BODY33V2', 'CDCM1', 'CLIMA33', 'CNAV13', 'CSWM2',
+    'CSWM5', 'DASH29', 'DASH29TFT', 'DASM1', 'DTCM4', 'EMCM1X', 'EPSZFX1',
+    'ESM1X', 'HALF1', 'HDLGHT6', 'IAW10JAX', 'JTDM23GP', 'LRBSS1',
+    'MED17.3.5', 'MED17.3.5S', 'PARKSEN14', 'PARKSEN8', 'PLGM1', 'RFH30',
+    'SLCK2', 'TBM1', 'TTM1', 'TVM1', 'ZF8HP50',
+].reduce((m, k) => { m[k] = DTC_RECORD_BYTES.STANDARD; return m; }, {}));
 
 class UdsError extends Error {
     constructor(msg, nrc) {
@@ -152,15 +180,24 @@ class Uds {
         }
     }
 
-    async readDtc() {
+    /**
+     * @param {{module?: string, recordBytes?: 3|4}} [opts]
+     *   module → 从 DTC_RECORD_BYTES_BY_MODULE 字典取条长；显式 recordBytes 优先。
+     *   两者都不给时按 UDS 标准 4 字节（不是整除猜测）；legacy 模块必须显式声明。
+     */
+    async readDtc({ module, recordBytes } = {}) {
         // 0x19 02 FF = reportDTCByStatusMask（全部）。
         // FF 会把「本周期自检未运行」的定义项（status=0x40）也带回来——健康车一次能回
         // 200+ 条，**不是故障**；parseDtcList 用 stored 位区分，UI 只展示真正存储过的。
-        const resp = assertPositive(await this.link.request(new Uint8Array([0x19, 0x02, 0xff])), '读故障码');
+        // 859B/108 帧应答：用由 ELM_TIMEOUT_MS + ATST03×帧数 推导的超时（D4），
+        // 不再用默认 5s（elm327.js:16）。
+        const resp = assertPositive(
+            await this.link.request(new Uint8Array([0x19, 0x02, 0xff]), { timeoutMs: DTC_READ_TIMEOUT_MS }),
+            '读故障码');
         if (resp[0] !== 0x59 || resp[1] !== 0x02) {
             throw new UdsError(`读故障码响应服务不匹配：${bytesToHex(resp.slice(0, 2))}`);
         }
-        return parseDtcList(resp);
+        return parseDtcList(resp, { module, recordBytes });
     }
 
     /**
@@ -333,10 +370,42 @@ class Uds {
                 });
             }
         }
-        // 校验后补发 22 40 AA（写入序列的第三条命令，与标准流程一致）
-        await this.link.request(new Uint8Array([0x22, 0x40, 0xAA]), { timeoutMs: 3000 })
-            .catch(() => {});
-        return { ok: diffs.length === 0, diffs, raw: d };
+        // A2：校验后补发 22 40 AA（写入序列第三条命令）。MES 侧仅文档级证据
+        // （docs/05-protocol.md:95，②级）——修的目标是「不静默」：把正响应/NRC/异常
+        // 全部记录并暴露给调用方，不再 .catch(()=>{}) 吞掉。
+        // 不强制抛错打断对齐主流程：这条是辅助校验，失败由调用方决定是否升级。
+        let aux;
+        try {
+            const auxResp = await this.link.request(new Uint8Array([0x22, 0x40, 0xAA]), { timeoutMs: 3000 });
+            const nrc = auxResp && auxResp[0] === 0x7f && auxResp.length >= 3 ? auxResp[2] : undefined;
+            aux = {
+                ok: !!(auxResp && auxResp[0] === 0x62),
+                nrc,
+                nrcText: nrc !== undefined ? (NRC[nrc] || `NRC 0x${nrc.toString(16)}`) : undefined,
+                raw: auxResp ? bytesToHex(auxResp) : '(空)',
+                error: null,
+                at: Date.now(),
+            };
+        } catch (e) {
+            aux = {
+                ok: false,
+                nrc: e instanceof UdsError ? e.nrc : undefined,
+                nrcText: e instanceof UdsError ? e.nrcText : undefined,
+                raw: '(无应答)',
+                error: (e && e.message) ? e.message : String(e),
+                at: Date.now(),
+            };
+        }
+        this.lastProxiAuxCheck = aux;
+        if (typeof this.onProxiAuxCheck === 'function') {
+            try { this.onProxiAuxCheck(aux); } catch { /* 回调异常不影响主判定 */ }
+        }
+        return {
+            ok: diffs.length === 0, diffs, raw: d, auxCheck: aux,
+            // A2 显式失败标记（供上层/门禁判定）：22 40 AA 失败必须为 false，
+            // 不能再只靠一个没人看的 catch 把这条辅助校验吞掉。
+            verifyMarker40AA: aux.ok,
+        };
     }
 }
 
@@ -369,14 +438,39 @@ function pinToKeyBcd(pin) {
  * 此前按 3 字节一条切，错位后把常量填充字节 `00 40` 切成了「P0040 · 状态 0x03」这类
  * 幽灵故障 —— 健康车也显示 110+ 条（ECU 对 FF 掩码会把全部"本周期自检未运行"的
  * 定义项带回来，状态 0x40，**不是故障**）。
- * 兼容：总长不按 4 字节对齐而按 3 字节对齐时（legacy 形态），退回 3 字节解析。
+ * D2：条长只能来自「显式 recordBytes / 模块字典 / UDS 标准默认 4」，
+ * **严禁**用 payload % 4 / % 3 整除猜测 —— 3 字节/条且条数为 4 倍数时会被误判成 4B，
+ * 整段错位。无字典且 payload 不按标准 4B 对齐时明确报错，不静默退回 3B。
  */
-function parseDtcList(resp) {
+function parseDtcList(resp, opts) {
     // 59 02 <statusAvailabilityMask> [ <dtcHi> <dtcLo> <ftb> <status> ]...（UDS 4 字节/条）
     const out = [];
     if (!resp || resp.length < 4) return out;
+    const explicit = (typeof opts === 'number')
+        || !!(opts && typeof opts === 'object'
+            && (opts.recordBytes != null || opts.stride != null || opts.module != null));
+    const stride = resolveDtcRecordBytes(opts);
     const payload = resp.length - 3;
-    const stride = payload % 4 === 0 ? 4 : payload % 3 === 0 ? 3 : 4;
+    if (payload % stride !== 0) {
+        throw new UdsError(
+            `DTC 记录长度不匹配：payload=${payload}B，条长=${stride}B。` +
+            '请显式传 recordBytes（3=legacy / 4=UDS 标准）或带字典的 module；禁止整除猜测');
+    }
+    // D2 应答结构自检（无显式条长时）：3B/条被当成 4B 时，3B 记录的状态字节会错位到
+    // FTB 位。真车样本（IAW 10JA 859B）与模拟车的 FTB 恒为 0x00；若按 4B 解析后
+    // 多数记录 FTB 非 0，说明条长错位，明确报错要求显式 recordBytes，不许静默出错成绩单。
+    if (!explicit && stride === DTC_RECORD_BYTES.STANDARD) {
+        let nonzeroFtb = 0, count = 0;
+        for (let i = 3; i + stride <= resp.length; i += stride) {
+            count++;
+            if (resp[i + 2] !== 0) nonzeroFtb++;
+        }
+        if (count > 1 && nonzeroFtb * 2 > count) {
+            throw new UdsError(
+                `DTC 应答结构自检失败：按 UDS 标准 4B 解析时 ${nonzeroFtb}/${count} 条 FTB 非 0` +
+                '（疑似 legacy 3B 记录错位到 FTB 位）。请显式传 recordBytes=3；禁止整除猜测');
+        }
+    }
     for (let i = 3; i + stride <= resp.length; i += stride) {
         const hi = resp[i], lo = resp[i + 1];
         const ftb = stride === 4 ? resp[i + 2] : 0;
@@ -397,6 +491,29 @@ function parseDtcList(resp) {
         });
     }
     return out;
+}
+
+/** D2：条长解析 —— 显式参数 > 模块字典 > UDS 标准 4B；永不整除猜测。 */
+function resolveDtcRecordBytes(opts) {
+    let recordBytes;
+    let module;
+    if (typeof opts === 'number') recordBytes = opts;
+    else if (opts && typeof opts === 'object') {
+        recordBytes = opts.recordBytes != null ? opts.recordBytes : opts.stride;
+        module = opts.module;
+    }
+    if (recordBytes != null) {
+        if (recordBytes !== DTC_RECORD_BYTES.LEGACY && recordBytes !== DTC_RECORD_BYTES.STANDARD) {
+            throw new UdsError(`非法 DTC 条长 ${recordBytes}：仅支持 3(legacy)/4(UDS 标准)`);
+        }
+        return recordBytes;
+    }
+    if (module != null) {
+        const v = DTC_RECORD_BYTES_BY_MODULE[module];
+        if (v == null) throw new UdsError(`模块 ${module} 无 DTC 条长字典条目：必须显式传 recordBytes`);
+        return v;
+    }
+    return DTC_RECORD_BYTES.STANDARD;
 }
 
 /**
@@ -423,4 +540,7 @@ function dtcCodeToString(hi, lo) {
     return `${letters[a]}${b}${c.toString(16).toUpperCase()}${d.toString(16).toUpperCase()}${e.toString(16).toUpperCase()}`;
 }
 
-export { Uds, UdsError, DID, NRC, pinToKeyBcd, parseDtcList, dtcCodeToString, isRoutineBusy };
+export {
+    Uds, UdsError, DID, NRC, pinToKeyBcd, parseDtcList, dtcCodeToString, isRoutineBusy,
+    DTC_READ_TIMEOUT_MS, DTC_RECORD_BYTES, DTC_RECORD_BYTES_BY_MODULE,
+};

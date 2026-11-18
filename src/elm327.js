@@ -13,7 +13,7 @@
  *   单帧 PCI = 0x0<n>，首帧 0x1<nnn>，连续帧 0x2<idx>
  */
 
-const ELM_TIMEOUT_MS = 5000;
+export const ELM_TIMEOUT_MS = 5000;
 
 /** 字节拼接（浏览器/Node 通用，不用 Buffer） */
 function concatBytes(a, b) {
@@ -53,9 +53,18 @@ function cleanLines(buf) {
         .filter((s) => s.length > 0 && s !== '>');
 }
 
-/** 把 ELM327 返回的原始帧拼成完整 ISO-TP 报文 */function reassembleIsoTp(frames) {
+/**
+ * 把 ELM327 返回的原始帧拼成完整 ISO-TP 报文。
+ *
+ * D4 ①级：连续帧序号（SN = PCI 低 4 位）必须从 1 起逐帧 +1（mod 16）。
+ * MES 5.4 源码 mes54r2-src/--/--.cs:4775-4781：`byte b = 33; ... list2[index][0] = b; b++;`
+ * （0x21 = SN 1，之后 0x22、0x23…），5.5 协议文档 docs/05-protocol.md:61-62 同口径。
+ * 接收侧是发送侧的镜像：SN 不连续 = 丢帧/串帧，必须报 BAD_FRAME，
+ * **不许静默拼接错位数据**（此前缺校验会把乱序帧拼成看似合法的成绩单）。
+ */
+function reassembleIsoTp(frames) {
     const out = [];
-    let pending = null; // { total, chunks:[] }
+    let pending = null; // { total, chunks:[], got, nextSn }
     for (const frame of frames) {
         const hex = frame.replace(/[^0-9A-Fa-f]/g, '');
         if (hex.length < 2) continue;
@@ -70,18 +79,44 @@ function cleanLines(buf) {
             pending = null;
         } else if (type === 0x1) {                // 首帧
             const len = ((pci & 0x0f) << 8) | parseInt(data.substr(0, 2), 16);
-            pending = { total: len, chunks: [data.slice(2)], got: data.length / 2 - 1 };
+            pending = { total: len, chunks: [data.slice(2)], got: data.length / 2 - 1, nextSn: 1 };
         } else if (type === 0x2 && pending) {     // 连续帧
+            const sn = pci & 0x0f;
+            const expected = pending.nextSn;
+            if (sn !== expected) {
+                pending = null;   // 整条多帧消息作废，绝不输出错位数据
+                throw new Elm327Error(
+                    `ISO-TP 连续帧序号不连续：期望 SN=${expected}，实得 SN=${sn}` +
+                    `（PCI=0x${pci.toString(16).padStart(2, '0')}）`,
+                    'BAD_FRAME');
+            }
             pending.chunks.push(data);
             pending.got += data.length / 2;
             if (pending.got >= pending.total) {
                 const all = pending.chunks.join('').slice(0, pending.total * 2);
                 out.push(hexToBytes(all));
                 pending = null;
+            } else {
+                pending.nextSn = (expected + 1) & 0x0f;
             }
         }
     }
     return out;
+}
+
+/**
+ * 校验 ISO-TP 连续帧序号序列是否连续（+1 mod 16）。
+ * MES ①级：--.cs:4775-4781 `byte b = 33; ... list2[index][0] = b; b++;`
+ * （首帧后第一个 CF 的 SN=1，其后逐帧 +1）。不连续 = 丢帧/串帧。
+ * @param {number[]} seq 连续帧序号数组
+ * @returns {boolean} 全部相邻序号连续（+1 mod 16）才为 true
+ */
+function validateFrameSequence(seq) {
+    if (!Array.isArray(seq) || seq.length < 2) return true;
+    for (let i = 1; i < seq.length; i++) {
+        if (seq[i] !== ((seq[i - 1] + 1) & 0x0f)) return false;
+    }
+    return true;
 }
 
 function hexToBytes(hex) {
@@ -141,6 +176,15 @@ class Elm327 {
         // request() 当时无互斥 → 三路收发交错，读到串帧垃圾后会被 merge 进配置写进 ECU。
         this.reqChain = Promise.resolve();
         port.on('data', (chunk) => this.#onData(chunk));
+        // Q3：监听端口 'error'（BridgePort 写失败会 emit + reject 双通道），
+        // 记录到 lastPortError 与诊断日志，保证写失败在协议层也可见、不静默。
+        // 写失败同时以 rejected promise 上抛给调用方（app 侧处理），两条路径不冲突。
+        if (typeof port.on === 'function') {
+            port.on('error', (e) => {
+                this.lastPortError = e;
+                this.#log('!! 端口错误：' + (e && e.message ? e.message : String(e)));
+            });
+        }
     }
 
     /**
@@ -239,12 +283,17 @@ class Elm327 {
         if (g.__apxLog.length > 4000) g.__apxLog.splice(0, g.__apxLog.length - 4000);
     }
 
-    #send(cmd, timeoutMs = ELM_TIMEOUT_MS) {
+    async #send(cmd, timeoutMs = ELM_TIMEOUT_MS) {
         this.log('>> ' + cmd);
         this.#log('>> ' + cmd);
         const sentAt = Date.now();
-        try { this.port.write(cmd + '\r'); } catch (e) {
-            return Promise.reject(new Elm327Error('写失败：' + e.message, 'WRITE'));
+        try {
+            const written = this.port.write(cmd + '\r');
+            // Q3：BridgePort.write 现在返回 promise（写失败上抛，不再 emit('error') 无人监听）。
+            // 同步写（MockAdapter/真实串口）返回 undefined，直接跳过；异步写必须 await 才能拿到失败。
+            if (written && typeof written.then === 'function') await written;
+        } catch (e) {
+            throw new Elm327Error('写失败：' + (e && e.message ? e.message : String(e)), 'WRITE');
         }
         return this.#nextSeg(timeoutMs, cmd, sentAt).catch(async (e) => {
             // 超时后不能把「迟到的上一条应答」留给下一条命令消费：
@@ -614,8 +663,12 @@ class Elm327 {
 
     /** 从 ELM327 响应里挑出流控帧（PCI 高 4 位 = 3） */
     #parseFlowControl(raw) {
+        // Q6：与 parseFrames:104-105 统一 —— respId 必须补零到 8 位再锚定行首剥离。
+        // 此前未 padStart：respId=0x18daf1 时只按 6 位剥，真实应答 18DAF1F1 头部剥不干净，
+        // PCI 读到半个 CAN ID → 流控帧解析错位。
+        const respIdHex = this.respId ? this.respId.toString(16).padStart(8, '0') : '';
         for (const line of cleanLines(raw)) {
-            const hex = line.replace(new RegExp('^' + (this.respId || '').toString(16), 'i'), '')
+            const hex = line.replace(new RegExp('^' + respIdHex, 'i'), '')
                 .replace(/[^0-9A-Fa-f]/g, '');
             if (hex.length < 2) continue;
             const pci = parseInt(hex.substr(0, 2), 16);
@@ -663,6 +716,7 @@ export {
     Elm327Error,
     PortLike,
     reassembleIsoTp,
+    validateFrameSequence,
     parseFrames,
     cleanLines,
     hexToBytes,

@@ -91,6 +91,8 @@ wss.on('connection', (ws) => {
         case 'open': {
           closeAll();
           const p = new SerialPort({ path: msg.port, baudRate: msg.baud || 38400, autoOpen: false });
+          // Q6：同一串口只注册一条 error 监听（覆盖 open 之前与打开之后）。
+          // 旧实现在 open 成功后又挂一条重复的 error 监听，同一错误会发两次 op:'error'。
           p.on('error', (e) => send(ws, { op: 'error', message: e.message }));
           try {
             await new Promise((res, rej) => p.open((e) => (e ? rej(e) : res())));
@@ -106,7 +108,6 @@ wss.on('connection', (ws) => {
             if (process.env.BRIDGE_LOG) console.log('[bridge] 桥转发', buf.length, '字节');
             send(ws, { op: 'data', hex: Buffer.from(buf).toString('hex') });
           });
-          sp.on('error', (e) => send(ws, { op: 'error', message: e.message }));
           sp.on('close', () => send(ws, { op: 'closed' }));
           return send(ws, { id, ok: true, port: msg.port, baud: msg.baud || 38400 });
         }

@@ -28,8 +28,17 @@ class InterfaceTester {
         this.rx = '';
         await sleep(450);
         this.rx = '';
-        // 2) 发送并等待本条应答
-        await this.bridge.writeText(cmd + '\r');
+        // 2) 发送并等待本条应答。Q5：await 所有写；写失败重试一次（桥接瞬时故障），
+        //    重试耗尽后抛错由 identify/test 记录，绝不静默吞。
+        for (let attempt = 0; ; attempt++) {
+            try {
+                await this.bridge.writeText(cmd + '\r');
+                break;
+            } catch (e) {
+                if (attempt >= 1) throw e;
+                await sleep(100);
+            }
+        }
         const t0 = Date.now();
         while (Date.now() - t0 < timeoutMs) {
             if (this.rx.includes('>')) {
@@ -38,13 +47,14 @@ class InterfaceTester {
             }
             await sleep(20);
         }
-        return this.rx;
+        throw new Error(`接口无应答（${cmd}，${timeoutMs}ms 超时）`);
     }
 
     async identify(spec) {
         const out = { kind: null, name: '', version: '', ok: false, log: [] };
         const push = (s) => out.log.push(s);
 
+        try {
         push(`正在复位适配器（${spec.name}）…`);
         let r = await this.exchange('ATZ', 4000);
         push(`ATZ → ${(r.trim().split('\r')[0] || '(无应答)').slice(0, 50)}`);
@@ -80,19 +90,30 @@ class InterfaceTester {
         } else {
             out.err = `未识别的接口（应答：${(id || '(无)').slice(0, 40).trim()}）`;
         }
+        } catch (e) {
+            // Q5：探测异常（写失败/超时）必须落到结论里，不许抛成未捕获异常或静默。
+            out.err = `接口探测失败：${e && e.message ? e.message : String(e)}`;
+            push(out.err);
+        }
         return out;
     }
 
-    /** 纯往返延迟：不计排空与收尾窗口 */
-    async latencyTest() {
+    /** 纯往返延迟：不计排空与收尾窗口；超时返回 null 让调用方判失败。 */
+    async latencyTest(timeoutMs = 3000) {
+        // Q5：先排空再写，避免迟到的上一条应答被当成自己的；所有写都 await。
         this.rx = '';
-        const t0 = Date.now();
+        await sleep(450);
+        this.rx = '';
         await this.bridge.writeText('ATI\r');
-        while (Date.now() - t0 < 3000) {
-            if (this.rx.includes('>')) return Date.now() - t0;
+        const t0 = Date.now();
+        while (Date.now() - t0 < timeoutMs) {
+            if (this.rx.includes('>')) {
+                await sleep(80);              // 与 exchange 一致的收尾窗口
+                return Date.now() - t0;
+            }
             await sleep(5);
         }
-        return Date.now() - t0;
+        return null;   // 不再把超时耗时伪装成延迟值
     }
 
     /** 完整测试：识别 + 延迟 + 结论 */
@@ -100,37 +121,53 @@ class InterfaceTester {
         const target = spec.transport === 'wifi' ? `${opts.host}:${opts.port}` : opts.port;
         const result = { spec, port: target, steps: [], ok: false };
         const step = (s) => { result.steps.push(s); return s; };
+        let opened = false;
 
         step(`正在打开 ${target}${opts.baud ? `（${opts.baud}bps）` : ''}…`);
         try {
             if (spec.transport === 'wifi') await this.bridge.tcpOpen(opts.host, opts.port);
             else await this.bridge.open(opts.port, opts.baud || spec.baud || 38400);
+            opened = true;
+            step('✓ 端口已打开');
+
+            // Q5：识别偶发未命中时重试一次；identify 自身已把异常写进 out.err。
+            let id = null;
+            for (let attempt = 0; attempt < 2; attempt++) {
+                id = await this.identify(spec);
+                if (id.ok || attempt === 1 || /探测失败/.test(id.err || '')) break;
+                step('识别未命中，重试一次…');
+            }
+            id.log.forEach(step);
+            result.identify = id;
+            if (!id.ok) {
+                step(`✗ ${id.err || '识别失败'}`);
+                result.error = id.err || '识别失败';
+                return result;
+            }
+            step(`✓ 识别为 ${id.name}${id.version ? '（' + id.version + '）' : ''}`);
+            if (id.warn) step(id.warn);
+
+            const lat = await this.latencyTest();
+            if (lat === null) {
+                step('✗ 端口往返延迟测试超时（无应答）');
+                result.error = '延迟测试超时';
+                return result;
+            }
+            step(`端口往返延迟 ${lat}ms${lat > 200 ? '（偏高，建议 USB 直连并调低缓冲）' : ''}`);
+            result.latency = lat;
+            step('✓ 测试通过，接口可用');
+            result.ok = true;
+            return result;
         } catch (e) {
-            step(`✗ 打开失败：${e.message}`);
-            result.error = e.message;
+            // 任何未预期异常都落到结论，不静默、不留悬空端口。
+            const msg = e && e.message ? e.message : String(e);
+            step(`✗ 测试异常：${msg}`);
+            result.error = msg;
             return result;
+        } finally {
+            // Q5：所有路径（成功/识别失败/异常/超时）都释放端口；close 自身失败不盖过主结论。
+            if (opened) await this.bridge.close().catch(() => {});
         }
-        step('✓ 端口已打开');
-
-        const id = await this.identify(spec);
-        id.log.forEach(step);
-        result.identify = id;
-        if (!id.ok) {
-            step(`✗ ${id.err || '识别失败'}`);
-            result.error = id.err || '识别失败';
-            await this.bridge.close();
-            return result;
-        }
-        step(`✓ 识别为 ${id.name}${id.version ? '（' + id.version + '）' : ''}`);
-        if (id.warn) step(id.warn);
-
-        const lat = await this.latencyTest();
-        step(`端口往返延迟 ${lat}ms${lat > 200 ? '（偏高，建议 USB 直连并调低缓冲）' : ''}`);
-        result.latency = lat;
-        step('✓ 测试通过，接口可用');
-        result.ok = true;
-        await this.bridge.close();
-        return result;
     }
 
     /** 扫描所有串口，找出可用接口 */

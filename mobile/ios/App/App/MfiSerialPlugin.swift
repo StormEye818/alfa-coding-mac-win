@@ -54,10 +54,32 @@ public class MfiSerialPlugin: CAPPlugin, CAPBridgedPlugin {
         guard let acc = EAAccessoryManager.shared().connectedAccessories.first(where: { Int($0.connectionID) == connId }) else {
             call.reject("配件已断开（connectionId=\(connId)）"); return
         }
-        // 协议串：显式指定优先，否则取配件声明的第一个（适配器一般只留一个 MFi 协议）
-        let proto = call.getString("protocol") ?? acc.protocolStrings.first
+        // 协议串选择（M1）：不再静默用 acc.protocolStrings.first。
+        // listPorts() 传给 JS 的是 protocolStrings[0]（配件自报的第一个），可能是非 OBD 的
+        // 辅助通道协议——用它开 EASession 会「打开成功但收不到 ELM 应答」。改为白名单优先：
+        //   1) com.obdlink / com.vgatemall 两个 OBD 主协议最高优先（MES iOS 字符串堆实证）；
+        //   2) 其次是 Info.plist 已声明的 16 个协议串（不扩张授权面，见修复规划 §4.4）；
+        //   3) 显式 protocol 只在第 2 层里做顺序微调，不能压过第 1 层；
+        //   4) 配件协议串与白名单全不匹配 → 明确 reject，绝不回退到 .first。
+        // 注意：下方 declared 必须与 Info.plist 的 UISupportedExternalAccessoryProtocols 保持一致。
+        let topPriority = ["com.obdlink", "com.vgatemall"]
+        let declared = [
+            "com.vgatemall.obd", "com.vgatemall", "com.vgate.vlinker", "com.vlinker",
+            "com.vlinker.obd", "com.obd2.elm327", "com.elm327.obd2", "com.obdlink",
+            "com.obdlink.obd", "com.obdlink.mx", "com.scantool.obdlink", "com.obdkey.obd2",
+            "com.obdkey", "com.cantiecar", "com.veepeak.obd", "com.carista.obd",
+        ]
+        let supported = Set(acc.protocolStrings)
+        var proto = topPriority.first { supported.contains($0) }
+        if proto == nil {
+            if let explicit = call.getString("protocol"), declared.contains(explicit), supported.contains(explicit) {
+                proto = explicit
+            } else {
+                proto = declared.first { supported.contains($0) }
+            }
+        }
         guard let proto = proto else {
-            call.reject("配件无协议串可开（\(acc.name)）"); return
+            call.reject("配件协议串不在白名单内，拒绝打开（\(acc.name)：\(acc.protocolStrings.joined(separator: ", "))）"); return
         }
         guard let session = EASession(accessory: acc, forProtocol: proto) else {
             call.reject("EASession 创建失败（协议 \(proto)）"); return

@@ -13,6 +13,9 @@ import { TcpSocket } from '@deedarb/capacitor-tcp-socket';
 import { BleClient, dataViewToHexString, hexStringToDataView } from '@capacitor-community/bluetooth-le';
 import { BluetoothSerial } from '@ascentio-it/capacitor-bluetooth-serial';
 import { registerPlugin, Capacitor } from '@capacitor/core';
+// 复用桌面端现成的 ELM 识别探针（ATZ / ATE0 / ATI，见 src/serial/detect.js:44-54）。
+// detect.js 只依赖 emitter.js 的 sleep，esbuild 打包进 vendor 不引入额外原生依赖。
+import { InterfaceTester } from '../../src/serial/detect.js';
 
 // iOS MFi External Accessory 通道（vLinker MS 等 MFi 认证适配器，见 ios/App/App/MfiSerialPlugin.swift）
 // 注意：ExternalAccessory 是 iOS 专有框架——Android/桌面无 MFi，仅 iOS 注册与调用
@@ -429,6 +432,98 @@ class MobileBridge {
     }
     log('listPorts →', out.length, '个蓝牙设备');
     return out;
+  }
+
+  /**
+   * 自动连接（③级扩展：MES 仍要用户选一个粗粒度连接类别，我们这里做到设备/端口全自动，
+   * 不宣称「与 MES 字节对齐」，只保证扩展自身正确。见修复规划 §4.3/§6.1-6）。
+   *
+   * 【硬约束 · 不可删】identify() 探针会发 ATZ 复位适配器，且每个候选探测结束都要 close 端口。
+   * 因此本方法只能在「未连接」时调用；若 this.port 非空则直接 reject ——
+   * 否则会把当前链路掐死，而 UI 仍显示"已连接"（根 app/app.js:415-418 审查 M9 已警示此坑）。
+   *
+   * 顺序：MFi(ea:) → BLE(ble:) → SPP(spp:) → WiFi(tcp:)；候选来自 listPorts()。
+   * 每个候选串行 connect() → identify()（复用 src/serial/detect.js:44-54，ATZ/ATE0/ATI），
+   * 首个 id.ok 即锁定该端口并把它连同解析出的 spec 返回；失败候选一律 close，不残留端口。
+   * 全部失败 → 抛 'OBD interface not detected!'，绝不回退模拟模式、绝不静默成功。
+   *
+   * opts 三个可注入钩子（默认值即真实实现，便于单测用假端口/假探针做证伪）：
+   *   listPorts()          → 候选数组（默认 this.listPorts()）
+   *   connect(candidate)   → 打开单个候选（默认按 path 前缀走 open()/tcpOpen()）
+   *   identify(spec)       → 探针，返回 { ok, kind, name, err }（默认 InterfaceTester.identify）
+   *
+   * @returns {Promise<{ok:true, path:string, identify:object, spec:object, candidate:object}>}
+   */
+  async autoConnect(opts = {}) {
+    if (this.port) {
+      throw new Error('autoConnect 仅可在未连接时调用：当前端口仍打开，请先断开（探针会发 ATZ 并 close 端口）');
+    }
+    const {
+      listPorts = () => this.listPorts(),
+      connect = (candidate) => this.#connectCandidate(candidate),
+      identify = (spec) => this.#probe(spec),
+    } = opts;
+
+    const candidates = (await listPorts()) || [];
+    const RANK = { 'ea:': 0, 'ble:': 1, 'spp:': 2, 'tcp:': 3 };
+    const kindOf = (p) => {
+      const m = /^(ea:|ble:|spp:|tcp:)/.exec(p || '');
+      return m ? m[1] : null;
+    };
+    // 只保留四种已知传输，按 MFi→BLE→SPP→WiFi 稳定排序（同类别保持 listPorts 原顺序）
+    const ordered = candidates
+      .map((c, i) => ({ c, i, k: kindOf(c && c.path) }))
+      .filter((x) => x.k !== null)
+      .sort((a, b) => (RANK[a.k] - RANK[b.k]) || (a.i - b.i))
+      .map((x) => x.c);
+
+    for (const cand of ordered) {
+      let locked = false;
+      try {
+        await this.close();
+        await connect(cand);
+        const spec = {
+          name: cand.friendly || cand.manufacturer || cand.path,
+          expect: cand.expect,
+        };
+        const id = await identify(spec);
+        if (id && id.ok) {
+          locked = true;   // 锁定：保留已打开的端口，交给上层 Elm327 复用
+          log('autoConnect 已锁定', cand.path, id.kind || '', id.name || '');
+          return { ok: true, path: cand.path, identify: id, spec: id, candidate: cand };
+        }
+        log('autoConnect 候选未识别', cand.path, (id && id.err) || '识别失败');
+      } catch (e) {
+        log('autoConnect 候选异常', cand.path, (e && e.message) || e);
+      } finally {
+        // 只有失败的候选才 close；成功锁定的端口留给上层，不能在这里掐断
+        if (!locked) await this.close().catch(() => {});
+      }
+    }
+    throw new Error('OBD interface not detected!');
+  }
+
+  /** autoConnect 默认 connect 钩子：按 path 前缀复用现有 open()/tcpOpen()，不改动它们的行为 */
+  async #connectCandidate(candidate) {
+    const path = candidate.path;
+    if (path.startsWith('tcp:')) {
+      const m = /^tcp:(.+):(\d{1,5})$/.exec(path);
+      if (!m) throw new Error('非法 WiFi 候选: ' + path);
+      await this.tcpOpen(m[1], Number(m[2]));
+    } else {
+      await this.open(path);
+    }
+  }
+
+  /** autoConnect 默认 identify 钩子：用 InterfaceTester 发 ATZ/ATE0/ATI；用完即摘掉它的 onData 包装，
+   *  避免接收缓存挂在桥上随正常运行无限增长（BridgePort 之后会链式接管 onData）。 */
+  async #probe(spec) {
+    const saved = this.onData;
+    try {
+      return await new InterfaceTester(this).identify(spec);
+    } finally {
+      this.onData = saved;
+    }
   }
 
   /** 无线适配器无主机侧波特率概念 */

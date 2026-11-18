@@ -34,7 +34,9 @@ class ProxiError extends Error {}
 class ProxiBlock {
     /** @param {Uint8Array} bytes 整个 DATA1 */
     constructor(bytes) {
-        if (!bytes || bytes.length < CRC_DATA_START) {
+        // MES 5.4 --.cs:37320 用 `Length < 26` 判空（裸块，同单位，已复核排除「头字节口径差」）。
+        // 我方原为 <25（=CRC_DATA_START）是真 off-by-one；CRC_DATA_START 仍是 CRC 计算起点，勿改。
+        if (!bytes || bytes.length < 26) {
             throw new ProxiError(`PROXI 块长度不足：${bytes ? bytes.length : 0}`);
         }
         this.bytes = Uint8Array.from(bytes);

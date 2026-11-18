@@ -5,7 +5,8 @@
  * 语义来源（实车闭环过，见 HANDOFF 2026-10-15 数值换算全量对齐）：
  *   value = (raw × scale + offset) / 10^decimals
  *   · raw 按 **大端** 装配（实车 `FF EF` → -17 → -1.06°，小端会算成 -4097）
- *   · `nums` 族按字节宽做两位补码（有符号）
+ *   · `nums` 族仅 1/2 字节按字节宽做补码（有符号）；3/4 字节只做无符号大端装配
+ *     （MES 5.5 decompiled.cs:749-769：补码仅 1B :749-752 / 2B :757-760；3B :762-765 / 4B :766-769 无符号）
  *   · format 串是 `family[,decimals[,scale[,offset[,mask]]]]` 编码，四要素必须整串解析
  *
  * format 族（来自诊断数据源 ResultFormat）：
@@ -141,11 +142,13 @@ function applyScale(raw, item) {
         return slice.map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
     }
 
-    // ---- 数值：大端装配 + nums 两位补码 + (raw×scale+offset)/10^decimals ----
+    // ---- 数值：大端装配 + (raw×scale+offset)/10^decimals ----
     let n = 0;
     for (const b of slice) n = n * 256 + b;
     const signed = spec.signed === true || fmt.startsWith('nums');
-    if (signed && n >= Math.pow(2, 8 * slice.length - 1)) n -= Math.pow(2, 8 * slice.length);
+    // MES 5.5 decompiled.cs:749-769 按字节数分派：补码只做 1 字节(:749-752) / 2 字节(:757-760)；
+    // 3 字节(:762-765) / 4 字节(:766-769) 即便带符号旗标也只装配成无符号大端数（bit31=1 为正）。
+    if (signed && slice.length <= 2 && n >= Math.pow(2, 8 * slice.length - 1)) n -= Math.pow(2, 8 * slice.length);
     n = n * (spec.scale ?? 1) + (spec.offset ?? 0);
     const dec = spec.decimals ?? 0;
     n = n / Math.pow(10, dec);

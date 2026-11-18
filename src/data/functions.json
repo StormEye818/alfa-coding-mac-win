@@ -1,5 +1,5 @@
 {
-  "note": "特殊功能（执行器测试 / 编程 / 调整）。已剔除里程表写入类条目。security.level=server 的本工具不支持。",
+  "note": "特殊功能（执行器测试 / 编程 / 调整）。已剔除里程表写入类条目。security.level=server 的本工具不支持。execManual=true = MES EXECMANUAL 旗标：该项为人工单步执行（BitResults 形如 0001ON|0002OFF|0002Abort，逐步 ON/OFF/Abort 由操作者确认），MES 确有此语义，字段保留待 G2 在 app 运行时接。intervalMs = 从 ResultFormat 的延时旗标解析出的基准等待毫秒（NOWAIT=0 / 0.5SEC=500 / 1SEC=1000 / 5SEC=5000（5.5 新增，CDCM1 四阀）/ 10SEC=10000 / 20SEC=20000 / 30SEC=30000 / 50SEC=50000 / 无旗标=2000），由 G2 在 app 运行时消费；本字段只是数据侧结构化，不代表已接进 app。",
   "source": "diag-data/data/params_all_55.tsv (CmdType=3/4/8/6, 952/949 模块)",
   "total": 618,
   "categories": [
@@ -20,7 +20,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Activate VIN lock",
@@ -35,7 +36,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Coil 1",
@@ -50,7 +52,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 500
         },
         {
           "name": "Coil 2",
@@ -65,7 +68,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 500
         },
         {
           "name": "Coil 3",
@@ -80,7 +84,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 500
         },
         {
           "name": "Coil 4",
@@ -95,7 +100,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 500
         },
         {
           "name": "Deactivate VIN lock",
@@ -110,7 +116,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -125,7 +132,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "EGR solenoid valve",
@@ -140,7 +148,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Electronic thermostat",
@@ -156,6 +165,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001100%",
             "000350%",
@@ -176,7 +186,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Fan 1st speed",
@@ -192,6 +203,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -211,7 +223,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Fuel supply circuit purge",
@@ -227,6 +240,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "0000Please turn car OFF, then press Y",
             "0000Please turn car ON, then press Y",
@@ -252,7 +266,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 500
         },
         {
           "name": "Lambda 1 heater (pre-cat.)",
@@ -267,7 +282,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 500
         },
         {
           "name": "Low temp. WCAC coolant pump",
@@ -283,6 +299,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -302,7 +319,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Oil level initialization",
@@ -317,7 +335,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Overboost counter reset",
@@ -332,7 +351,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Phonic wheel learn reset",
@@ -347,7 +367,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Replacement of intelligent alternator (IAM)",
@@ -362,7 +383,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Replacement of RPM sensor or distribution belt",
@@ -377,7 +399,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Replacement of timing sensor or cam",
@@ -392,7 +415,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Replacement of turbocharger",
@@ -407,7 +431,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Self-adaptation parameters reset",
@@ -422,7 +447,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Throttle position learning",
@@ -438,6 +464,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF0CLearned",
             "FF00Not learned",
@@ -468,7 +495,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "UniAir actuation electrovalve Cyl. 1",
@@ -483,7 +511,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "UniAir actuation electrovalve Cyl. 2",
@@ -498,7 +527,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "UniAir actuation electrovalve Cyl. 3",
@@ -513,7 +543,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "UniAir actuation electrovalve Cyl. 4",
@@ -528,7 +559,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Variable displacement engine oil pump",
@@ -543,7 +575,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN code write",
@@ -559,6 +592,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -821,7 +855,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "A/C Compressor relay",
@@ -836,7 +871,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Activate VIN lock",
@@ -851,7 +887,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Active grille shutter",
@@ -867,6 +904,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 20000,
           "options": [
             "0001Open",
             "0002Close",
@@ -886,7 +924,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Air flow meter sensor replacement",
@@ -901,7 +940,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Blow-by heater relay control",
@@ -916,7 +956,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Boost control solenoid",
@@ -931,7 +972,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Clutch pedal learning",
@@ -946,7 +988,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Clutch pedal learning (E6D)",
@@ -961,7 +1004,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Cruise control light",
@@ -977,6 +1021,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -996,7 +1041,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -1011,7 +1057,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Differential pressure sensor replacement (only for version with DPF)",
@@ -1026,7 +1073,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "EGR exchanger exclusion valve",
@@ -1041,7 +1089,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Engine temperature light",
@@ -1057,6 +1106,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -1077,6 +1127,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -1097,6 +1148,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -1117,6 +1169,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -1136,7 +1189,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Fuel high pressure regulator",
@@ -1151,7 +1205,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Glow plug preheating circuit test",
@@ -1167,6 +1222,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FFFF0000OK",
             "00010001Glow plug 1",
@@ -1198,6 +1254,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -1218,6 +1275,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF00Completed correctly",
             "FF01Engine running",
@@ -1239,6 +1297,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF00OK",
             "0101EGR valve control",
@@ -1264,6 +1323,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 9,
             "kind": "enum",
@@ -1480,6 +1540,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 9,
             "kind": "enum",
@@ -1696,6 +1757,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 9,
             "kind": "enum",
@@ -1912,6 +1974,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 9,
             "kind": "enum",
@@ -2128,6 +2191,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF00Completed correctly",
             "FF01Engine running",
@@ -2149,6 +2213,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF00OK",
             "0101EGR valve control",
@@ -2174,6 +2239,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "000330%",
             "000250%",
@@ -2195,6 +2261,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF01In progress",
             "FF02Learned",
@@ -2221,7 +2288,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "NOx sensor before NOx storage catalyst replacement",
@@ -2236,7 +2304,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "NOx storage catalyst (NSC) replacement",
@@ -2251,7 +2320,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Oil change",
@@ -2266,7 +2336,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Oil pressure light",
@@ -2282,6 +2353,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -2302,6 +2374,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -2322,6 +2395,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF00Completed correctly",
             "FF01Key turned to Stop or Start/Stop button pressed",
@@ -2356,7 +2430,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Particle filter replacement (E6D)",
@@ -2371,7 +2446,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Rail pressure sensor replacement",
@@ -2386,7 +2462,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Replacement of control unit and injectors",
@@ -2401,7 +2478,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Replacement of intelligent alternator (IAM)",
@@ -2416,7 +2494,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Replacement of Lambda sensor",
@@ -2431,7 +2510,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN code write",
@@ -2447,6 +2527,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -2710,6 +2791,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -2729,7 +2811,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Clutch pedal learning",
@@ -2745,6 +2828,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF01In progress",
             "FF02Learned",
@@ -2765,7 +2849,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 500
         },
         {
           "name": "Coil 2",
@@ -2780,7 +2865,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 500
         },
         {
           "name": "Coil 3",
@@ -2795,7 +2881,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 500
         },
         {
           "name": "Deactivate VIN lock",
@@ -2810,7 +2897,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -2825,7 +2913,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Evaporation control valve",
@@ -2840,7 +2929,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Fan 1st speed",
@@ -2856,6 +2946,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -2876,6 +2967,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -2895,7 +2987,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Ionization control module self-adaptation parameters reset",
@@ -2910,7 +3003,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Lambda 1 heater (after-cat.)",
@@ -2925,7 +3019,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Lambda 1 heater (pre-cat.)",
@@ -2940,7 +3035,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Motorised throttle",
@@ -2955,7 +3051,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Neutral signal learn",
@@ -2971,6 +3068,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF02OK",
             "0000Failed"
@@ -2989,7 +3087,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Phase variator control (exhaust)",
@@ -3005,6 +3104,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001100%",
             "000350%",
@@ -3026,6 +3126,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001100%",
             "000350%",
@@ -3046,7 +3147,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Self-adaptation parameters reset",
@@ -3062,6 +3164,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "warning": "After the reset of the self-adaptive parameters, or after workshop repairs with disconnection of battery or control unit reprogramming, remember to carry out climate control learn procedure (key on MAR with climate control on for one minute)."
         },
         {
@@ -3077,7 +3180,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Turbo vacuum valve",
@@ -3092,7 +3196,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN code write",
@@ -3108,6 +3213,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -3370,7 +3476,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "A/C Compressor relay",
@@ -3385,7 +3492,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Activate VIN lock",
@@ -3400,7 +3508,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Coil 4",
@@ -3415,7 +3524,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 500
         },
         {
           "name": "Coil 5",
@@ -3430,7 +3540,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 500
         },
         {
           "name": "Coil 6",
@@ -3445,7 +3556,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 500
         },
         {
           "name": "Deactivate VIN lock",
@@ -3460,7 +3572,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -3475,7 +3588,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Evaporation control valve",
@@ -3490,7 +3604,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Lambda 1 heater (after-cat.)",
@@ -3505,7 +3620,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Lambda 1 heater (pre-cat.)",
@@ -3520,7 +3636,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Motorised throttle",
@@ -3535,7 +3652,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Oil level initialization",
@@ -3550,7 +3668,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Phase variator control (exhaust)",
@@ -3566,6 +3685,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001100%",
             "000350%",
@@ -3587,6 +3707,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001100%",
             "000350%",
@@ -3608,6 +3729,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "warning": "After the reset of the self-adaptive parameters, or after workshop repairs with disconnection of battery or control unit reprogramming, remember to carry out climate control learn procedure (key on MAR with climate control on for one minute)."
         },
         {
@@ -3623,7 +3745,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Turbo vacuum valve",
@@ -3638,7 +3761,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN code write",
@@ -3654,6 +3778,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -3916,7 +4041,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         }
       ]
     },
@@ -3937,7 +4063,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Boot open",
@@ -3952,7 +4079,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 1000
         },
         {
           "name": "Deactivate VIN lock",
@@ -3967,7 +4095,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -3982,7 +4111,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Door lock",
@@ -3997,7 +4127,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 500
         },
         {
           "name": "Door unlock",
@@ -4012,7 +4143,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 500
         },
         {
           "name": "Doors status indicator",
@@ -4028,6 +4160,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -4048,6 +4181,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -4084,6 +4218,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -4104,6 +4239,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0012ON",
             "0034OFF",
@@ -4124,6 +4260,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -4144,6 +4281,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 1000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -4180,6 +4318,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -4200,6 +4339,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -4220,6 +4360,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -4239,7 +4380,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 500
         },
         {
           "name": "Indicators command",
@@ -4255,6 +4397,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -4290,6 +4433,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -4310,6 +4454,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -4330,6 +4475,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -4350,6 +4496,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -4370,6 +4517,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -4405,6 +4553,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 500,
           "options": [
             "0001Driver",
             "0002Passenger",
@@ -4428,6 +4577,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -4448,6 +4598,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -4468,6 +4619,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -4488,6 +4640,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF00OK",
             "FFFFFailed"
@@ -4507,6 +4660,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -4527,6 +4681,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -4547,6 +4702,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -4606,6 +4762,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -4665,6 +4822,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0012ON",
             "0034OFF",
@@ -4685,6 +4843,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0012ON",
             "0034OFF",
@@ -4705,6 +4864,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -4967,7 +5127,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN unlock",
@@ -4982,7 +5143,8 @@
             "text": "需要 5 位 PIN（离线可用）"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN unlock + 1040",
@@ -4997,7 +5159,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN unlock + 2705",
@@ -5012,7 +5175,8 @@
             "text": "需要服务器按 VIN 算密钥（27 05）→ 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Volumetric sensors sensitivity",
@@ -5028,6 +5192,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -5117,6 +5282,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -5136,7 +5302,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Boot open",
@@ -5151,7 +5318,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 1000
         },
         {
           "name": "Deactivate VIN lock",
@@ -5166,7 +5334,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -5181,7 +5350,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Door lock",
@@ -5196,7 +5366,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 500
         },
         {
           "name": "Door unlock",
@@ -5211,7 +5382,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 500
         },
         {
           "name": "Doors status indicator",
@@ -5227,6 +5399,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -5247,6 +5420,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -5283,6 +5457,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -5303,6 +5478,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0012ON",
             "0034OFF",
@@ -5323,6 +5499,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -5343,6 +5520,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 1000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -5379,6 +5557,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -5399,6 +5578,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -5419,6 +5599,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -5438,7 +5619,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 500
         },
         {
           "name": "Indicators command",
@@ -5454,6 +5636,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -5489,6 +5672,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -5509,6 +5693,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -5529,6 +5714,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -5549,6 +5735,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -5569,6 +5756,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -5604,6 +5792,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 500,
           "options": [
             "0001Driver",
             "0002Passenger",
@@ -5627,6 +5816,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -5647,6 +5837,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -5667,6 +5858,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -5687,6 +5879,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF00OK",
             "FFFFFailed"
@@ -5706,6 +5899,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -5726,6 +5920,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -5746,6 +5941,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -5805,6 +6001,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -5864,6 +6061,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0012ON",
             "0034OFF",
@@ -5884,6 +6082,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0012ON",
             "0034OFF",
@@ -5904,6 +6103,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -6167,6 +6367,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -6256,6 +6457,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -6275,7 +6477,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Boot open",
@@ -6290,7 +6493,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 1000
         },
         {
           "name": "Deactivate VIN lock",
@@ -6305,7 +6509,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -6320,7 +6525,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Door lock",
@@ -6335,7 +6541,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 500
         },
         {
           "name": "Door unlock",
@@ -6350,7 +6557,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 500
         },
         {
           "name": "Doors status indicator",
@@ -6366,6 +6574,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -6386,6 +6595,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001Left",
             "0002Right",
@@ -6408,6 +6618,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -6428,6 +6639,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001Left",
             "0002Right",
@@ -6450,6 +6662,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -6470,6 +6683,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 1000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -6490,6 +6704,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -6510,6 +6725,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001Left",
             "0002Right",
@@ -6531,7 +6747,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 500
         },
         {
           "name": "Indicators command",
@@ -6547,6 +6764,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "0404Enabled",
             "0400Disabled"
@@ -6566,6 +6784,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001Left",
             "0002Right",
@@ -6588,6 +6807,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -6608,6 +6828,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -6628,6 +6849,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF00Normal power",
             "FF01Low power (logistic)"
@@ -6647,6 +6869,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 500,
           "options": [
             "0001Driver",
             "0002Passenger",
@@ -6670,6 +6893,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -6690,6 +6914,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -6710,6 +6935,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0012ON",
             "0034OFF",
@@ -6730,6 +6956,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF00OK",
             "FFFFFailed"
@@ -6749,6 +6976,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -6769,6 +6997,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -6789,6 +7018,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "07000.8 deg.",
             "07010.9 deg.",
@@ -6812,6 +7042,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "07000.8 deg.",
             "07010.9 deg.",
@@ -6835,6 +7066,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0012ON",
             "0034OFF",
@@ -6855,6 +7087,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0012ON",
             "0034OFF",
@@ -6875,6 +7108,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF20 ",
             "FF2E.",
@@ -6932,6 +7166,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "0F0030%",
             "0F0140%",
@@ -6960,6 +7195,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -6979,7 +7215,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Brake lights",
@@ -6995,6 +7232,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -7014,7 +7252,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -7029,7 +7268,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Rear fog lights",
@@ -7045,6 +7285,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -7065,6 +7306,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -7085,6 +7327,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -7105,6 +7348,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -7125,6 +7369,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -7145,6 +7390,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -7165,6 +7411,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF20 ",
             "FF2E.",
@@ -7228,6 +7475,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -7247,7 +7495,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Activate VIN lock",
@@ -7262,7 +7511,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Airbag control light",
@@ -7278,6 +7528,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -7297,7 +7548,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Dashboard illumination",
@@ -7313,6 +7565,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001100%",
             "000250%",
@@ -7334,7 +7587,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock",
@@ -7349,7 +7603,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -7364,7 +7619,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "EBD/Parking brake control light",
@@ -7380,6 +7636,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -7400,6 +7657,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -7420,6 +7678,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -7440,6 +7699,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -7460,6 +7720,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -7480,6 +7741,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -7500,6 +7762,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -7520,6 +7783,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -7540,6 +7804,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -7560,6 +7825,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -7580,6 +7846,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -7600,6 +7867,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -7619,7 +7887,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Speedometer",
@@ -7635,6 +7904,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001100%",
             "000250%",
@@ -7657,6 +7927,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -7677,6 +7948,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -7940,6 +8212,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -7959,7 +8232,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Activate VIN lock",
@@ -7974,7 +8248,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Airbag control light",
@@ -7990,6 +8265,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -8009,7 +8285,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Dashboard illumination",
@@ -8025,6 +8302,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001100%",
             "000250%",
@@ -8046,7 +8324,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock",
@@ -8061,7 +8340,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -8076,7 +8356,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "ESP control light",
@@ -8092,6 +8373,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -8112,6 +8394,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -8132,6 +8415,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF000"
           ]
@@ -8150,6 +8434,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -8170,6 +8455,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -8190,6 +8476,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -8210,6 +8497,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF000"
           ]
@@ -8228,6 +8516,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -8247,7 +8536,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 1000
         },
         {
           "name": "Steering failure control light",
@@ -8263,6 +8553,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -8283,6 +8574,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF20 ",
             "FF2E.",
@@ -8346,6 +8638,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -8393,6 +8686,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -8428,6 +8722,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -8463,6 +8758,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -8498,6 +8794,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -8533,6 +8830,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -8568,6 +8866,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -10127,6 +10426,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -10162,6 +10462,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -10197,6 +10498,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -10232,6 +10534,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -10267,6 +10570,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -10302,6 +10606,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -10337,6 +10642,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -10384,6 +10690,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -10419,6 +10726,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -10454,6 +10762,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -10489,6 +10798,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -10524,6 +10834,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -10559,6 +10870,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -10594,6 +10906,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -10629,6 +10942,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -10664,6 +10978,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -10699,6 +11014,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -10734,6 +11050,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -10781,6 +11098,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -10816,6 +11134,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -10851,6 +11170,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -10922,6 +11242,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -10957,6 +11278,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -10992,6 +11314,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -11027,6 +11350,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -11062,6 +11386,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -11097,6 +11422,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "warning": "DO NOT INTERRUPT the procedure once it has started. The key should be ON/MAR and Engine OFF. After successfull execution of the procedure turn your key to OFF and wait at least 60 seconds before turning it back ON.  NOTE: On some models (GIULIA, STELVIO) the ABS module may be reset during PROXI procedure. You will have to connect to ABS mnodule and perform all calibration procedures."
         },
         {
@@ -11113,6 +11439,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -11148,6 +11475,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -11183,6 +11511,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -11230,6 +11559,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -11265,6 +11595,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -11300,6 +11631,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -11335,6 +11667,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -11370,6 +11703,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -11405,6 +11739,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -11524,6 +11859,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -11559,6 +11895,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -11600,6 +11937,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -11619,7 +11957,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock",
@@ -11634,7 +11973,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -11649,7 +11989,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Diagnostics solenoid valve",
@@ -11664,7 +12005,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "EBD control light",
@@ -11680,6 +12022,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -11700,6 +12043,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001Apply",
             "0002Release"
@@ -11719,7 +12063,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Exit EPB maintenance mode",
@@ -11734,7 +12079,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Front left drain valve",
@@ -11749,7 +12095,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Front left load valve",
@@ -11764,7 +12111,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Front right drain valve",
@@ -11779,7 +12127,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Front right load valve",
@@ -11794,7 +12143,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Hill holder failure indicator",
@@ -11810,6 +12160,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -11830,6 +12181,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 500,
           "warning": "Do not execute the procedure without opening the bleeder!"
         },
         {
@@ -11846,6 +12198,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 500,
           "warning": "Do not execute the procedure without opening the bleeder!"
         },
         {
@@ -11862,6 +12215,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 500,
           "warning": "Do not execute the procedure without opening the bleeder!"
         },
         {
@@ -11878,6 +12232,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 500,
           "warning": "Do not execute the procedure without opening the bleeder!"
         },
         {
@@ -11894,6 +12249,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 500,
           "warning": "Do not execute the procedure without opening the bleeder!"
         },
         {
@@ -11910,6 +12266,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 500,
           "warning": "Do not execute the procedure without opening the bleeder!"
         },
         {
@@ -11926,6 +12283,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 500,
           "warning": "Do not execute the procedure without opening the bleeder!"
         },
         {
@@ -11941,7 +12299,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 500
         },
         {
           "name": "Hydraulic unit bleed",
@@ -11956,7 +12315,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 500
         },
         {
           "name": "Hydraulic unit bleed (Simulator)",
@@ -11971,7 +12331,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 500
         },
         {
           "name": "Lateral and longitudinal acceleration sensor calibration",
@@ -11987,6 +12348,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF00OK",
             "2020Failed - Vehicle is not standstill",
@@ -12011,6 +12373,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF00OK",
             "0000Failed"
@@ -12029,7 +12392,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Rear left EPB motor",
@@ -12045,6 +12409,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001Apply",
             "0002Release"
@@ -12064,7 +12429,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Rear right drain valve",
@@ -12079,7 +12445,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Rear right EPB motor",
@@ -12095,6 +12462,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001Apply",
             "0002Release"
@@ -12114,7 +12482,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Reset steering angle",
@@ -12130,6 +12499,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF00OK",
             "0000Failed"
@@ -12149,6 +12519,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 2,
             "kind": "enum",
@@ -12202,7 +12573,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Traction solenoid valve (pilot) 1",
@@ -12217,7 +12589,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Traction solenoid valve (pilot) 2",
@@ -12232,7 +12605,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Traction solenoid valve (primary) 1",
@@ -12247,7 +12621,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Traction solenoid valve (primary) 2",
@@ -12262,7 +12637,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN code write",
@@ -12278,6 +12654,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -12547,6 +12924,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "0100Calibration of accelerometer 710/1 failed",
             "0200Calibration of accelerometer 710/2 failed",
@@ -12568,7 +12946,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock",
@@ -12583,7 +12962,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -12598,7 +12978,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Front left valve",
@@ -12613,7 +12994,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 5000
         },
         {
           "name": "Front right valve",
@@ -12628,7 +13010,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 5000
         },
         {
           "name": "Rear left valve",
@@ -12643,7 +13026,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 5000
         },
         {
           "name": "Rear right valve",
@@ -12658,7 +13042,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 5000
         },
         {
           "name": "VIN code write",
@@ -12674,6 +13059,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF20 ",
             "FF2E.",
@@ -12731,6 +13117,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001Pre-intervention",
             "0003Intervention",
@@ -12751,7 +13138,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Active alignment stage 1 (mirror in forward position)",
@@ -12767,6 +13155,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF000000OK, Please execute alignment stage 1",
             "FF000100OK, Please execute alignment stage 2",
@@ -12796,6 +13185,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF000000OK, Please execute alignment stage 1",
             "FF000100OK, Please execute alignment stage 2",
@@ -12825,6 +13215,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF000000OK, Please execute alignment stage 1",
             "FF000100OK, Please execute alignment stage 2",
@@ -12854,6 +13245,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "warning": "DO NOT EXECUTE WITHOUT SPECIAL RADAR CALIBRATION EQUIPMENT!!!"
         },
         {
@@ -12870,6 +13262,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "warning": "DO NOT EXECUTE WITHOUT SPECIAL RADAR CALIBRATION EQUIPMENT!!!"
         },
         {
@@ -12885,7 +13278,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -12900,7 +13294,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "FCW control light",
@@ -12916,6 +13311,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -12936,6 +13332,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -13198,7 +13595,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Body height wheelhouse edge (front left)",
@@ -13214,6 +13612,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 2,
             "kind": "number",
@@ -13244,6 +13643,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 2,
             "kind": "number",
@@ -13274,6 +13674,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 2,
             "kind": "number",
@@ -13304,6 +13705,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 2,
             "kind": "number",
@@ -13334,6 +13736,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 2,
             "kind": "number",
@@ -13364,7 +13767,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -13379,7 +13783,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Target frame calibration",
@@ -13395,6 +13800,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FFFFFFFFCompleted correctly",
             "FFFF0001In progress",
@@ -13416,6 +13822,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -13678,7 +14085,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Clutch calibration",
@@ -13694,6 +14102,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF01OK",
             "FF02In progress",
@@ -13714,7 +14123,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -13729,7 +14139,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Gearbox learn",
@@ -13745,6 +14156,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF01Not available",
             "FF02In progress",
@@ -13767,6 +14179,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF01Not available",
             "FF02In progress",
@@ -13789,6 +14202,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF01Not available",
             "FF02In progress",
@@ -13811,6 +14225,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF01OK",
             "FF02In progress",
@@ -13832,6 +14247,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -14100,7 +14516,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock",
@@ -14115,7 +14532,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -14130,7 +14548,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN code write",
@@ -14146,6 +14565,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -14409,6 +14829,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001Active",
             "0002OFF",
@@ -14428,7 +14849,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock",
@@ -14443,7 +14865,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -14458,7 +14881,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN code write",
@@ -14474,6 +14898,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -14737,6 +15162,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF00Performed",
             "FFFFNot performed"
@@ -14756,6 +15182,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF00Not active",
             "FF01Active",
@@ -14775,7 +15202,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Activate VIN lock",
@@ -14790,7 +15218,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Cabin Equalization Version",
@@ -14805,7 +15234,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock",
@@ -14820,7 +15250,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -14835,7 +15266,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "ECU Current Internal Settings",
@@ -14850,7 +15282,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "List of Stored Languages",
@@ -14865,7 +15298,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Rear camera brightness",
@@ -14881,6 +15315,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -15509,7 +15944,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Supplier Configuration Data",
@@ -15524,7 +15960,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Sync SDARS module",
@@ -15539,7 +15976,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Tomtom Maps Data",
@@ -15554,7 +15992,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Tomtom MUID Data",
@@ -15569,7 +16008,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Video Input Setting",
@@ -15584,7 +16024,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN code write",
@@ -15600,6 +16041,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -15862,7 +16304,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock",
@@ -15877,7 +16320,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -15892,7 +16336,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Read touch pad configuration",
@@ -15907,7 +16352,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Touch Pad Configuration Status",
@@ -15923,6 +16369,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -15957,7 +16404,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Touch pad self test",
@@ -15972,7 +16420,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN code write",
@@ -15988,6 +16437,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -16250,7 +16700,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock",
@@ -16265,7 +16716,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -16280,7 +16732,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN code write",
@@ -16296,6 +16749,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF20 ",
             "FF2E.",
@@ -16358,7 +16812,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Activate VIN lock",
@@ -16373,7 +16828,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Additional heater relay 1",
@@ -16389,6 +16845,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -16409,6 +16866,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -16429,6 +16887,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 20000,
           "options": [
             "0001100%",
             "00020%",
@@ -16448,7 +16907,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -16463,7 +16923,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Electric fan control",
@@ -16479,6 +16940,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001100%",
             "000250%",
@@ -16500,6 +16962,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF00OK",
             "FF88Failed",
@@ -16520,6 +16983,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 50000,
           "options": [
             "0001100%",
             "000350%",
@@ -16541,6 +17005,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 50000,
           "options": [
             "0001100%",
             "000350%",
@@ -16562,6 +17027,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 20000,
           "options": [
             "0001100%",
             "000350%",
@@ -16583,6 +17049,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 20000,
           "options": [
             "0001100%",
             "000350%",
@@ -16604,6 +17071,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 50000,
           "options": [
             "0001100%",
             "000350%",
@@ -16625,6 +17093,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 50000,
           "options": [
             "0001100%",
             "000350%",
@@ -16646,6 +17115,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 20000,
           "options": [
             "0001100%",
             "000350%",
@@ -16667,6 +17137,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001High",
             "0003Med",
@@ -16689,6 +17160,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001High",
             "0003Med",
@@ -16711,6 +17183,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -16747,6 +17220,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -17009,7 +17483,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock",
@@ -17024,7 +17499,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -17039,7 +17515,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "PROXI 2024",
@@ -17054,7 +17531,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Seat heater (driver)",
@@ -17070,6 +17548,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -17090,6 +17569,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -17110,6 +17590,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -17146,6 +17627,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF02Failed",
             "FF01In progress",
@@ -17165,7 +17647,8 @@
             "text": "需要服务器按 VIN 算密钥（27 05）→ 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN code write",
@@ -17181,6 +17664,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -17443,7 +17927,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN unlock3 +vinlock",
@@ -17458,7 +17943,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Activate VIN lock",
@@ -17473,7 +17959,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock",
@@ -17488,7 +17975,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -17503,7 +17991,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN code write",
@@ -17519,6 +18008,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -17787,7 +18277,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Classification number/version",
@@ -17803,6 +18294,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 3,
             "kind": "number",
@@ -17825,7 +18317,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -17840,7 +18333,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "First calibration",
@@ -17856,6 +18350,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF03Failed",
             "FF02In progress",
@@ -17878,6 +18373,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF03Failed",
             "FF02In progress",
@@ -17899,7 +18395,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN code write",
@@ -17915,6 +18412,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -18177,7 +18675,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock",
@@ -18192,7 +18691,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -18207,7 +18707,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Gear selector lever LEDs",
@@ -18223,6 +18724,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001P",
             "0002R",
@@ -18246,6 +18748,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -18508,7 +19011,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Actuator base adjustment",
@@ -18524,6 +19028,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF20Completed",
             "FF21Aborted",
@@ -18550,7 +19055,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -18565,7 +19071,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Gearbox lever position learn",
@@ -18581,6 +19088,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF00OK",
             "FFFFNot OK"
@@ -18600,6 +19108,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "00FF0003Oil Temperature low",
             "00FF0004Oil Temperature high",
@@ -18631,6 +19140,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF02In progress",
             "FF00Failed",
@@ -18650,7 +19160,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN code write",
@@ -18666,6 +19177,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -18934,7 +19446,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Calibrate closed position",
@@ -18950,6 +19463,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF00Completed correctly",
             "FF01Drive motor overcurrent",
@@ -18993,6 +19507,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF00Completed correctly",
             "FF01Drive motor overcurrent",
@@ -19035,7 +19550,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -19050,7 +19566,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Drive motor feedback",
@@ -19065,7 +19582,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Drive motor PWM",
@@ -19080,7 +19598,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "ECU temperature",
@@ -19095,7 +19614,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Latch motor feedback",
@@ -19110,7 +19630,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Latch position switch",
@@ -19126,6 +19647,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "4040Closed",
             "4000Open"
@@ -19145,6 +19667,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF03Open",
             "FF00Closed",
@@ -19164,7 +19687,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Liftgate status",
@@ -19180,6 +19704,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF01Open",
             "FF05Closed",
@@ -19206,6 +19731,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "1010Closed",
             "1000Open"
@@ -19225,6 +19751,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "2020Closed",
             "2000Open"
@@ -19244,6 +19771,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -19512,7 +20040,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock",
@@ -19527,7 +20056,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -19542,7 +20072,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Injectors",
@@ -19557,7 +20088,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Pump relay control",
@@ -19573,6 +20105,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0012Pump",
             "0034Return",
@@ -19592,7 +20125,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Urea/AdBlue first fill reset",
@@ -19607,7 +20141,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Urea/AdBlue heating component replacement",
@@ -19622,7 +20157,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 10000
         },
         {
           "name": "Urea/AdBlue injector 1 reset",
@@ -19637,7 +20173,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Urea/AdBlue pressure line heater",
@@ -19652,7 +20189,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Urea/AdBlue pump reset",
@@ -19667,7 +20205,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Urea/AdBlue system refill",
@@ -19682,7 +20221,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 10000
         },
         {
           "name": "Urea/AdBlue tank reset",
@@ -19697,7 +20237,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN code write",
@@ -19713,6 +20254,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -19981,7 +20523,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock",
@@ -19996,7 +20539,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -20011,7 +20555,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Mirror signal light",
@@ -20027,6 +20572,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -20046,7 +20592,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN code write",
@@ -20062,6 +20609,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -20324,7 +20872,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN lock",
@@ -20339,7 +20888,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN unlock",
@@ -20354,7 +20904,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN unlock + 2705",
@@ -20369,7 +20920,8 @@
             "text": "需要服务器按 VIN 算密钥（27 05）→ 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN unlock2",
@@ -20384,7 +20936,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN unlock3 +vinlock",
@@ -20399,7 +20952,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN unlock4",
@@ -20414,7 +20968,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN write",
@@ -20429,7 +20984,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         }
       ]
     },
@@ -20450,7 +21006,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock",
@@ -20465,7 +21022,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -20480,7 +21038,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Enable FOBIKs",
@@ -20496,6 +21055,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF00OK, FOBIK detected",
             "FF01Failed, No transponder detected",
@@ -20529,6 +21089,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 4,
             "kind": "enum",
@@ -20648,6 +21209,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 4,
             "kind": "enum",
@@ -20767,6 +21329,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 2,
             "kind": "enum",
@@ -20856,6 +21419,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF0F0001OK, RF Key 1 learned",
             "FF0F0002OK, RF Key 2 learned",
@@ -20902,6 +21466,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 4,
             "kind": "enum",
@@ -21021,6 +21586,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 4,
             "kind": "enum",
@@ -21140,6 +21706,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 2,
             "kind": "enum",
@@ -21229,6 +21796,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0013ON",
             "0024OFF",
@@ -21249,6 +21817,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -21517,7 +22086,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock",
@@ -21532,7 +22102,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -21547,7 +22118,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Headlight actuators (CENTER)",
@@ -21563,6 +22135,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -21583,6 +22156,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -21603,6 +22177,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -21623,6 +22198,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -21643,6 +22219,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -21663,6 +22240,7 @@
           },
           "needsUserInput": false,
           "execManual": true,
+          "intervalMs": 2000,
           "options": [
             "0001ON",
             "0002OFF",
@@ -21682,7 +22260,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN code write",
@@ -21698,6 +22277,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -21966,7 +22546,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock",
@@ -21981,7 +22562,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -21996,7 +22578,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN code write",
@@ -22012,6 +22595,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -22274,7 +22858,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock",
@@ -22289,7 +22874,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -22304,7 +22890,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Fully open the splitters",
@@ -22320,6 +22907,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF00Completed correctly",
             "FF01In progress",
@@ -22340,6 +22928,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF00Completed correctly",
             "FF01In progress",
@@ -22360,6 +22949,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -22628,7 +23218,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock",
@@ -22643,7 +23234,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -22658,7 +23250,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Tow hook",
@@ -22674,6 +23267,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -22709,6 +23303,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -22971,7 +23566,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock",
@@ -22986,7 +23582,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -23001,7 +23598,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Tow hook",
@@ -23017,6 +23615,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "enum",
@@ -23052,6 +23651,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -23320,7 +23920,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock",
@@ -23335,7 +23936,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -23350,7 +23952,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Position sensor calibration",
@@ -23366,6 +23969,7 @@
           },
           "needsUserInput": false,
           "execManual": false,
+          "intervalMs": 2000,
           "options": [
             "FF01Vehicle speed",
             "FF02Steering wheel effort",
@@ -23390,6 +23994,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -23659,6 +24264,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 4,
             "kind": "date"
@@ -23680,7 +24286,8 @@
             "text": "无需安全访问"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Service interval",
@@ -23696,6 +24303,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "number",
@@ -23726,6 +24334,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 1,
             "kind": "number",
@@ -23787,7 +24396,8 @@
           "desc": "通过调大保养周期并执行保养归零，重新启用仪表的保养提醒显示。",
           "warning": "本功能不改变「剩余保养次数」计数器（出厂 9，禁止写入更大值）。它恢复的是仪表的 Service due 倒计时显示。若需把次数补回 9，需联系经销商。",
           "notes": "实现依据：保养归零例程的说明原文写明 \"You can re-enable the function by increasing the service interval value\"。流程 = 读 22 28 03 → 写 2E 28 03（单位 500km/步）→ 2F 55 69 01 → 校验 22 01 01。",
-          "added": true
+          "added": true,
+          "intervalMs": 2000
         }
       ]
     },
@@ -23808,7 +24418,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock",
@@ -23823,7 +24434,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -23838,7 +24450,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN code write",
@@ -23854,6 +24467,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",
@@ -24122,7 +24736,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock",
@@ -24137,7 +24752,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "Deactivate VIN lock V2",
@@ -24152,7 +24768,8 @@
             "text": "需要服务器按 VIN 算密钥 → 本工具不支持"
           },
           "needsUserInput": false,
-          "execManual": false
+          "execManual": false,
+          "intervalMs": 2000
         },
         {
           "name": "VIN code write",
@@ -24168,6 +24785,7 @@
           },
           "needsUserInput": true,
           "execManual": false,
+          "intervalMs": 2000,
           "input": {
             "bytes": 17,
             "kind": "enum",

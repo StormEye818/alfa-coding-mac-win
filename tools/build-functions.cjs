@@ -46,6 +46,7 @@ function parseFlags(rf) {
     const flags = {
         readNotes: false, execManual: false, security: null,
         userEntry: null, odometer: false, disconnect: false, proxi: false, func: false,
+        intervalMs: 2000,
     };
     const s = String(rf || '');
     if (/READNOTES/i.test(s)) flags.readNotes = true;
@@ -54,6 +55,11 @@ function parseFlags(rf) {
     if (/DISCONN/i.test(s)) flags.disconnect = true;
     if (/PROXYPROC/i.test(s)) flags.proxi = true;
     if (/\bFUNC\b|FUNCEX/i.test(s)) flags.func = true;
+    // 延时旗标（MES FuncSpec）：与 app 运行时 interMs 同口径（app.js:2128-2135 的 0.5SEC/1SEC 写法），
+    // 5.5 新增 5SEC（CDCM1 四个阀）→ 5000ms，此前未解析会落回 2s 默认。NOWAIT 最后覆盖为 0。
+    const secFlag = /(\d+(?:\.\d+)?)SEC/i.exec(s);
+    if (secFlag) flags.intervalMs = Math.round(parseFloat(secFlag[1]) * 1000);
+    if (/NOWAIT/i.test(s)) flags.intervalMs = 0;
     const sec = /SECURITY(0529V2EX|0529V2|0529|29)/i.exec(s);
     if (sec) flags.security = 'SECURITY' + sec[1].toUpperCase();
     const ue = /RWUSERENTRY(NUM29|NUM|29W|29H|29|2|)/i.exec(s);
@@ -153,6 +159,7 @@ function build() {
             security: sec,
             needsUserInput: flags.userEntry !== null,
             execManual: flags.execManual,
+            intervalMs: flags.intervalMs,
         };
         // 命令模板自带 `27 05/06`（服务器密钥路径）的条目：即便数据侧没打 SECURITY 旗标，
         // 也必须标成需服务器密钥 —— 否则界面允许点，执行时必被 NRC 拒（2026-10-18 审查 L8）
@@ -200,6 +207,8 @@ function build() {
         const catName = CAT[old.module] || `其它（${old.module}）`;
         let cat = funcs.find((f) => f.category === catName);
         if (!cat) { cat = { category: catName, count: 0, items: [] }; funcs.push(cat); }
+        // 人工 workflow 项没有数据源旗标，补默认延时，保证每项都有 intervalMs 字段
+        if (old.intervalMs === undefined) old.intervalMs = 2000;
         cat.items.push(old);
         cat.count++;
         generatedKeys.add(key);
@@ -208,7 +217,7 @@ function build() {
     funcs.sort((a, b) => b.count - a.count);
 
     fs.writeFileSync(path.join(OUT, 'functions.json'), JSON.stringify({
-        note: '特殊功能（执行器测试 / 编程 / 调整）。已剔除里程表写入类条目。security.level=server 的本工具不支持。',
+        note: '特殊功能（执行器测试 / 编程 / 调整）。已剔除里程表写入类条目。security.level=server 的本工具不支持。execManual=true = MES EXECMANUAL 旗标：该项为人工单步执行（BitResults 形如 0001ON|0002OFF|0002Abort，逐步 ON/OFF/Abort 由操作者确认），MES 确有此语义，字段保留待 G2 在 app 运行时接。intervalMs = 从 ResultFormat 的延时旗标解析出的基准等待毫秒（NOWAIT=0 / 0.5SEC=500 / 1SEC=1000 / 5SEC=5000（5.5 新增，CDCM1 四阀）/ 10SEC=10000 / 20SEC=20000 / 30SEC=30000 / 50SEC=50000 / 无旗标=2000），由 G2 在 app 运行时消费；本字段只是数据侧结构化，不代表已接进 app。',
         source: 'diag-data/data/params_all_55.tsv (CmdType=3/4/8/6, 952/949 模块)',
         total: funcs.reduce((n, f) => n + f.count, 0),
         categories: funcs,

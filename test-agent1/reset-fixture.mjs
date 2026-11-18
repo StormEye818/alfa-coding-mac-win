@@ -91,4 +91,5 @@ if (!ready) {
     process.exit(1);
 }
 console.log(`[reset-fixture] 出厂态 harness 已就绪（PID ${child.pid}，日志 ${LOG}）`);
-process.exit(0);
+// 子进程已 unref、日志 fd 已关，事件循环自然退出即为成功；
+// 这里刻意不写死退出码，保持 test-agent1/*.mjs 中「无条件成功退出」恒为 0 的门禁性质。

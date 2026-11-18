@@ -112,7 +112,23 @@ npm run dist:mac           # macOS dmg
 npm run dist:win           # Windows NSIS（arm64 Mac 需设 ELECTRON_BUILDER_NSIS_DIR=.nsis-arm64）
 ```
 
-测试：`npm test`（语法门禁 + 协议层单测）；`test-agent1/`（61 项端到端回归，需先起 `node bridge/server.js`，再起模拟车 `node sandbox/harness.mjs`）。
+测试：
+
+```bash
+npm test          # 语法门禁 + 单测（离线，含 app-logic 真断言）
+npm run align:mes # MES 字节级对齐门禁（全 A / exit 0；非 A 时退出码区分前置未满足与真缺陷）
+npm run test:car  # 车自检（离线）
+npm run test:e2e  # 61 项端到端回归（需先起桥与模拟车，见下）
+```
+
+`test:e2e` 前置（缺一即失败、退出码非 0）：
+
+```bash
+node bridge/server.js       # 终端 1：串口/TCP 桥，监听 8850
+node sandbox/harness.mjs    # 终端 2：模拟车，监听 35001
+```
+
+两个进程就绪后再在终端 3 跑 `npm run test:e2e`；六个脚本顺序执行、任一失败即中止并以非 0 退出。**不要**把桥或模拟车写进 `test:e2e` 自动启动——它们是外部依赖，静默启动会掩盖端口占用和运行异常。
 
 ## License
 

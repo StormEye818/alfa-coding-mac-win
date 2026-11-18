@@ -15,7 +15,7 @@
     "dist:win": "electron-builder --win",
     "test:car": "node sandbox/car-selftest.mjs",
     "test:syntax": "node tools/check-syntax.mjs",
-    "test:e2e": "node test-agent1/t01-connect.mjs && node test-agent1/t02-config-editor.mjs && node test-agent1/t03-align-odoflash.mjs && node test-agent1/t04-funcs-diag.mjs && node test-agent1/t05-final-cycle.mjs && node test-agent1/t06-iface-cable.mjs",
+    "test:e2e": "node test-agent1/reset-fixture.mjs && node test-agent1/t01-connect.mjs && node test-agent1/t02-config-editor.mjs && node test-agent1/t03-align-odoflash.mjs && node test-agent1/t04-funcs-diag.mjs && node test-agent1/t05-final-cycle.mjs && node test-agent1/t06-iface-cable.mjs",
     "align:mes": "TZ=UTC LANG=C NO_COLOR=1 NODE_OPTIONS='' node tools/align-mes.mjs"
   },
   "dependencies": {

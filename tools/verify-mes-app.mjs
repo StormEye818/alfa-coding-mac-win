@@ -221,6 +221,94 @@ export async function run(ctx) {
       `src/elm327.js 不含传输层细节=${neutral}`, '总纲 §4.3 M4（三种传输都进 AT 层）', 'static');
   }
 
+  // ── §7 补挖项 N1–N5：全部真执行（N5 是文档口径，标静态契约）──────
+  {
+    // N1：readProxiData3 只请求一次 DATA3；readProxiAll 仍三次且顺序不变
+    const seen = [];
+    const fake = Object.create(Uds.prototype);
+    fake.readDataByIdentifier = async (did) => { seen.push(did); return Uint8Array.from([0xaa, 0xbb]); };
+    await fake.readProxiData3();
+    const once = [...seen];
+    seen.length = 0;
+    await fake.readProxiAll();
+    const thrice = [...seen];
+    const ok = once.length === 1 && once[0] === DID.DATA3
+      && thrice.length === 3 && thrice[0] === DID.PROXI_DATA1 && thrice[1] === DID.DATA2 && thrice[2] === DID.DATA3;
+    add('N1', 'READ_PROXI_DATA3_SINGLE_DID', ok,
+      `readProxiData3 DID=${JSON.stringify(once)}（必须仅 DATA3）；readProxiAll=${JSON.stringify(thrice)}（必须 DATA1,DATA2,DATA3）`,
+      'mes55-knowledge-pack/docs/05-protocol.md:75,77', 'behavior');
+  }
+
+  {
+    // N2：同步闸真跑两次（第二次必须 false），且调用点在 btnAlign handler 的第一个 await 之前
+    const state = { aligning: false, busy: null };
+    let alerts = 0;
+    const gate = instantiate(app, 'tryAcquireAlignGate', { state, alert: () => { alerts++; } });
+    const first = runSafe(() => gate(), null);
+    const locked = state.aligning === true;
+    const second = runSafe(() => gate(), null);
+    const clickAt = app.indexOf("$('btnAlign').addEventListener");
+    const gateAt = app.indexOf('tryAcquireAlignGate()', clickAt > 0 ? clickAt : 0);
+    const awaitAt = app.indexOf('await ensureRead()', clickAt > 0 ? clickAt : 0);
+    const beforeAwait = clickAt > 0 && gateAt > clickAt && awaitAt > gateAt;
+    add('N2', 'ALIGN_GATE_SYNC_BEFORE_AWAIT', first === true && second === false && locked && alerts === 1 && beforeAwait,
+      `首次=${first} 二次=${second}（必须 true/false） state.aligning=${locked} alert=${alerts}（必须 1）`
+      + ` gate@${gateAt} await@${awaitAt}（必须 gate 在 await 前）`,
+      '总纲 §7 N2（③扩展：只验自身正确性，不称对齐）', 'extension');
+  }
+
+  {
+    // N3：写后校验三态真跑 classifyWriteVerification
+    const classify = instantiate(app, 'classifyWriteVerification', {});
+    const r1 = runSafe(() => classify({ ok: true, diffs: [] }, [], true), null);
+    const r2 = runSafe(() => classify({ ok: true, diffs: [] }, [{ addr: 12, from: 1, to: 2 }], false), null);
+    const marker = { byte: 12, xorMask: 3, got: 1, want: 2 };
+    const r3 = runSafe(() => classify({ ok: false, diffs: [marker] }, [], false), null);
+    const ok = !!r1 && r1.writeOk === true && r1.verified === false
+      && !!r2 && r2.writeOk === false
+      && !!r3 && r3.writeOk === false && r3.markerDiffs.length === 1 && r3.markerDiffs[0].byte === 12;
+    add('N3', 'WRITE_VERIFICATION_THREE_STATES', ok,
+      `未回读一致=${stable(r1)}（writeOk=true/verified=false） 整块差异=${stable(r2)}（writeOk=false）`
+      + ` 主判据差异=${stable(r3)}（false 且列 byte12）`,
+      '总纲 §7 N3（②级：未回读≠有差异）', 'behavior');
+  }
+
+  {
+    // N4：wireBridgeEvents 真跑两种传输；handleBridgeClosed 真跑可见回调
+    const seen = { error: null, closed: null };
+    const wire = instantiate(app, 'wireBridgeEvents', {});
+    const mobileBridge = { isMobile: true, onError: null, onClosed: null };
+    const wiredMobile = runSafe(() => wire(mobileBridge, (m) => { seen.error = m; }, () => { seen.closed = true; }), null);
+    mobileBridge.onError('boom');
+    mobileBridge.onClosed();
+    const mobileErr = seen.error;
+    const listeners = {};
+    const desktopBridge = { on: (ev, cb) => { listeners[ev] = cb; } };
+    const wiredDesktop = runSafe(() => wire(desktopBridge, () => { seen.error = 'desktop-error'; }, () => { seen.closed = true; }), null);
+    if (listeners.error) listeners.error('desk-boom');
+    const st = { connected: true };
+    let reports = 0;
+    const onClosed = instantiate(app, 'handleBridgeClosed', { state: st, reportTransportLost: () => { reports++; } });
+    onClosed();
+    const ok = wiredMobile === true && mobileErr === 'boom' && seen.closed === true
+      && wiredDesktop === true && seen.error === 'desktop-error' && reports === 1;
+    add('N4', 'BRIDGE_EVENTS_SURFACED', ok,
+      `mobile接线=${wiredMobile} 桌面接线=${wiredDesktop} mobileErr=${JSON.stringify(mobileErr)} error=${JSON.stringify(seen.error)}`
+      + ` closed=${seen.closed} 未连接回调=${reports}（必须 1）`,
+      '总纲 §7 N4 / MES iOS EAAccessoryManager 事件机制', 'behavior');
+  }
+
+  {
+    // N5：README 的五个数字是文档口径，静态精确核对即可（不冒充行为断言）
+    const readme = readText(`${ctx.root}/README.md`);
+    const pairs = [[91, /91\s*个源节点/], [77, /77\s*个/], [40, /40\s*个模块定义/],
+      [38, /38\s*个模块/], [4305, /4305\s*条/]];
+    const miss = pairs.filter(([, re]) => !re.test(readme)).map(([n]) => n);
+    add('N5', 'README_DOC_NUMBERS', miss.length === 0,
+      `README 五数 91/77/40/38/4305 缺失=${JSON.stringify(miss)}（必须 []）`,
+      'README.md:93-94（文档口径）', 'static');
+  }
+
   return out;
 }
 

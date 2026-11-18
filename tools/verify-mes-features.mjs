@@ -54,13 +54,27 @@ export async function run(ctx) {
   // ── S1：FUNC 只发 commands[0] + 自造 31 03 轮询（不得发 commands[1..n]）──
   {
     const h = makeHarness();
-    const item = { resultFormat: 'FUNC', commands: '0431012000,0631022001FF,0431032000' };
+    // commands[1] 必须是**合法**帧：旧夹具 `06 31 02 20 01 FF` 的长度前缀 06 与 payload 5 字节不符，
+    // 被 raw.length < 1+len 守卫 continue，撤掉 S1 的 break 也不会下发 → 空断言假绿。
+    const item = { resultFormat: 'FUNC', commands: '0431012000,0431022000,0431032000' };
+
+    // 对照路径：只在内存里删掉 app.js 的 S1 break（绝不写回文件），证明同一夹具在回退实现下
+    // 确实会把 31 02 发出去。控制组失败 ⇒ 本断言无判伪能力，必须红。
+    const noBreakSrc = app.replace(/break;\s*\/\/\s*只处理首条命令[^\n]*/, '');
+    const control = makeHarness();
+    if (noBreakSrc !== app) {
+      const fnNoBreak = instantiate(noBreakSrc, 'runCommandString', depsForRun(control));
+      await runSafeAsync(() => fnNoBreak(item.commands, item), 'ERR');
+    }
+    const controlStops = control.requests.filter((p) => p[0] === 0x31 && p[1] === 0x02).length;
+
     await runSafeAsync(() => runCmd(item.commands, item, h), 'ERR');
     const starts = h.requests.filter((p) => p[0] === 0x31 && p[1] === 0x01).length;
     const stops = h.requests.filter((p) => p[0] === 0x31 && p[1] === 0x02).length;
     const polls = h.requests.filter((p) => p[0] === 0x31 && p[1] === 0x03).length;
-    add('S1', 'FUNC_ONLY_FIRST_COMMAND', starts === 1 && stops === 0 && polls >= 1,
-      `31 01=${starts}（必须 1） 31 02=${stops}（必须 0） 31 03=${polls}（必须 >=1）`, MES_S1);
+    add('S1', 'FUNC_ONLY_FIRST_COMMAND', noBreakSrc !== app && controlStops >= 1 && starts === 1 && stops === 0 && polls >= 1,
+      `夹具合法帧=04 31 02 20 00；对照（撤 break）31 02=${controlStops}（必须 >=1）`
+      + `｜现行 31 01=${starts}（必须 1） 31 02=${stops}（必须 0） 31 03=${polls}（必须 >=1）`, MES_S1);
   }
 
   // ── S2：0.5SEC / 1SEC 不乘沉降倍数（仅 num>1000 才乘）──────────────

@@ -39,6 +39,12 @@ export const ITEMS = [
   ['M2', 1, 'MES iOS EAAccessoryManager 自动发现（①级机制）'],
   ['M3', 3, '总纲 §4.3 M3（③扩展：我方接线）'],
   ['M4', 1, 'MES iOS SendCommandToELM 同构（①级架构）'],
+  // §7 补挖项：原 31 项之外新增的正式修复项，必须同样进覆盖表
+  ['N1', 2, 'mes55-knowledge-pack/docs/05-protocol.md:75,77（只读 DATA3 路径）'],
+  ['N2', 3, '总纲 §7 N2（③扩展：我方对齐闸并发）'],
+  ['N3', 2, '总纲 §7 N3（②级：未回读 ≠ 有差异）'],
+  ['N4', 1, 'MES iOS EAAccessoryManager / Info.plist 传输事件（①级机制）'],
+  ['N5', 2, 'README.md:93-94（文档口径）'],
 ];
 
 /** ①级证据的「内容锚」：不是只查文件存在，必须在指定行段里找到关键语义 */
@@ -66,8 +72,8 @@ export function run(ctx) {
     `清单 ${EXPECTED_NAMES.length} 条，缺失=${JSON.stringify(vanished)}（必须 []）`,
     'tools/verify-mes-manifest.mjs', 'static');
 
-  add('G0', 'ITEM_COUNT', ITEMS.length === 31,
-    `总纲待修项=${ITEMS.length}（S7+D4+A7+C3+Q6+M4=31）`, 'docs/修复规划-20261118.md §1–§4');
+  add('G0', 'ITEM_COUNT', ITEMS.length === 36,
+    `总纲待修项=${ITEMS.length}（原31 + §7 的 N1-N5 =36）`, 'docs/修复规划-20261118.md §1–§4');
 
   for (const [item, tier, evidence] of ITEMS) {
     add(item, 'EVIDENCE_DECLARED', !!evidence && (tier === 1 || tier === 2 || tier === 3),

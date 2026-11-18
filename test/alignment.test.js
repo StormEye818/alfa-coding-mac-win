@@ -111,12 +111,17 @@ console.log('\n可写范围：实际位图 + EOL 期望位都置位才 alignable
     const noE = computeAlignment(bNoE.d1, bNoE.d3, [sgw]);
     check('A4：C=1 / E=0 → alignable=false', noE.byName.get(sgw.name).alignable === false,
         JSON.stringify(noE.byName.get(sgw.name)));
+    // A4 反例 2：E 位置位但实际位图没有 → 车上无此节点，同样不可写
+    const bEolOnly = mk(); putEol(bEolOnly.d3, sgw);
+    const eolOnly = computeAlignment(bEolOnly.d1, bEolOnly.d3, [sgw]);
+    const eo = eolOnly.byName.get(sgw.name);
+    check('A4：E=1 / C=0 → alignable=false', !!eo && eo.alignable === false, JSON.stringify(eo));
     const absentNode = mods.alignmentNodes.find((n) => !res.rows.some((r) => r.name === n.name && r.listed));
+    // 不再用 `check(..., true)` 占位：夹具必须真有未安装样本，否则这条就不会被验证
+    check('未安装样本存在（夹具自检）', !!absentNode);
     if (absentNode) {
         const r = res.byName.get(absentNode.name);
         check('未安装 → 不可写', r && r.alignable === false, JSON.stringify(r));
-    } else {
-        check('未安装 → 不可写（无未安装样本，跳过）', true);
     }
 }
 

@@ -239,6 +239,49 @@ async function refreshPorts() {
   }
 }
 
+/**
+ * N4：移动端四种传输（WiFi/BLE/SPP/MFi）的写失败/断链经 MobileBridge 的
+ * onError/onClosed 上抛，必须在接线层接住 —— 旧实现只 log，用户看到的是逐条 5s 超时，
+ * 拔线后完全无提示。这里统一：可见提示（toast/stageFail）+ 连接态复位 + 停轮询。
+ */
+function reportTransportLost(what, detail) {
+  const text = `${what}${detail ? '：' + detail : ''}`;
+  log(text, 'warn');
+  stageFail(text);                                   // 可见，不是只 log
+  try {
+    if (typeof window !== 'undefined' && typeof window.__apxToast === 'function') window.__apxToast(text);
+  } catch {}
+  state.connected = false;
+  state.readDone = false;
+  stopLiveLoop();
+  $('connState').textContent = '未连接';
+  $('connState').className = 'pill offline';
+}
+function handleBridgeError(msg) {
+  reportTransportLost('适配器传输错误', String(msg || '未知错误'));
+}
+function handleBridgeClosed() {
+  // 打开新端口时 close() 旧端口也会触发 closed；未连接时忽略，避免误报
+  if (!state.connected) return;
+  reportTransportLost('适配器连接已断开', '请检查线缆 / 蓝牙 / WiFi 后重新连接');
+}
+function wireBridgeEvents(bridge, onError, onClosed) {
+  if (!bridge) return false;
+  // MobileBridge 暴露 onError/onClosed 属性（由四种端口的 on('error'/'closed') 转发）
+  if (bridge.onError !== undefined || bridge.isMobile) {
+    bridge.onError = onError;
+    bridge.onClosed = onClosed;
+    return true;
+  }
+  // 桌面 BridgeClient 用 on() 事件接口
+  if (typeof bridge.on === 'function') {
+    bridge.on('error', onError);
+    bridge.on('closed', onClosed);
+    return true;
+  }
+  return false;
+}
+
 async function ensureBridge() {
   const alive = state.bridge && (state.bridge.isMobile || (state.bridge.ws && state.bridge.ws.readyState === 1));
   if (alive) return state.bridge;
@@ -253,6 +296,7 @@ async function ensureBridge() {
     await state.bridge.connect();
     log('串口桥已连接');
   }
+  wireBridgeEvents(state.bridge, handleBridgeError, handleBridgeClosed);
   state.tester = new InterfaceTester(state.bridge);
   return state.bridge;
 }
@@ -1246,29 +1290,47 @@ async function writeToEcu() {
     //    此前只有整块 diff，缺这两条 —— 与对齐路径不一致，也没跑主判据。
     //    （2026-10-16 复查 A3）
     stage('正在回读校验（22 10 2A 主判据 + 整块比对）…');
-    const v = await state.uds.verifyProxi(state.block.bytes).catch((e) => {
-      log('22 10 2A 校验失败：' + e.message, 'warn');
-      return { ok: false, diffs: [], err: e.message };
-    });
+    // N3：把「未回读」与「确有差异」分开。车身不回 22 10 2A（NO_DATA/TIMEOUT/BAD_FRAME）
+    // 时，整块回读仍可逐字节验证成功，不能弹「发现差异」却列不出字节，更不能把
+    // 所选项全标「写入失败」逼用户重复刷写；与对齐路径的「✓已写入（未回读）」同口径。
+    let v = null, unverified = false;
+    try {
+      v = await state.uds.verifyProxi(state.block.bytes);
+    } catch (e) {
+      const noReadback = e && (e.code === 'NO_DATA' || e.code === 'TIMEOUT' || e.code === 'BAD_FRAME'
+        || /无应答|timeout|no data/i.test(String(e.message)));
+      if (!noReadback) throw e;
+      unverified = true;
+      v = { ok: true, diffs: [], unverified: true, why: e.message };
+      log('22 10 2A 未回读（按对齐路径口径：已写入、未回读）：' + e.message, 'warn');
+    }
     const back = new ProxiBlock(await state.uds.readProxi());
     const diff = back.diff(state.block);
-    const ok = v.ok && diff.length === 0;
-    if (!v.ok) {
-      log('22 10 2A 判定有差异：' + (v.diffs || []).map((d) => `Byte${d.byte}`).join('、'), 'warn');
+    const verification = classifyWriteVerification(v, diff, unverified);
+    const { markerDiffs } = verification;
+    const writeOk = verification.writeOk;
+    if (markerDiffs.length) {
+      log('22 10 2A 主判据有差异：' + markerDiffs.map((d) => `Byte${d.byte}`).join('、'), 'warn');
     }
-    // 按实际写入结果翻状态：成功→已写入，有差异→写入失败
-    for (const k of state.namedPicks.keys()) setWriteState('named:' + k, ok ? 'written' : 'failed');
-    for (const k of state.selected.keys()) setWriteState('feat:' + k, ok ? 'written' : 'failed');
-    if (!ok) {
-      alert('写入后校验发现差异，以下条目已标记为「写入失败」：\n' +
-        diff.slice(0, 8).map((d) => `Byte${d.addr}: ${hex8(d.from)} → ${hex8(d.to)}`).join('\n'));
+    if (v && v.verifyMarker === false) log('22 40 AA 收尾校验失败（辅助项，不阻断主判定）', 'warn');
+    // 状态徽标按写入结果；「未回读」单独在文案披露，不混成失败或已回读成功
+    for (const k of state.namedPicks.keys()) setWriteState('named:' + k, writeOk ? 'written' : 'failed');
+    for (const k of state.selected.keys()) setWriteState('feat:' + k, writeOk ? 'written' : 'failed');
+    if (!writeOk) {
+      const detail = diff.slice(0, 8).map((d) => `Byte${d.addr}: ${hex8(d.from)} → ${hex8(d.to)}`).join('\n');
+      const marker = markerDiffs.slice(0, 8).map((d) => `Byte${d.byte}`).join('、');
+      alert('写入后校验发现差异，以下条目已标记为「写入失败」：\n'
+        + (detail || ('22 10 2A 主判据差异：' + marker)));
+    } else if (unverified) {
+      alert('写入完成：整车块回读逐字节一致。\n\n但车身未回 22 10 2A，未做主判据回读；'
+        + '所选项标记为「已写入（未回读）」，请按需重读对齐状态确认。');
     } else {
-      alert('写入完成，读回校验一致。所选项已标记为「已写入」。');
+      alert('写入完成，22 10 2A 主判据与整块回读均一致。');
     }
     state.baseline = back.clone();
     state.block = back;
     // 写入后按新块重算对齐状态（DATA1 变了、DATA3 不变 → 新增/移除状态立即更新）
-    if (ok) {
+    if (writeOk) {
       applyAlignment(state.block.bytes, state.data3, { log: true });
       renderAlign();
     }
@@ -1276,7 +1338,9 @@ async function writeToEcu() {
     state.namedPicks.clear();
     state.selected.clear();
     renderEditor(); renderNamed(); renderFeatures(); detectConflicts();
-    if (ok) stageDone('配置已写入并校验通过'); else stageFail('写入完成，但读回校验发现差异');
+    if (!writeOk) stageFail('写入完成，但读回校验发现差异');
+    else if (unverified) stageDone('配置已写入（未回读），整块回读一致');
+    else stageDone('配置已写入并校验通过');
   } catch (e) {
     for (const k of state.namedPicks.keys()) setWriteState('named:' + k, 'failed');
     for (const k of state.selected.keys()) setWriteState('feat:' + k, 'failed');
@@ -1344,7 +1408,12 @@ function nodePresent(node) {
  * 待移除（配置里有、车上没有）与未安装节点都没有写入目标。
  */
 function nodeAlignable(node) {
-  return !!node && nodePresent(node) === true && nodeAddressable(node);
+  if (!node || !nodeAddressable(node)) return false;
+  // A4：可写性统一取自 src/alignment.js 的判定（alignable = actual && eol），
+  // UI 不再自己按 actual 重算一遍 —— 否则 E 位为 0 的在位节点会被误判可写，
+  // 与 MES 写入循环的 E 位门槛分叉。
+  const row = nodeRow(node);
+  return !!(row && row.alignable);
 }
 
 /** 该节点是否出现在配置或实际位图中（对齐页展示范围） */
@@ -1702,10 +1771,37 @@ $('btnSelFail').addEventListener('click', () =>
 $('btnSelMisalign').addEventListener('click', () =>
   setSelection((el) => el.dataset.st === 'misaligned' || el.dataset.st === 'fail'));
 
+/**
+ * N2：同步获取对齐闸 —— 必须在第一个 await 之前调用。第二次点击在同步阶段就会
+ * 看到 state.aligning=true 并被拒，不会进入任何 await 窗口。
+ */
+function tryAcquireAlignGate() {
+  if (state.aligning) { alert('正在执行 PROXI 对齐，请等它结束。'); return false; }
+  if (state.busy) { alert(`正在执行「${state.busy}」，请等它结束再开始对齐。`); return false; }
+  state.aligning = true;
+  return true;
+}
+
+/**
+ * N3：写后校验三态判定。未回读 ≠ 确有差异：
+ *  - hasRealDiff：整块回读 diff 或 22 10 2A 主判据差异槽位 → 写入失败
+ *  - unverified：ECU 不回 22 10 2A，但整块回读一致 → 已写入、未回读
+ */
+function classifyWriteVerification(v, diff, unverified) {
+  const markerDiffs = (v && v.diffs) || [];
+  const hasRealDiff = (diff && diff.length > 0) || markerDiffs.length > 0;
+  return {
+    writeOk: !hasRealDiff,
+    verified: !unverified && !!(v && v.ok),
+    markerDiffs,
+  };
+}
+
 $('btnAlign').addEventListener('click', async () => {
-  if (state.aligning) return;
-  if (state.busy) return alert(`正在执行「${state.busy}」，请等它结束再开始对齐。`);
-  if (!(await ensureRead())) return;
+  // N2：同步闸必须在第一个 await 之前（见 tryAcquireAlignGate）。
+  if (!tryAcquireAlignGate()) return;
+  try {
+    if (!(await ensureRead())) return;
   stopLiveForOperation('PROXI 对齐');
   if (state.session) state.session.resetCableAbort();
   // 教程 §5.3 对齐前安全警告（ABS 复位/标定、勿中断、钥匙 ON）
@@ -1775,7 +1871,9 @@ $('btnAlign').addEventListener('click', async () => {
   // 映射：PROXIX 家族 DATA1[25..56] = DATA3[32..63]（正序），SGW 在 Byte41 落在该区。
   try {
     stage('正在读取 DATA3 并合并 CAN 配置…');
-    const { data3 } = await state.uds.readProxiAll();
+    // N1：只需 DATA3，用只读 DID 方法；旧 readProxiAll() 会白读 DATA1(289B 多帧)+DATA2，
+    // 每次对齐多两趟串口往返，还可能在半双工总线上引入串帧。失败分支语义不变。
+    const data3 = await state.uds.readProxiData3();
     const m = state.block.mergeData3(data3);
     if (m.merged && m.changed > 0) {
       renderEditor();
@@ -2116,6 +2214,10 @@ $('btnAlign').addEventListener('click', async () => {
   } finally {
     state.aligning = false;
     if (state.session) state.session.resetCableAbort();
+  }
+  } finally {
+    // N2：所有早退路径（confirm 取消 / ensureRead 失败 / 无选中节点 / 各硬闸）都经这里复位
+    state.aligning = false;
   }
 });
 

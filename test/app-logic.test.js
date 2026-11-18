@@ -75,11 +75,15 @@ for (const [flag, expected] of [['0.5SEC', 500], ['1SEC', 1000]]) {
 }
 
 {
-  // S6：5SEC 必须解析成 5s 基准，不能落回 2s
+  // S6：结构化字段是权威值；旗标只兜底。假时钟按 ms 前进，精确量必须与门禁一致。
   const h = cmdHarness();
-  await fn('runCommandString', h.deps)('0431012000', { resultFormat: '5SEC', commands: '0431012000' });
+  await fn('runCommandString', h.deps)('0431012000', { resultFormat: 'PROBE_ONLY', commands: '0431012000', intervalMs: 5000 });
   const waited = h.clock.delays.reduce((a, b) => a + b, 0);
-  check('S6 5SEC 已解析（>=4s）', waited >= 4000, `waited=${Math.round(waited)}`);
+  check('S6 intervalMs=5000 精确等待 25000ms', waited === 25000, `waited=${Math.round(waited)}`);
+  const h2 = cmdHarness();
+  await fn('runCommandString', h2.deps)('0431012000', { resultFormat: '5SEC', commands: '0431012000' });
+  const w2 = h2.clock.delays.reduce((a, b) => a + b, 0);
+  check('S6 旗标兜底同样 25000ms', w2 === 25000, `waited=${Math.round(w2)}`);
 }
 
 {
@@ -238,6 +242,60 @@ console.log('\n实时数据排序置顶与 PROXI 五类清单（UX2/UX3）');
   check('UX3 一句话结论含需对齐数', /还有 2 个节点需对齐/.test(r.line), r.line);
   const r2 = five({ present: 3, needs: 0, eolFailed: 0 });
   check('UX3 反例：一致时给重写存储块提示', /全部对齐/.test(r2.line), r2.line);
+}
+
+/* ---------------- N1-N4：补挖项 ---------------- */
+console.log('\n补挖项 N1-N4');
+{
+  // N1：对齐前置只用只读 DATA3 方法，不再 readProxiAll 白读两块
+  const alignSection = src.slice(src.indexOf('对齐前置：merge DATA3'), src.indexOf('对齐前置：merge DATA3') + 500);
+  check('N1 对齐前置调用 readProxiData3',
+    /await state\.uds\.readProxiData3\(\)/.test(alignSection)
+      && !/await state\.uds\.readProxiAll\(\)/.test(alignSection), alignSection.slice(0, 200));
+  const udsSrc = fs.readFileSync(new URL('../src/uds.js', import.meta.url), 'utf8');
+  check('N1 反例：协议层确有该方法', /async\s+readProxiData3\s*\(/.test(udsSrc));
+
+  // N2：同步闸 —— 第一次获取成功并置位，第二次在 await 之前就被拒
+  const gState = { aligning: false, busy: null };
+  const alerts = [];
+  const acquire = fn('tryAcquireAlignGate', { state: gState, alert: (m) => alerts.push(m) });
+  const first = acquire();
+  const second = acquire();
+  check('N2 第一次获取闸成功并置 aligning', first === true && gState.aligning === true);
+  check('N2 第二次点击同步被拒（尚未进入 await）', second === false && /正在执行 PROXI 对齐/.test(alerts[0] || ''),
+    JSON.stringify(alerts));
+  const gState2 = { aligning: false, busy: '读取配置' };
+  const acquire2 = fn('tryAcquireAlignGate', { state: gState2, alert: (m) => alerts.push(m) });
+  check('N2 busy 时也被拒', acquire2() === false && gState2.aligning === false);
+
+  // N3：未回读 ≠ 确有差异
+  const classify = fn('classifyWriteVerification');
+  const noRead = classify({ ok: true, diffs: [], unverified: true }, [], true);
+  check('N3 未回读但整块一致 → 写入成功、未校验', noRead.writeOk === true && noRead.verified === false,
+    JSON.stringify(noRead));
+  const realDiff = classify({ ok: true, diffs: [] }, [{ addr: 40, from: 1, to: 2 }], false);
+  check('N3 整块差异 → 写入失败', realDiff.writeOk === false, JSON.stringify(realDiff));
+  const marker = classify({ ok: false, diffs: [{ byte: 41 }] }, [], false);
+  check('N3 主判据差异 → 写入失败且列出字节', marker.writeOk === false && marker.markerDiffs.length === 1,
+    JSON.stringify(marker));
+
+  // N4：MobileBridge 的 onError/onClosed 必须在接线层被接住
+  const events = {};
+  const mb = { isMobile: true, onError: null, onClosed: null };
+  const onErr = (m) => { events.error = m; };
+  const onClosed = () => { events.closed = true; };
+  const wire = fn('wireBridgeEvents', {
+    handleBridgeError: (m) => { events.error = m; },
+    handleBridgeClosed: () => { events.closed = true; },
+  });
+  check('N4 MobileBridge 回调已注册', wire(mb, onErr, onClosed) === true
+    && typeof mb.onError === 'function' && typeof mb.onClosed === 'function');
+  mb.onError('BLE 写失败');
+  mb.onClosed();
+  check('N4 错误/关闭事件被真正接住', events.error === 'BLE 写失败' && events.closed === true, JSON.stringify(events));
+  const bc = { on(name, cb) { (events.listeners || (events.listeners = {}))[name] = cb; } };
+  check('N4 桌面桥走 on() 接口', wire(bc, onErr, onClosed) === true
+    && !!events.listeners.error && !!events.listeners.closed);
 }
 
 console.log(`\napp-logic 结果：${pass} 通过 / ${fail} 失败`);

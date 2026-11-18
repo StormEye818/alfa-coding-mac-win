@@ -107,10 +107,10 @@ export async function run(ctx) {
   {
     const awaitAt = app.indexOf('await state.uds.securityAccess');
     const gate = app.lastIndexOf('if (operationBlocked()) return;', awaitAt > 0 ? awaitAt : 0);
-    const disableAt = app.indexOf('b.disabled = true', awaitAt > 0 ? awaitAt : 0);
+    const disableAt = app.lastIndexOf('b.disabled = true', awaitAt > 0 ? awaitAt : 0);
     const ok = gate > 0 && awaitAt > gate && disableAt > gate && disableAt < awaitAt;
     add('S3', 'CONCURRENCY_GATE_BEFORE_AWAIT', ok,
-      `gate@${gate} disable@${disableAt} await@${awaitAt}（必须 gate < disable < await；当前 disable 在 await 之后）`,
+      `gate@${gate} disable@${disableAt} await@${awaitAt}（必须 gate < disable < await；从 await 位置向前找最近的 disable）`,
       '总纲 §1.1 S3（③扩展：我方并发，不称对齐）', 'extension');
   }
 

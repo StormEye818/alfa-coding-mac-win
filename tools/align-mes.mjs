@@ -12,6 +12,7 @@ import { existsSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { stable } from './verify-mes-lib.mjs';
 
 // env 钉死：必须在任何被测代码执行前设定
 process.env.TZ = 'UTC';
@@ -66,14 +67,54 @@ const nonFp = [];
 report.push('=== G0 alfaproxi × MES 字节级对齐门禁（先建门禁，修复未开始时必须红） ===');
 report.push('退出码三态：0=全A；2=仅前置未满足（未判内容）；1=其它真缺陷');
 
-// 通用指纹护栏：任何断言 detail 里出现 epoch 毫秒都必须打码并移到 NONFP 段。
-// 教训：G1 给 verifyProxi 加了 auxCheck.at，它随每次运行变化，直接进 detail 就毁掉逐字节确定性。
-const EPOCH_RE = /\b(?:at|ts|timestamp|time):\d{10,}\b/g;
-let scrubbedEpochs = 0;
-function scrubDetail(text) {
-  const hits = String(text).match(EPOCH_RE) || [];
-  scrubbedEpochs += hits.length;
-  return String(text).replace(EPOCH_RE, (h) => `${h.split(':')[0]}:<epoch>`);
+/**
+ * 输出层统一净化（不是「只删这次的 at」）：
+ *   · 按 **key 名**丢弃易变字段：at / ts / time / timestamp / date / elapsed / duration / tmpdir；
+ *   · 字符串里嵌的 `key: value` 形态同样打码（gate 的 detail 大多是 stable(object) 的字符串）；
+ *   · 绝对路径（/Users /tmp /var/folders / 盘符）统一替换为 <path>。
+ * 有判定意义的内容一律保留；被丢掉的信息只允许出现在（不进指纹）段的**计数**里。
+ */
+const VOLATILE_KEYS = ['at', 'ts', 'time', 'timestamp', 'date', 'elapsed', 'duration', 'tmpdir'];
+const VOLATILE_SET = new Set(VOLATILE_KEYS);
+const VOLATILE_TEXT_RE = new RegExp(`(["']?)(${VOLATILE_KEYS.join('|')})\\1\\s*[:=]\\s*(?:"[^"]*"|'[^']*'|[^,;}\\s]+)`, 'g');
+const ABS_PATH_RE = /\/(?:Users|tmp|var\/folders)\/[^\s,;}\]]+|[A-Za-z]:\\[^\s,;}\]]+/g;
+const scrubStats = { keys: 0, paths: 0 };
+
+function scrubText(text) {
+  const str = String(text);
+  const hits = str.match(VOLATILE_TEXT_RE) || [];
+  scrubStats.keys += hits.length;
+  const paths = str.match(ABS_PATH_RE) || [];
+  scrubStats.paths += paths.length;
+  return str.replace(VOLATILE_TEXT_RE, (_m, q, key) => `${q}${key}${q}:<volatile>`)
+            .replace(ABS_PATH_RE, '<path>');
+}
+
+/** 递归版：若 gate 将来传结构化 data 字段，也按同一批 key 名净化 */
+function scrubObject(value) {
+  if (Array.isArray(value)) return value.map(scrubObject);
+  if (value && typeof value === 'object') {
+    const out = {};
+    for (const [k, v] of Object.entries(value)) {
+      if (VOLATILE_SET.has(k)) { scrubStats.keys++; continue; }
+      out[k] = scrubObject(v);
+    }
+    return out;
+  }
+  return typeof value === 'string' ? scrubText(value) : value;
+}
+
+/** 唯一的规范化出口：所有断言行都从这里出，杜绝某个 gate 漏打码 */
+function normalize(a) {
+  const detail = scrubText(a.detail);
+  const data = a.data !== undefined ? stable(scrubObject(a.data)) : '';
+  const evidence = scrubText(a.evidence || '');
+  return {
+    ok: a.ok,
+    line: `${a.ok ? 'A' : 'F'} ${String(a.item).padEnd(2)} ${a.gate} ${a.name} ${detail}${data ? ` data=${data}` : ''}｜证据 ${evidence}`
+      + `${a.mode === 'static' ? ' [静态契约]' : a.mode === 'extension' ? ' [③扩展]' : ''}`,
+    detail,
+  };
 }
 
 const assertions = [];
@@ -100,10 +141,33 @@ for (const g of GATES) {
   }
 }
 
+// 把「确定性」本身变成断言：两个**不同**的易变输入（时间戳/临时路径/耗时各不同）
+// 经过同一个 normalize 后必须逐字符相同。差异只打印两边 sha，避免自检自己又泄漏易变值。
+{
+  const probe = (salt) => stable({
+    keep: '判定用内容不变',
+    nested: { meaningful: 42, at: 1_790_000_000_000 + salt, duration: 10 + salt },
+    at: 1_790_000_000_000 + salt,
+    tmpdir: `/tmp/align-mes-${salt}/run`,
+    elapsed: 123 + salt,
+  });
+  const n1 = normalize({ item: 'G0', name: 'probe', gate: 'self', detail: probe(0), evidence: 'self' }).detail;
+  const n2 = normalize({ item: 'G0', name: 'probe', gate: 'self', detail: probe(987654), evidence: 'self' }).detail;
+  const h = (x) => createHash('sha256').update(x, 'utf8').digest('hex').slice(0, 16);
+  const selfOk = n1 === n2;
+  assertions.push({
+    item: 'G0', name: 'NORMALIZATION_DETERMINISTIC', ok: selfOk,
+    gate: 'align-mes', mode: 'behavior', evidence: 'G0 输出层自检（同输入两次 normalize 逐字符相同）',
+    detail: selfOk
+      ? `两份不同易变输入净化后逐字符相同，sha16=${h(n1)}`
+      : `净化后仍不同：sha16(a)=${h(n1)} sha16(b)=${h(n2)}（必须相同）`,
+  });
+}
+
 assertions.sort((a, b) => String(a.item).localeCompare(String(b.item)) || String(a.name).localeCompare(String(b.name)));
 const byItem = new Map();
 for (const a of assertions) {
-  report.push(`${a.ok ? 'A' : 'F'} ${a.item.padEnd(2)} ${a.gate} ${a.name} ${scrubDetail(a.detail)}｜证据 ${a.evidence}${a.mode === 'static' ? ' [静态契约]' : a.mode === 'extension' ? ' [③扩展]' : ''}`);
+  report.push(normalize(a).line);
   if (!byItem.has(a.item)) byItem.set(a.item, []);
   byItem.get(a.item).push(a.ok);
 }
@@ -130,7 +194,7 @@ report.push(`gate 数=${GATES.length} 独立 TMPDIR=${isolatedTmp} cwd=<ROOT> TZ
 report.push(`结论：${allOk ? '全 A' : `发现 ${fails.length} 条真缺陷`}，退出码=${allOk ? 0 : 1}`);
 report.push(`sha256=${sha}`);
 nonFp.push('（不进指纹）MES 证据根路径与本机安装位置有关，仅作自述，不参与判定');
-nonFp.push(`（不进指纹）本次报告有 ${scrubbedEpochs} 个 epoch 毫秒字段被打码为 <epoch>，不参与指纹`);
+nonFp.push(`（不进指纹）输出层净化移除 ${scrubStats.keys} 个易变字段（at/ts/time/timestamp/date/elapsed/duration/tmpdir）、${scrubStats.paths} 个绝对路径；仅计计数，不进指纹`);
 nonFp.push(`（不进指纹）${process.env.TMPDIR || '(unset)'} 为运行期临时目录，逐次不同，已排除`);
 
 // sha 必须覆盖「汇总」之前的报告体；重算并固定输出（汇总行本身不进指纹，避免自指）

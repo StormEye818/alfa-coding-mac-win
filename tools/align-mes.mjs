@@ -144,23 +144,37 @@ for (const g of GATES) {
 // 把「确定性」本身变成断言：两个**不同**的易变输入（时间戳/临时路径/耗时各不同）
 // 经过同一个 normalize 后必须逐字符相同。差异只打印两边 sha，避免自检自己又泄漏易变值。
 {
-  const probe = (salt) => stable({
-    keep: '判定用内容不变',
-    nested: { meaningful: 42, at: 1_790_000_000_000 + salt, duration: 10 + salt },
-    at: 1_790_000_000_000 + salt,
-    tmpdir: `/tmp/align-mes-${salt}/run`,
-    elapsed: 123 + salt,
+  const probe = (salt) => ({
+    item: 'G0', name: 'probe', gate: 'self', mode: 'behavior', evidence: 'self',
+    // 字符串形态（gate 的 detail 大多是 stable(object)）
+    detail: stable({ keep: '判定用内容不变', at: 1_790_000_000_000 + salt, elapsed: 123 + salt }),
+    // 结构化形态：验证 scrubObject 的**递归按 key 丢弃**也生效
+    data: {
+      keep: { meaningful: 42, label: '判定内容' },
+      at: 1_790_000_000_000 + salt,
+      ts: 1_790_000_000_001 + salt,
+      time: 1_790_000_000_002 + salt,
+      timestamp: 1_790_000_000_003 + salt,
+      date: `2026-11-${18 + (salt % 10)}`,
+      elapsed: 10 + salt,
+      duration: 20 + salt,
+      tmpdir: `/tmp/align-mes-${salt}/run`,
+      nested: { at: 1_790_000_000_004 + salt, keep: '稳定' },
+    },
   });
-  const n1 = normalize({ item: 'G0', name: 'probe', gate: 'self', detail: probe(0), evidence: 'self' }).detail;
-  const n2 = normalize({ item: 'G0', name: 'probe', gate: 'self', detail: probe(987654), evidence: 'self' }).detail;
+  const l1 = normalize(probe(0)).line;
+  const l2 = normalize(probe(987654)).line;
   const h = (x) => createHash('sha256').update(x, 'utf8').digest('hex').slice(0, 16);
-  const selfOk = n1 === n2;
+  // 三重判据：两次净化相同 ∧ 有意义的字段没被一起删掉 ∧ 裸 epoch 没漏出去
+  const selfOk = l1 === l2
+    && l1.includes('判定内容') && l1.includes('判定用内容不变') && l1.includes('meaningful:42')
+    && !/\bat:\d{10,}/.test(l1);
   assertions.push({
     item: 'G0', name: 'NORMALIZATION_DETERMINISTIC', ok: selfOk,
-    gate: 'align-mes', mode: 'behavior', evidence: 'G0 输出层自检（同输入两次 normalize 逐字符相同）',
+    gate: 'align-mes', mode: 'behavior', evidence: 'G0 输出层自检（两份不同易变输入净化后逐字符相同）',
     detail: selfOk
-      ? `两份不同易变输入净化后逐字符相同，sha16=${h(n1)}`
-      : `净化后仍不同：sha16(a)=${h(n1)} sha16(b)=${h(n2)}（必须相同）`,
+      ? `两份不同易变输入净化后逐字符相同且判定字段保留，sha16=${h(l1)}`
+      : `净化自检失败：相同=${l1 === l2} 保留判定字段=${l1.includes('meaningful:42')} 裸epoch=${/\bat:\d{10,}/.test(l1)} sha16(a)=${h(l1)} sha16(b)=${h(l2)}`,
   });
 }
 

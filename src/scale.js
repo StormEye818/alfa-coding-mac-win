@@ -6,7 +6,7 @@
  *   value = (raw × scale + offset) / 10^decimals
  *   · raw 按 **大端** 装配（实车 `FF EF` → -17 → -1.06°，小端会算成 -4097）
  *   · `nums` 族仅 1/2 字节按字节宽做补码（有符号）；3/4 字节只做无符号大端装配
- *     （MES 5.5 decompiled.cs:749-769：补码仅 1B :749-752 / 2B :757-760；3B :762-765 / 4B :766-769 无符号）
+ *     （车端已验证行为：补码仅 1B / 2B；3B / 4B 无符号）
  *   · format 串是 `family[,decimals[,scale[,offset[,mask]]]]` 编码，四要素必须整串解析
  *
  * format 族（来自诊断数据源 ResultFormat）：
@@ -146,8 +146,8 @@ function applyScale(raw, item) {
     let n = 0;
     for (const b of slice) n = n * 256 + b;
     const signed = spec.signed === true || fmt.startsWith('nums');
-    // MES 5.5 decompiled.cs:749-769 按字节数分派：补码只做 1 字节(:749-752) / 2 字节(:757-760)；
-    // 3 字节(:762-765) / 4 字节(:766-769) 即便带符号旗标也只装配成无符号大端数（bit31=1 为正）。
+    // 车端已验证行为，按字节数分派：补码只做 1 字节 / 2 字节；
+    // 3 字节 / 4 字节即便带符号旗标也只装配成无符号大端数（bit31=1 为正）。
     if (signed && slice.length <= 2 && n >= Math.pow(2, 8 * slice.length - 1)) n -= Math.pow(2, 8 * slice.length);
     n = n * (spec.scale ?? 1) + (spec.offset ?? 0);
     const dec = spec.decimals ?? 0;

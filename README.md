@@ -116,7 +116,7 @@ npm run dist:win           # Windows NSIS（arm64 Mac 需设 ELECTRON_BUILDER_NS
 
 ```bash
 npm test          # 语法门禁 + 单测（离线，含 app-logic 真断言）
-npm run align:mes # MES 字节级对齐门禁（全 A / exit 0；非 A 时退出码区分前置未满足与真缺陷）
+npm run align:oem # 字节级对齐门禁（全 A / exit 0；非 A 时退出码区分前置未满足与真缺陷）
 npm run test:car  # 车自检（离线）
 npm run test:e2e  # 61 项端到端回归（需先起桥与模拟车，见下）
 ```

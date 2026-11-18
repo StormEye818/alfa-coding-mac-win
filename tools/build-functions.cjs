@@ -55,7 +55,7 @@ function parseFlags(rf) {
     if (/DISCONN/i.test(s)) flags.disconnect = true;
     if (/PROXYPROC/i.test(s)) flags.proxi = true;
     if (/\bFUNC\b|FUNCEX/i.test(s)) flags.func = true;
-    // 延时旗标（MES FuncSpec）：与 app 运行时 interMs 同口径（app.js:2128-2135 的 0.5SEC/1SEC 写法），
+    // 延时旗标：与 app 运行时 interMs 同口径（0.5SEC/1SEC 写法），
     // 5.5 新增 5SEC（CDCM1 四个阀）→ 5000ms，此前未解析会落回 2s 默认。NOWAIT 最后覆盖为 0。
     const secFlag = /(\d+(?:\.\d+)?)SEC/i.exec(s);
     if (secFlag) flags.intervalMs = Math.round(parseFloat(secFlag[1]) * 1000);
@@ -217,7 +217,7 @@ function build() {
     funcs.sort((a, b) => b.count - a.count);
 
     fs.writeFileSync(path.join(OUT, 'functions.json'), JSON.stringify({
-        note: '特殊功能（执行器测试 / 编程 / 调整）。已剔除里程表写入类条目。security.level=server 的本工具不支持。execManual=true = MES EXECMANUAL 旗标：该项为人工单步执行（BitResults 形如 0001ON|0002OFF|0002Abort，逐步 ON/OFF/Abort 由操作者确认），MES 确有此语义，字段保留待 G2 在 app 运行时接。intervalMs = 从 ResultFormat 的延时旗标解析出的基准等待毫秒（NOWAIT=0 / 0.5SEC=500 / 1SEC=1000 / 5SEC=5000（5.5 新增，CDCM1 四阀）/ 10SEC=10000 / 20SEC=20000 / 30SEC=30000 / 50SEC=50000 / 无旗标=2000），由 G2 在 app 运行时消费；本字段只是数据侧结构化，不代表已接进 app。',
+        note: '特殊功能（执行器测试 / 编程 / 调整）。已剔除里程表写入类条目。security.level=server 的本工具不支持。execManual=true = 人工单步执行旗标：该项为人工单步执行（BitResults 形如 0001ON|0002OFF|0002Abort，逐步 ON/OFF/Abort 由操作者确认），车端确有此语义，字段保留待 G2 在 app 运行时接。intervalMs = 从 ResultFormat 的延时旗标解析出的基准等待毫秒（NOWAIT=0 / 0.5SEC=500 / 1SEC=1000 / 5SEC=5000（新增，CDCM1 四阀）/ 10SEC=10000 / 20SEC=20000 / 30SEC=30000 / 50SEC=50000 / 无旗标=2000），由 G2 在 app 运行时消费；本字段只是数据侧结构化，不代表已接进 app。',
         source: 'diag-data/data/params_all_55.tsv (CmdType=3/4/8/6, 952/949 模块)',
         total: funcs.reduce((n, f) => n + f.count, 0),
         categories: funcs,

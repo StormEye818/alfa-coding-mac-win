@@ -1387,7 +1387,7 @@ function nodeGroupOf(n) {
  * 节点 startByte 是位图索引（1..16），不是 PROXI 字节号 —— SGW 节点 startByte=2
  * 对应命名项「SGW」Byte40 已交叉验证。判定集中在 src/alignment.js。
  */
-/** A4：MES 的 EOL 门槛 —— E 位为 0 的节点直接 continue，不可写 */
+/** A4：车端 EOL 门槛 —— E 位为 0 的节点直接 continue，不可写 */
 function eolWritableRow(row) {
   return !!(row && row.eol);
 }
@@ -1411,7 +1411,7 @@ function nodeAlignable(node) {
   if (!node || !nodeAddressable(node)) return false;
   // A4：可写性统一取自 src/alignment.js 的判定（alignable = actual && eol），
   // UI 不再自己按 actual 重算一遍 —— 否则 E 位为 0 的在位节点会被误判可写，
-  // 与 MES 写入循环的 E 位门槛分叉。
+  // 与车端写入循环的 E 位门槛分叉。
   const row = nodeRow(node);
   return !!(row && row.alignable);
 }
@@ -1524,7 +1524,7 @@ function alignReadbackNote(verifiedDone, unverifiedDone) {
 }
 
 /**
- * UX3：把位图统计收敛成 MES 风格的五类清单 + 一句话结论。
+ * UX3：把位图统计收敛成车端风格的五类清单 + 一句话结论。
  * 五类口径（可并存、可重叠，故求和不一定等于节点总数）：
  *   CONFIGURED = 已配置且已对齐（ok + eol-ok）
  *   AVAILABLE  = DATA3 实际在位
@@ -1977,9 +1977,9 @@ $('btnAlign').addEventListener('click', async () => {
     .filter((el) => chosenIdx.has(Number(el.dataset.idx)));
 
   // —— 与车端全量口径核对 ——
-  // —— A4：EOL 期望位图严格门槛（MES `--.cs:36940`：`(E[n-1] & b)==0 → continue`） ——
+  // —— A4：EOL 期望位图严格门槛（车端已验证行为：`(E[n-1] & b)==0 → continue`） ——
   // 旧代码 `eolKnown = eolExpected>0` 语义反了：E 全 0 当成「不过滤」写全部；
-  // MES 在 E 全 0 时是**跳过全部**。删除「E 全 0 等价不过滤」的错误假设。
+  // 车端在 E 全 0 时是**跳过全部**。删除「E 全 0 等价不过滤」的错误假设。
   const eolExpected = state.alignment && state.alignment.counts ? state.alignment.counts.eolExpected : 0;
   if (!eolExpected) {
     stageFail('EOL 期望位图全 0：按车端全量语义跳过全部节点，未写入');
@@ -1990,14 +1990,14 @@ $('btnAlign').addEventListener('click', async () => {
   const eolExcluded = chosenNodes.filter((el) =>
     !eolWritableRow(nodeRow(state.modules.alignmentNodes[Number(el.dataset.idx)])));
   if (eolExcluded.length) {
-    // ③级扩展：后加装件实际在位但不在 E 位图里。默认按 MES 跳过；
-    // 只有用户显式确认才多写，且明确标注「非 MES 对齐语义」。
+    // ③级扩展：后加装件实际在位但不在 E 位图里。默认按车端语义跳过；
+    // 只有用户显式确认才多写，且明确标注「非车端对齐语义」。
     const names = eolExcluded.slice(0, 8).map((el) => '· ' + el.querySelector('.nm').textContent.trim());
     const more = eolExcluded.length > 8 ? `\n…等 ${eolExcluded.length} 个` : '';
     const includeAnyway = confirm(
       `⚠ 有 ${eolExcluded.length} 个节点实际在位，但 EOL 期望位（E 位）为 0：\n\n${names.join('\n')}${more}\n\n`
       + '车端全量写入按 E 位过滤，这些节点会被 continue 跳过（多见于后加装件）。\n\n'
-      + '点「取消」= 按车端语义跳过它们（推荐，与 MES 一致）\n'
+      + '点「取消」= 按车端语义跳过它们（推荐）\n'
       + '点「确定」= 仍写入（③级扩展，不称对齐，仅保证在位节点全写）'
     );
     if (!includeAnyway) {
@@ -2007,10 +2007,10 @@ $('btnAlign').addEventListener('click', async () => {
         chosenIdx.delete(Number(el.dataset.idx));
       }
       chosenNodes = chosenNodes.filter((el) => !eolExcluded.includes(el));
-      log(`按 MES EOL 门槛跳过 ${eolExcluded.length} 个 E 位为 0 的节点`);
+      log(`按车端 EOL 门槛跳过 ${eolExcluded.length} 个 E 位为 0 的节点`);
       if (!chosenNodes.length) return alert('没有剩余可写节点。');
     } else {
-      log(`③级扩展：仍写入 ${eolExcluded.length} 个 E 位为 0 的节点（非 MES 对齐语义）`);
+      log(`③级扩展：仍写入 ${eolExcluded.length} 个 E 位为 0 的节点（非车端对齐语义）`);
     }
   }
 
@@ -2374,7 +2374,7 @@ async function mergeRwUserEntry(item, picked) {
   const wlen = wraw[0];
   const wpay = wraw.slice(1, 1 + wlen);
   if (wpay[0] !== 0x2e || wpay.length < 4) return null;                    // 次条=写模板
-  // S5：基线必须按 **Commands[0] 的读 DID** 读回（`--.cs:4689,4696-4712`）。
+  // S5：基线必须按 **Commands[0] 的读 DID** 读回（车端已验证行为）。
   // 35 项读/写 DID 不同（如 VIN 读 F1B0 / 写 F190）：拿写模板 DID 去读，
   // 轻则基线错位、重则把读不到的全零当成基线写坏 VIN。
   const rdid = (rraw[2] << 8) | rraw[3];
@@ -2426,7 +2426,7 @@ async function runCommandString(cmdStr, item, opts = {}) {
     interMs = item.intervalMs;
   } else if (flags.includes('0.5SEC')) interMs = 500;
   else if (flags.includes('1SEC')) interMs = 1000;
-  // MES 5.5 字符串表有 0.5/1/5/10/20/30/50SEC（5.5 新增 5SEC，4 项 CDCM1 阀），
+  // 车端字符串表有 0.5/1/5/10/20/30/50SEC（新增 5SEC，4 项 CDCM1 阀），
   // 旗标仅作数据缺字段时的兼容兜底。
   else if (flags.includes('5SEC')) interMs = 5000;
   else if (flags.includes('10SEC')) interMs = 10000;
@@ -2434,7 +2434,7 @@ async function runCommandString(cmdStr, item, opts = {}) {
   else if (flags.includes('30SEC')) interMs = 30000;
   else if (flags.includes('50SEC')) interMs = 50000;
   if (flags.includes('NOWAIT')) interMs = 0;
-  // 沉降倍数按 MES `--.cs:4586-4592,4607-4610`：只有 num>1000 才在基准之上追加
+  // 沉降倍数按车端已验证行为：只有 num>1000 才在基准之上追加
   // 4×基准（1 条）/ 3×基准（2 条）；num=500/1000 只睡一次基准。
   // 旧实现无条件 ×5/×4，把 0.5SEC/1SEC 放大 4 倍（S2）。
   const overSec = interMs > 1000;
@@ -2602,8 +2602,8 @@ async function runCommandString(cmdStr, item, opts = {}) {
       const rawStatus = finalStatus
         ? Array.from(finalStatus).map((b) => b.toString(16).toUpperCase().padStart(2, '0')).join(' ')
         : '空';
-      // S4：BitResults（MES `_0091`，MMVV标签 格式，末项兜底）把结果字节翻成可读文本。
-      // MES `--.cs:4646-4679`：缓冲 array[4] = 剥前缀后的 resp[3]；无 BitResults 时
+      // S4：BitResults（`_0091`，MMVV标签 格式，末项兜底）把结果字节翻成可读文本。
+      // 车端已验证行为：缓冲 array[4] = 剥前缀后的 resp[3]；无 BitResults 时
       // 直接展示 `Completed correctly` + 结果字节 hex（温度/油位等原因在选项表里）。
       let resultText = '';
       if (finalStatus && finalStatus[0] === 0x71 && finalStatus.length > 3) {

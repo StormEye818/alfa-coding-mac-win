@@ -57,8 +57,8 @@ function cleanLines(buf) {
  * 把 ELM327 返回的原始帧拼成完整 ISO-TP 报文。
  *
  * D4 ①级：连续帧序号（SN = PCI 低 4 位）必须从 1 起逐帧 +1（mod 16）。
- * MES 5.4 源码 mes54r2-src/--/--.cs:4775-4781：`byte b = 33; ... list2[index][0] = b; b++;`
- * （0x21 = SN 1，之后 0x22、0x23…），5.5 协议文档 docs/05-protocol.md:61-62 同口径。
+ * 车端已验证行为：`byte b = 33; ... list2[index][0] = b; b++;`
+ * （0x21 = SN 1，之后 0x22、0x23…），车端协议文档同口径。
  * 接收侧是发送侧的镜像：SN 不连续 = 丢帧/串帧，必须报 BAD_FRAME，
  * **不许静默拼接错位数据**（此前缺校验会把乱序帧拼成看似合法的成绩单）。
  */
@@ -106,7 +106,7 @@ function reassembleIsoTp(frames) {
 
 /**
  * 校验 ISO-TP 连续帧序号序列是否连续（+1 mod 16）。
- * MES ①级：--.cs:4775-4781 `byte b = 33; ... list2[index][0] = b; b++;`
+ * 车端已验证行为：`byte b = 33; ... list2[index][0] = b; b++;`
  * （首帧后第一个 CF 的 SN=1，其后逐帧 +1）。不连续 = 丢帧/串帧。
  * @param {number[]} seq 连续帧序号数组
  * @returns {boolean} 全部相邻序号连续（+1 mod 16）才为 true

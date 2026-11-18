@@ -14,7 +14,8 @@
     "dist:mac": "electron-builder --mac",
     "dist:win": "electron-builder --win",
     "test:car": "node sandbox/car-selftest.mjs",
-    "test:syntax": "node tools/check-syntax.mjs"
+    "test:syntax": "node tools/check-syntax.mjs",
+    "align:mes": "TZ=UTC LANG=C NO_COLOR=1 NODE_OPTIONS='' node tools/align-mes.mjs"
   },
   "dependencies": {
     "serialport": "^12.0.0",

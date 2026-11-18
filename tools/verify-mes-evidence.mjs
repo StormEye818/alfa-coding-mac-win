@@ -25,7 +25,7 @@ export const ITEMS = [
   ['A4', 1, 'mes54r2-src/--/--.cs:36936-36942'],
   ['A5', 3, '总纲 §1.3 A5（③扩展）'],
   ['A6', 2, '总纲 §1.3 A6（②级：披露保留）'],
-  ['A7', 1, 'mes54r2-src/--/--.cs:36940'],
+  ['A7', 1, 'mes55-knowledge-pack/source/MULTIECUSCAN.decompiled.cs:50731,51350'],
   ['C1', 1, 'mes55-knowledge-pack/source/MULTIECUSCAN.decompiled.cs:742-769'],
   ['C2', 3, '总纲 §1.4 C2（③扩展）'],
   ['C3', 2, '总纲 §1.4 C3（②级：写路径 merge）'],
@@ -49,6 +49,10 @@ const CONTENT_ANCHORS = [
   ['S5', 'mes54r2-src/--/--.cs', 4689, 4712, /Commands\[0\]|_008A_0099_0089\[0\]/],
   ['A4', 'mes54r2-src/--/--.cs', 36936, 36942, /continue/],
   ['C1', 'mes55-knowledge-pack/source/MULTIECUSCAN.decompiled.cs', 742, 769, /P_0\.Length\s*==\s*3|P_0\.Length == 3/],
+  // A7 实现按 MES 5.5，证据锚必须指 5.5；5.4 的 37320 只是同源旧行，不能当现行证据
+  ['A7', 'mes55-knowledge-pack/source/MULTIECUSCAN.decompiled.cs', 50725, 50735, /\.Length\s*<\s*26/],
+  // A4 判定沿用 5.4（总纲 §1.3 A4 明引 36940），同时验 5.5 同语义行，避免版本口径漂移
+  ['A4', 'mes55-knowledge-pack/source/MULTIECUSCAN.decompiled.cs', 50258, 50266, /&\s*b\)\s*==\s*0/],
 ];
 
 export function run(ctx) {

@@ -11,8 +11,8 @@ import { parseDtcList, isRoutineBusy } from '../src/uds.js';
 import * as elm from '../src/elm327.js';
 
 const MES_C1 = 'mes55-knowledge-pack/source/MULTIECUSCAN.decompiled.cs:742-769';
-const MES_A4 = 'mes54r2-src/--/--.cs:36936-36942';
-const MES_A7 = 'mes54r2-src/--/--.cs:36940 (E 位为 0 即 continue)';
+const MES_A4 = 'mes54r2-src/--/--.cs:36936-36942（MES 5.5 同语义：mes55-knowledge-pack/source/MULTIECUSCAN.decompiled.cs:50262）';
+const MES_A7 = 'mes55-knowledge-pack/source/MULTIECUSCAN.decompiled.cs:50731,51350（Length < 26 判空；5.4 对应 mes54r2-src/--/--.cs:37320）';
 const MES_D2 = 'mes55-knowledge-pack/source/MULTIECUSCAN.decompiled.cs (DTC 记录表按模块字典定长)';
 
 export function run(ctx) {

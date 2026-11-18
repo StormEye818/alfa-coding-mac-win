@@ -57,8 +57,13 @@ export async function run(ctx) {
     const uds = new Uds(link);
     const res = await runSafeAsync(() => uds.verifyProxi(new Uint8Array(289)), null);
     const rejected = !!res && Object.keys(res).some((k) => /marker|40aa|verifyMarker/i.test(k) && res[k] === false);
+    // auxCheck.at 是 epoch 毫秒，每次运行都变：**不许进指纹**。
+    // 这里先就地打码，runner 里还有一层通用 scrub 兜底（见 align-mes.mjs）。
+    const shown = res && typeof res === 'object'
+      ? stable({ ...res, ...(res.auxCheck ? { auxCheck: { ...res.auxCheck, at: '<epoch>' } } : {}) })
+      : String(res);
     add('A2', 'MARKER_22_40_AA_NOT_SWALLOWED', rejected,
-      `22 40 AA 失败后结果=${res ? stable(res).slice(0, 160) : 'ERR'}（必须显式标记失败）`, MES_A2);
+      `22 40 AA 失败后结果=${shown.slice(0, 160)}（必须显式标记失败）`, MES_A2);
   }
 
   // ── A3：复检失败不得保留「✓对齐完成」────────────────────────────

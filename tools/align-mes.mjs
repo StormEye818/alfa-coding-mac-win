@@ -66,6 +66,16 @@ const nonFp = [];
 report.push('=== G0 alfaproxi × MES 字节级对齐门禁（先建门禁，修复未开始时必须红） ===');
 report.push('退出码三态：0=全A；2=仅前置未满足（未判内容）；1=其它真缺陷');
 
+// 通用指纹护栏：任何断言 detail 里出现 epoch 毫秒都必须打码并移到 NONFP 段。
+// 教训：G1 给 verifyProxi 加了 auxCheck.at，它随每次运行变化，直接进 detail 就毁掉逐字节确定性。
+const EPOCH_RE = /\b(?:at|ts|timestamp|time):\d{10,}\b/g;
+let scrubbedEpochs = 0;
+function scrubDetail(text) {
+  const hits = String(text).match(EPOCH_RE) || [];
+  scrubbedEpochs += hits.length;
+  return String(text).replace(EPOCH_RE, (h) => `${h.split(':')[0]}:<epoch>`);
+}
+
 const assertions = [];
 let isolatedTmp = 0;
 const savedTmp = process.env.TMPDIR;
@@ -93,7 +103,7 @@ for (const g of GATES) {
 assertions.sort((a, b) => String(a.item).localeCompare(String(b.item)) || String(a.name).localeCompare(String(b.name)));
 const byItem = new Map();
 for (const a of assertions) {
-  report.push(`${a.ok ? 'A' : 'F'} ${a.item.padEnd(2)} ${a.gate} ${a.name} ${a.detail}｜证据 ${a.evidence}${a.mode === 'static' ? ' [静态契约]' : a.mode === 'extension' ? ' [③扩展]' : ''}`);
+  report.push(`${a.ok ? 'A' : 'F'} ${a.item.padEnd(2)} ${a.gate} ${a.name} ${scrubDetail(a.detail)}｜证据 ${a.evidence}${a.mode === 'static' ? ' [静态契约]' : a.mode === 'extension' ? ' [③扩展]' : ''}`);
   if (!byItem.has(a.item)) byItem.set(a.item, []);
   byItem.get(a.item).push(a.ok);
 }
@@ -120,6 +130,7 @@ report.push(`gate 数=${GATES.length} 独立 TMPDIR=${isolatedTmp} cwd=<ROOT> TZ
 report.push(`结论：${allOk ? '全 A' : `发现 ${fails.length} 条真缺陷`}，退出码=${allOk ? 0 : 1}`);
 report.push(`sha256=${sha}`);
 nonFp.push('（不进指纹）MES 证据根路径与本机安装位置有关，仅作自述，不参与判定');
+nonFp.push(`（不进指纹）本次报告有 ${scrubbedEpochs} 个 epoch 毫秒字段被打码为 <epoch>，不参与指纹`);
 nonFp.push(`（不进指纹）${process.env.TMPDIR || '(unset)'} 为运行期临时目录，逐次不同，已排除`);
 
 // sha 必须覆盖「汇总」之前的报告体；重算并固定输出（汇总行本身不进指纹，避免自指）

@@ -25,6 +25,7 @@ process.chdir(ROOT);
 const MES_ROOT = process.env.ALIGN_MES_ROOT || '/Users/se818/mes-reverse';
 
 const PREFLIGHT_FILES = [
+  ['修复总纲（验收口径来源）', `${ROOT}/docs/修复规划-20261118.md`],
   ['MES 5.4 反编译源码', `${MES_ROOT}/mes54r2-src/--/--.cs`],
   ['MES 5.5 decompiled', `${MES_ROOT}/mes55-knowledge-pack/source/MULTIECUSCAN.decompiled.cs`],
   ['功能数据', `${ROOT}/src/data/functions.json`],

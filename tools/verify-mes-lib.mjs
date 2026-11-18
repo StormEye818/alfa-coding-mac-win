@@ -123,8 +123,10 @@ export function fakeClock() {
   let t = 1_000_000;
   return {
     delays,
-    setTimeout(fn, ms) { delays.push(Number(ms) || 0); if (fn) fn(); return delays.length; },
-    Date: { now() { t += 137; return t; }, parse: Date.parse, UTC: Date.UTC },
+    // 关键：时钟按「本次 setTimeout 的 ms」前进，累计等待 === 被测代码请求的毫秒数，
+    // 否则 waitCancellable 的 120ms 分片会让累计值变成近似量，容差式断言就能蒙混过关。
+    setTimeout(fn, ms) { const d = Number(ms) || 0; delays.push(d); t += d; if (fn) fn(); return delays.length; },
+    Date: { now() { return t; }, parse: Date.parse, UTC: Date.UTC },
   };
 }
 

@@ -153,27 +153,61 @@ export async function run(ctx) {
   add('C3', 'SGW_BYPASS_WRITE_MERGES_DATA3', /mergeData3/.test(app.slice(app.indexOf('async function writeToEcu'), app.indexOf('async function writeToEcu') + 4000)),
     'writeToEcu 路径含 mergeData3', '总纲 §1.4 C3', 'static');
 
-  // ── M2：真执行 MobileBridge.autoConnect（当前必须不存在 → 红）─────
+  // ── M2：真执行 MobileBridge.autoConnect（按真实 opts 契约注入钩子）──
+  // 真实签名：const { listPorts=()=>this.listPorts(), connect=..., identify=... } = opts;
+  // candidates **不是** opts 字段；旧夹具传 {candidates:[]} 会走真实 listPorts() 抛错而假红。
   {
-    let ok = false; let detail = 'autoConnect 不可执行';
     const cls = extractBlock(mobile, /class\s+MobileBridge\s*\{/);
-    if (cls) {
-      const MobileBridge = new Function(cls.replace(/^class\s+MobileBridge/, 'class MobileBridge') + '\nreturn MobileBridge;')();
-      const mb = new MobileBridge();
-      const res = await runSafeAsync(() => mb.autoConnect({ candidates: [] }), null);
-      ok = !!res && res.ok === false;
-      detail = `autoConnect 返回=${stable(res)}（必须给出明确失败结果，而不是 TypeError）`;
+    if (!cls) {
+      add('M2', 'AUTOCONNECT_EXECUTABLE', false, '无法从 mobile-bridge.js 提取 MobileBridge 类',
+        '总纲 §4.3 M2', 'extension');
+    } else {
+      const MobileBridge = new Function('log', cls + '\nreturn MobileBridge;')(() => {});
+      const mk = () => new MobileBridge();
+
+      // 负向：无候选必须抛明确错误（不是返回 {ok:false}，也不是 TypeError）
+      const neg = await runSafeAsync(async () => {
+        await mk().autoConnect({ listPorts: async () => [] });
+        return null;
+      }, 'THREW');
+      // 用显式捕获拿错误文案，避免把 Error 对象字符串化出栈信息
+      let negMsg = '';
+      try { await mk().autoConnect({ listPorts: async () => [] }); }
+      catch (e) { negMsg = String(e && e.message ? e.message : e); }
+      const negativeOk = neg === 'THREW' && /OBD interface not detected!/.test(negMsg);
+
+      // 正向：坏/好两个候选，按 MFi 优先锁定第一个识别成功的
+      let pos = null;
+      try {
+        pos = await mk().autoConnect({
+          listPorts: async () => [
+            { path: 'spp:BAD', friendly: 'BAD' },
+            { path: 'ea:GOOD|com.obdlink', friendly: 'GOOD' },
+          ],
+          connect: async () => {},
+          identify: async (spec) => (spec.name === 'GOOD' ? { ok: true, kind: 'mfi', name: 'GOOD' } : { ok: false }),
+        });
+      } catch { pos = null; }
+      const positiveOk = !!pos && pos.ok === true && pos.path === 'ea:GOOD|com.obdlink';
+
+      add('M2', 'AUTOCONNECT_EXECUTABLE', negativeOk && positiveOk,
+        `空候选错误文案=${JSON.stringify(negMsg)}（必须含 OBD interface not detected!）`
+        + `；坏/好候选锁定=${pos ? pos.path : 'null'}（必须 ea:GOOD|com.obdlink）`,
+        '总纲 §4.3 M2 + mobile/src/mobile-bridge.js:462-505', 'extension');
     }
-    add('M2', 'AUTOCONNECT_EXECUTABLE', ok, detail,
-      '总纲 §4.3 M2（③扩展：MES iOS 为①级机制证据，具体数值不许照抄）', 'extension');
   }
 
   // ── M1 / M3 / M4：原生与接线层契约 ────────────────────────────────
   {
-    const noFirst = !/protocolStrings\.first/.test(swift);
-    const white = /com\.obdlink|com\.vgatemall/.test(swift);
-    add('M1', 'MFI_PROTOCOL_WHITELIST', noFirst && white,
-      `Swift 不再用 .first=${noFirst}，白名单包含 MES 两串=${white}`,
+    // 先剥 Swift 注释：M1 的修复说明本身就写着「不再静默用 acc.protocolStrings.first」，
+    // 直接 grep 全文会把「说明已修复的注释」当成「仍在用」—— 典型假红。
+    const code = swift.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+    const usesFirst = /=\s*acc\.protocolStrings\.first\b/.test(code);
+    const white = /com\.obdlink|com\.vgatemall/.test(code);
+    const ordered = /topPriority/.test(code) && /declared/.test(code);
+    add('M1', 'MFI_PROTOCOL_WHITELIST', !usesFirst && white && ordered,
+      `剥注释后代码里 =acc.protocolStrings.first=${usesFirst}（必须 false）`
+      + `，白名单含 MES 两串=${white}，优先级表=${ordered}（必须全 true）`,
       '总纲 §4.3 M1 / MES iOS Info.plist', 'static');
   }
   {

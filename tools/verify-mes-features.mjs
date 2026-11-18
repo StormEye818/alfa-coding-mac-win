@@ -73,15 +73,33 @@ export async function run(ctx) {
       `${flag} 单命令累计等待≈${Math.round(waited)}ms（必须≈${expectedMs}ms，不得×5）`, MES_S2);
   }
 
-  // ── S6：5SEC 旗标必须被解析，不得落回 2s 默认 ────────────────────
+  // ── S6：5SEC 的权威值是结构化字段 intervalMs === 5000（不是旗标文本，也不是近似等待）──
   {
+    const data = readJson(`${ctx.root}/src/data/functions.json`);
+    let exact5000 = 0; let flagged5000 = 0;
+    const walk = (v) => {
+      if (Array.isArray(v)) { v.forEach(walk); return; }
+      if (v && typeof v === 'object') {
+        if (v.intervalMs === 5000) { exact5000++; if (/5SEC/i.test(v.resultFormat || '')) flagged5000++; }
+        Object.values(v).forEach(walk);
+      }
+    };
+    walk(data);
+    add('S6', 'INTERVAL_MS_FIELD_EXACT_5000', exact5000 > 0 && exact5000 === flagged5000,
+      `结构化 intervalMs===5000 的条目=${exact5000}，其中带 5SEC 旗标=${flagged5000}（必须相等且 >0；精确相等，不用容差）`,
+      'src/data/functions.json（build-functions.cjs:61 解析 5SEC=5000）+ 总纲 §1.1 S6', 'extension');
+  }
+  {
+    // 只给 intervalMs、故意不给 5SEC 旗标：若仍绿，说明运行时真消费了结构化字段，
+    // 而不是从 resultFormat 文本重新解析。假时钟按 ms 前进，累计值是精确量。
     const h = makeHarness();
-    const item = { resultFormat: '5SEC', commands: '0431012000' };
+    const item = { resultFormat: 'PROBE_ONLY', commands: '0431012000', intervalMs: 5000 };
     await runSafeAsync(() => runCmd(item.commands, item, h), 'ERR');
     const waited = h.clock.delays.reduce((a, b) => a + b, 0);
-    add('S6', 'FLAG_5SEC_PARSED', waited >= 5000 * 0.8,
-      `5SEC 单命令累计等待≈${Math.round(waited)}ms（必须≈5000ms，2s 默认算未解析）`,
-      'mes55-knowledge-pack 5.5 字符串表 + 总纲 §1.1 S6（③扩展：MES 5.4 无 5SEC）', 'extension');
+    const expected = 25000;   // MES：num>1000 时 基准 + 4×基准 = 5×5000（单命令）
+    add('S6', 'INTERVAL_MS_CONSUMED_EXACT', waited === expected,
+      `旗标串不含 5SEC、仅给 intervalMs=5000 时累计等待=${waited}（必须精确 ${expected}；若仍取默认 2000 会是 10000）`,
+      'mes54r2-src/--/--.cs:4586-4610（num>1000 加 4×num）+ 总纲 §1.1 S6', 'extension');
   }
 
   // ── S5：读改写基线取读命令 DID，不是写模板 DID ───────────────────
@@ -126,10 +144,19 @@ export async function run(ctx) {
       }
     };
     walk(data);
-    const runtimeUses = (app.match(/execManual/g) || []).length;
-    add('S7', 'EXEC_MANUAL_NOT_DEAD', withField === 0 || runtimeUses > 0,
-      `数据含 execManual 的条目=${withField}，运行时引用=${runtimeUses}（不得只写不读）`,
-      '总纲 §1.1 S7（③扩展）', 'extension');
+    // 不能只数源码里出现了几次 execManual：注释和一次性赋值也算。
+    // 真判据：在「特殊功能按钮 click handler」内，有 item.execManual === true 的分支，
+    // 且该分支 600 字符内出现 prompt( 与 return null（操作者能选 Abort 不发帧）。
+    const at = app.indexOf('item.execManual === true');
+    const handler = app.lastIndexOf("b.addEventListener('click', async () => {", at > 0 ? at : 0);
+    const seg = at > 0 ? app.slice(at, at + 600) : '';
+    const inPath = at > 0 && handler > 0 && handler < at
+      && /prompt\s*\(/.test(seg) && /return null/.test(seg);
+    add('S7', 'EXEC_MANUAL_NOT_DEAD', withField === 0 || inPath,
+      `数据含 execManual 的条目=${withField}；执行路径内分支=${inPath}`
+      + `（app.js:${app.slice(0, Math.max(0, at)).split('\n').length}，click handler@${handler}；`
+      + `必须 prompt + return null，只出现在注释/赋值不算）`,
+      '总纲 §1.1 S7（③扩展：MES 确有 EXECMANUAL 语义）', 'extension');
   }
 
   return out;
